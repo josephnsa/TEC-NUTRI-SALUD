@@ -1,8 +1,13 @@
 import { ketoCatalog, type KetoItem } from "../data/ketoCatalog";
 
+import { getActivoPerfilId } from "./perfilStorage";
+
 export type ListaItem = KetoItem & { cantidad: number; comprado: boolean };
 
-const STORAGE_KEY = "tec_nutri_salud_keto_lista_v1";
+function listaStorageKey(): string {
+  const pid = getActivoPerfilId();
+  return pid ? `tec_nutri_salud_keto_lista_v1__${pid}` : "tec_nutri_salud_keto_lista_v1";
+}
 
 export type ListaGuardada = {
   dias: number;
@@ -29,18 +34,29 @@ export function generarListaKeto(dias: number, personas: number): ListaItem[] {
 
 export function loadListaLocal(): ListaGuardada | null {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw) as ListaGuardada;
+    const key = listaStorageKey();
+    const raw = localStorage.getItem(key);
+    if (raw) return JSON.parse(raw) as ListaGuardada;
+    const pid = getActivoPerfilId();
+    if (pid) {
+      const legacyKey = "tec_nutri_salud_keto_lista_v1";
+      const leg = localStorage.getItem(legacyKey);
+      if (leg) {
+        localStorage.setItem(key, leg);
+        localStorage.removeItem(legacyKey);
+        return JSON.parse(leg) as ListaGuardada;
+      }
+    }
+    return null;
   } catch {
     return null;
   }
 }
 
 export function saveListaLocal(data: ListaGuardada) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  localStorage.setItem(listaStorageKey(), JSON.stringify(data));
 }
 
 export function clearListaLocal() {
-  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(listaStorageKey());
 }

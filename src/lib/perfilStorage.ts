@@ -1,6 +1,31 @@
 import type { PerfilUsuario } from "./nutritionPlan";
 
-const PERFIL_KEY = "tec_nutri_salud_perfil_v1";
+const PERFIL_KEY_LEGACY = "tec_nutri_salud_perfil_v1";
+const PERFILES_KEY = "tec_nutri_salud_perfiles_v1";
+
+export const PERFILES_STORAGE_EVENT = "tec-nutri-salud-perfiles";
+
+export const MAX_PERFILES = 8;
+
+export type PerfilMiembro = PerfilUsuario & {
+  id: string;
+  creadoEn: string;
+  /** ISO date YYYY-MM-DD; inicio del “día 1” del plan (fase 2.3). */
+  fechaInicioPlan?: string | null;
+};
+
+export type EstadoPerfiles = {
+  perfiles: PerfilMiembro[];
+  activoId: string;
+};
+
+function emitPerfilesChanged() {
+  try {
+    window.dispatchEvent(new CustomEvent(PERFILES_STORAGE_EVENT, { detail: {} }));
+  } catch {
+    /* ignore */
+  }
+}
 
 /** Migra JSON antiguo (sin `nombre`) y sanea tipos. */
 export function normalizePerfilParsed(raw: unknown): PerfilUsuario | null {
@@ -28,25 +53,201 @@ export function normalizePerfilParsed(raw: unknown): PerfilUsuario | null {
   };
 }
 
-export function loadPerfilLocal(): PerfilUsuario | null {
+function normalizeMiembro(raw: unknown): PerfilMiembro | null {
+  if (!raw || typeof raw !== "object") return null;
+  const o = raw as Partial<PerfilMiembro>;
+  const base = normalizePerfilParsed(o);
+  if (!base || typeof o.id !== "string" || !o.id) return null;
+  const creadoEn = typeof o.creadoEn === "string" ? o.creadoEn : new Date().toISOString();
+  const fip = o.fechaInicioPlan;
+  const fechaInicioPlan =
+    fip === null || fip === undefined
+      ? null
+      : typeof fip === "string" && /^\d{4}-\d{2}-\d{2}$/.test(fip)
+        ? fip
+        : null;
+  return { ...base, id: o.id, creadoEn, fechaInicioPlan: fechaInicioPlan ?? null };
+}
+
+function parseEstado(raw: string): EstadoPerfiles | null {
   try {
-    const raw = localStorage.getItem(PERFIL_KEY);
-    if (!raw) return null;
-    return normalizePerfilParsed(JSON.parse(raw));
+    const data = JSON.parse(raw) as unknown;
+    if (!data || typeof data !== "object") return null;
+    const root = data as Partial<EstadoPerfiles>;
+    if (!Array.isArray(root.perfiles) || typeof root.activoId !== "string") return null;
+    const perfiles = root.perfiles.map(normalizeMiembro).filter(Boolean) as PerfilMiembro[];
+    if (!perfiles.length) return null;
+    const activoOk = perfiles.some((p) => p.id === root.activoId) ? root.activoId : perfiles[0].id;
+    return { perfiles, activoId: activoOk };
   } catch {
     return null;
   }
 }
 
+function readEstadoFromDisk(): EstadoPerfiles | null {
+  try {
+    const raw = localStorage.getItem(PERFILES_KEY);
+    if (raw) {
+      const e = parseEstado(raw);
+      if (e) return e;
+    }
+    const legacy = localStorage.getItem(PERFIL_KEY_LEGACY);
+    if (!legacy) return null;
+    const u = normalizePerfilParsed(JSON.parse(legacy));
+    if (!u) return null;
+    const id = crypto.randomUUID();
+    const estado: EstadoPerfiles = {
+      perfiles: [{ ...u, id, creadoEn: new Date().toISOString(), fechaInicioPlan: null }],
+      activoId: id
+    };
+    localStorage.setItem(PERFILES_KEY, JSON.stringify(estado));
+    localStorage.removeItem(PERFIL_KEY_LEGACY);
+    emitPerfilesChanged();
+    return estado;
+  } catch {
+    return null;
+  }
+}
+
+function writeEstado(e: EstadoPerfiles) {
+  localStorage.setItem(PERFILES_KEY, JSON.stringify(e));
+  emitPerfilesChanged();
+}
+
+function nuevoMiembroDesdeUsuario(u: PerfilUsuario): PerfilMiembro {
+  const n = normalizePerfilParsed(u) ?? u;
+  return {
+    ...n,
+    id: crypto.randomUUID(),
+    creadoEn: new Date().toISOString(),
+    fechaInicioPlan: null
+  };
+}
+
+export function stripToUsuario(m: PerfilMiembro): PerfilUsuario {
+  const { id: _id, creadoEn: _c, fechaInicioPlan: _f, ...rest } = m;
+  return rest;
+}
+
+export function loadEstadoPerfiles(): EstadoPerfiles | null {
+  return readEstadoFromDisk();
+}
+
+export function getActivoPerfilId(): string | null {
+  const e = readEstadoFromDisk();
+  return e?.activoId ?? null;
+}
+
+export function listPerfilesMiembros(): PerfilMiembro[] {
+  return readEstadoFromDisk()?.perfiles ?? [];
+}
+
+/** Primer id estable (para migrar mercados legacy sin perfilId). */
+export function getPrimerPerfilId(): string | null {
+  const e = readEstadoFromDisk();
+  return e?.perfiles[0]?.id ?? null;
+}
+
+export function loadPerfilLocal(): PerfilUsuario | null {
+  const e = readEstadoFromDisk();
+  if (!e) return null;
+  const m = e.perfiles.find((p) => p.id === e.activoId) ?? e.perfiles[0];
+  return m ? stripToUsuario(m) : null;
+}
+
+/** Perfil activo con metadatos (id, fechas). */
+export function loadPerfilMiembroActivo(): PerfilMiembro | null {
+  const e = readEstadoFromDisk();
+  if (!e) return null;
+  return e.perfiles.find((p) => p.id === e.activoId) ?? e.perfiles[0] ?? null;
+}
+
 export function savePerfilLocal(p: PerfilUsuario) {
   const n = normalizePerfilParsed(p);
-  localStorage.setItem(PERFIL_KEY, JSON.stringify(n ?? p));
+  if (!n) return;
+  let e = readEstadoFromDisk();
+  if (!e) {
+    const m = nuevoMiembroDesdeUsuario(n);
+    e = { perfiles: [m], activoId: m.id };
+    writeEstado(e);
+    return;
+  }
+  const idx = e.perfiles.findIndex((x) => x.id === e.activoId);
+  if (idx === -1) {
+    const m = nuevoMiembroDesdeUsuario(n);
+    e = { perfiles: [...e.perfiles, m], activoId: m.id };
+    writeEstado(e);
+    return;
+  }
+  const prev = e.perfiles[idx];
+  const merged: PerfilMiembro = {
+    ...n,
+    id: prev.id,
+    creadoEn: prev.creadoEn,
+    fechaInicioPlan: prev.fechaInicioPlan ?? null
+  };
+  const perfiles = [...e.perfiles];
+  perfiles[idx] = merged;
+  writeEstado({ ...e, perfiles });
+}
+
+export function saveFechaInicioPlanActivo(isoDate: string | null) {
+  const e = readEstadoFromDisk();
+  if (!e) return;
+  const idx = e.perfiles.findIndex((x) => x.id === e.activoId);
+  if (idx === -1) return;
+  const perfiles = [...e.perfiles];
+  const m = perfiles[idx];
+  let f: string | null = m.fechaInicioPlan ?? null;
+  if (isoDate === null || isoDate === "") f = null;
+  else if (/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) f = isoDate;
+  perfiles[idx] = { ...m, fechaInicioPlan: f };
+  writeEstado({ ...e, perfiles });
 }
 
 export function perfilGuardadoEnDispositivo(): boolean {
   try {
-    return Boolean(localStorage.getItem(PERFIL_KEY));
+    return Boolean(localStorage.getItem(PERFILES_KEY) || localStorage.getItem(PERFIL_KEY_LEGACY));
   } catch {
     return false;
   }
+}
+
+export function setActivoPerfilId(id: string): boolean {
+  const e = readEstadoFromDisk();
+  if (!e || !e.perfiles.some((p) => p.id === id)) return false;
+  if (e.activoId === id) return true;
+  writeEstado({ ...e, activoId: id });
+  return true;
+}
+
+export function addPerfilMiembro(): PerfilMiembro | null {
+  const e = readEstadoFromDisk();
+  if (!e) return null;
+  if (e.perfiles.length >= MAX_PERFILES) return null;
+  const m = nuevoMiembroDesdeUsuario(
+    normalizePerfilParsed({
+      nombre: "",
+      edad: 32,
+      pesoKg: 72,
+      tallaCm: 168,
+      sexo: "f",
+      enfermedades: "",
+      alimentosEvitar: "",
+      estiloDieta: "keto"
+    })!
+  );
+  writeEstado({ perfiles: [...e.perfiles, m], activoId: m.id });
+  return m;
+}
+
+export function removePerfilMiembro(id: string): boolean {
+  const e = readEstadoFromDisk();
+  if (!e || e.perfiles.length <= 1) return false;
+  const next = e.perfiles.filter((p) => p.id !== id);
+  if (next.length === e.perfiles.length) return false;
+  let activoId = e.activoId;
+  if (activoId === id) activoId = next[0].id;
+  writeEstado({ perfiles: next, activoId });
+  return true;
 }

@@ -11,7 +11,7 @@ import {
   getMercadoRealizado,
   listarMercadosRealizados
 } from "../lib/mercadoHistorial";
-import { loadPerfilLocal, perfilGuardadoEnDispositivo } from "../lib/perfilStorage";
+import { loadPerfilLocal, perfilGuardadoEnDispositivo, PERFILES_STORAGE_EVENT } from "../lib/perfilStorage";
 
 export function MiEspacio() {
   const { user } = useAuth();
@@ -20,9 +20,11 @@ export function MiEspacio() {
   useEffect(() => {
     const sync = () => setTick((t) => t + 1);
     window.addEventListener("storage", sync);
+    window.addEventListener(PERFILES_STORAGE_EVENT, sync);
     const id = window.setInterval(sync, 2500);
     return () => {
       window.removeEventListener("storage", sync);
+      window.removeEventListener(PERFILES_STORAGE_EVENT, sync);
       window.clearInterval(id);
     };
   }, []);

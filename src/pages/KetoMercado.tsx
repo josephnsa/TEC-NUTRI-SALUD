@@ -18,6 +18,7 @@ import {
   setMercadoActivoParaPlan,
   type MercadoSnapshot
 } from "../lib/mercadoHistorial";
+import { PERFILES_STORAGE_EVENT } from "../lib/perfilStorage";
 
 export function KetoMercado() {
   const navigate = useNavigate();
@@ -42,6 +43,24 @@ export function KetoMercado() {
       setItems(saved.items);
     }
     refreshHistorial();
+  }, [refreshHistorial]);
+
+  useEffect(() => {
+    const onPerfil = () => {
+      const saved = loadListaLocal();
+      if (saved?.items?.length) {
+        setDias(saved.dias);
+        setPersonas(saved.personas);
+        setItems(saved.items);
+      } else {
+        setDias(7);
+        setPersonas(2);
+        setItems(generarListaKeto(7, 2));
+      }
+      refreshHistorial();
+    };
+    window.addEventListener(PERFILES_STORAGE_EVENT, onPerfil);
+    return () => window.removeEventListener(PERFILES_STORAGE_EVENT, onPerfil);
   }, [refreshHistorial]);
 
   const persist = useCallback(

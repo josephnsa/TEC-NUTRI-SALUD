@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { useAuth } from "../context/AuthContext";
 import { MARCA_APP } from "../lib/brand";
 import { PASO_ASISTENTE, PASOS_RECORRIDO_PRINCIPAL, RUTA_MI_ESPACIO } from "../lib/recorrido";
+import { SelectorPerfilHeader } from "./SelectorPerfilHeader";
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
   `rounded-xl px-3 py-2 text-sm font-medium transition-all duration-200 ${
@@ -20,17 +21,20 @@ export function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-dvh flex flex-col">
       <header className="sticky top-0 z-40 border-b border-white/40 bg-white/75 shadow-sm backdrop-blur-xl supports-[backdrop-filter]:bg-white/65">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-3 py-2.5 sm:gap-3 sm:px-4 sm:py-3">
-          <NavLink
-            to="/"
-            className={({ isActive }) =>
-              `min-w-0 shrink font-display text-base font-bold leading-tight tracking-tight transition sm:text-lg ${
-                isActive ? "text-gradient-brand" : "text-gradient-brand opacity-[0.92] hover:opacity-100"
-              }`
-            }
-          >
-            {MARCA_APP}
-          </NavLink>
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-2 px-3 py-2.5 sm:gap-3 sm:px-4 sm:py-3">
+          <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+            <NavLink
+              to="/"
+              className={({ isActive }) =>
+                `min-w-0 shrink font-display text-base font-bold leading-tight tracking-tight transition sm:text-lg ${
+                  isActive ? "text-gradient-brand" : "text-gradient-brand opacity-[0.92] hover:opacity-100"
+                }`
+              }
+            >
+              {MARCA_APP}
+            </NavLink>
+            <SelectorPerfilHeader />
+          </div>
 
           <div className="flex min-w-0 items-center justify-end gap-2">
             <div className="flex shrink-0 items-center gap-2 md:hidden">

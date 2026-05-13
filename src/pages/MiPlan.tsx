@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { StepHeader } from "../components/StepHeader";
 import { DecimalField, IntField } from "../components/NumericInputs";
@@ -12,11 +12,26 @@ import {
   type ModoCronograma,
   type PerfilUsuario
 } from "../lib/nutritionPlan";
-import { loadPerfilLocal, savePerfilLocal } from "../lib/perfilStorage";
+import {
+  PERFILES_STORAGE_EVENT,
+  MAX_PERFILES,
+  addPerfilMiembro,
+  getActivoPerfilId,
+  listPerfilesMiembros,
+  loadPerfilLocal,
+  loadPerfilMiembroActivo,
+  perfilGuardadoEnDispositivo,
+  removePerfilMiembro,
+  saveFechaInicioPlanActivo,
+  savePerfilLocal,
+  setActivoPerfilId,
+  stripToUsuario
+} from "../lib/perfilStorage";
 import { fetchProfileRemote, upsertProfileRemote } from "../lib/profileRemote";
-import { getMercadoActivoParaPlan, getMercadoRealizado } from "../lib/mercadoHistorial";
+import { getMercadoActivoParaPlan, getMercadoRealizado, purgeMercadoDePerfil } from "../lib/mercadoHistorial";
 import { URL_GOOGLE_AI_STUDIO_API_KEY, agenteRecetasGratisDisponible, generarCronogramaIA } from "../lib/recipesGemini";
 import { RUTA_MI_ESPACIO } from "../lib/recorrido";
+import { etiquetaFechaDiaPlan } from "../lib/planFechas";
 
 const defaultPerfil: PerfilUsuario = {
   nombre: "",
@@ -50,11 +65,24 @@ export function MiPlan() {
   const [vistaCronograma, setVistaCronograma] = useState<"plantillas" | "ia">("plantillas");
   const [iaCargando, setIaCargando] = useState(false);
   const [iaError, setIaError] = useState<string | null>(null);
+  const [fechaInicioPlan, setFechaInicioPlan] = useState<string>("");
+  const [perfilContextoId, setPerfilContextoId] = useState<string | null>(null);
+
+  const bootDesdeAlmacenamiento = useCallback(() => {
+    const l = loadPerfilLocal();
+    if (l) setPerfil(l);
+    else setPerfil(defaultPerfil);
+    const m = loadPerfilMiembroActivo();
+    setFechaInicioPlan(m?.fechaInicioPlan ?? "");
+    setMercadoActivoId(getMercadoActivoParaPlan());
+    setPerfilContextoId(getActivoPerfilId());
+  }, []);
 
   useEffect(() => {
-    const local = loadPerfilLocal();
-    if (local) setPerfil(local);
-  }, []);
+    bootDesdeAlmacenamiento();
+    window.addEventListener(PERFILES_STORAGE_EVENT, bootDesdeAlmacenamiento);
+    return () => window.removeEventListener(PERFILES_STORAGE_EVENT, bootDesdeAlmacenamiento);
+  }, [bootDesdeAlmacenamiento]);
 
   useEffect(() => {
     if (!user?.id || !isConfigured) return;
@@ -64,6 +92,8 @@ export function MiPlan() {
       if (remote) {
         setPerfil(remote);
         savePerfilLocal(remote);
+        const m = loadPerfilMiembroActivo();
+        setFechaInicioPlan(m?.fechaInicioPlan ?? "");
       }
       setLoadingRemote(false);
     })();
@@ -72,9 +102,11 @@ export function MiPlan() {
   useEffect(() => {
     const sync = () => setMercadoActivoId(getMercadoActivoParaPlan());
     window.addEventListener("storage", sync);
+    window.addEventListener(PERFILES_STORAGE_EVENT, sync);
     const id = window.setInterval(sync, 2000);
     return () => {
       window.removeEventListener("storage", sync);
+      window.removeEventListener(PERFILES_STORAGE_EVENT, sync);
       window.clearInterval(id);
     };
   }, []);
@@ -88,7 +120,7 @@ export function MiPlan() {
     setCronogramaIa(null);
     setVistaCronograma("plantillas");
     setIaError(null);
-  }, [diasCronograma, modoCronograma, mercadoActivoId, perfil.estiloDieta]);
+  }, [diasCronograma, modoCronograma, mercadoActivoId, perfil.estiloDieta, perfilContextoId]);
 
   const itemsMercadoActivo = snapshotMercado?.items;
   const nComprados = contarCompradosMercado(itemsMercadoActivo);
@@ -157,6 +189,45 @@ export function MiPlan() {
     }
   };
 
+  const miembros = listPerfilesMiembros();
+  const activoId = getActivoPerfilId() ?? miembros[0]?.id ?? "";
+
+  const onCambiarPerfilLista = (id: string) => {
+    if (setActivoPerfilId(id)) bootDesdeAlmacenamiento();
+  };
+
+  const onAnadirPersona = () => {
+    if (!perfilGuardadoEnDispositivo()) {
+      setStatus("Guarda una vez con «Guardar perfil» antes de añadir otra persona.");
+      return;
+    }
+    const m = addPerfilMiembro();
+    if (!m) setStatus(`Máximo ${MAX_PERFILES} perfiles.`);
+    else {
+      setPerfil(stripToUsuario(m));
+      setFechaInicioPlan(m.fechaInicioPlan ?? "");
+      setMercadoActivoId(getMercadoActivoParaPlan());
+      setPerfilContextoId(m.id);
+      setStatus("Nuevo perfil activo. Completa sus datos y mercado.");
+    }
+  };
+
+  const onEliminarPersonaActiva = () => {
+    if (miembros.length <= 1) return;
+    if (!window.confirm("¿Eliminar el perfil activo? Se borran sus mercados guardados para ese perfil.")) return;
+    const id = activoId;
+    if (removePerfilMiembro(id)) {
+      purgeMercadoDePerfil(id);
+      bootDesdeAlmacenamiento();
+      setStatus("Perfil eliminado.");
+    }
+  };
+
+  const onFechaInicioChange = (v: string) => {
+    setFechaInicioPlan(v);
+    saveFechaInicioPlanActivo(v || null);
+  };
+
   return (
     <div className="space-y-8">
       <StepHeader
@@ -164,6 +235,50 @@ export function MiPlan() {
         titulo="Mi plan alimenticio"
         subtitulo={loadingRemote ? "Sincronizando perfil…" : undefined}
       />
+
+      {miembros.length > 0 && (
+        <section className="ui-card space-y-3" aria-labelledby="familia-heading">
+          <h2 id="familia-heading" className="ui-section-title">
+            Familia (este dispositivo)
+          </h2>
+          <p className="text-xs text-slate-600">
+            Cada persona tiene su mercado y lista keto. Usa el selector de la barra superior o este menú para cambiar de perfil.
+          </p>
+          <div className="flex flex-wrap items-end gap-3">
+            <label className="text-sm">
+              <span className="font-medium text-teal-950">Perfil a editar</span>
+              <select
+                className="mt-1 block min-w-[12rem] rounded-xl border border-emerald-200/80 bg-white/90 px-3 py-2 shadow-sm backdrop-blur-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                value={activoId}
+                onChange={(e) => onCambiarPerfilLista(e.target.value)}
+              >
+                {miembros.map((m, i) => (
+                  <option key={m.id} value={m.id}>
+                    {m.nombre.trim() || `Persona ${i + 1}`}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="text-sm">
+              <span className="font-medium text-teal-950">Inicio del plan (opcional)</span>
+              <input
+                type="date"
+                className="mt-1 block rounded-xl border border-emerald-200/80 bg-white/90 px-3 py-2 shadow-sm backdrop-blur-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                value={fechaInicioPlan}
+                onChange={(e) => onFechaInicioChange(e.target.value)}
+              />
+            </label>
+            <button type="button" className="ui-btn-secondary" onClick={onAnadirPersona}>
+              Añadir persona
+            </button>
+            {miembros.length > 1 && (
+              <button type="button" className="ui-btn-secondary text-red-800 hover:border-red-200" onClick={onEliminarPersonaActiva}>
+                Quitar perfil activo
+              </button>
+            )}
+          </div>
+        </section>
+      )}
 
       <div className="ui-card-muted flex flex-col gap-2 px-4 py-3 text-sm text-slate-800 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <div>
@@ -418,9 +533,14 @@ export function MiPlan() {
           )}
         </p>
         <div className="space-y-4">
-          {cronogramaMostrado.map((d) => (
+          {cronogramaMostrado.map((d) => {
+            const lblFecha = etiquetaFechaDiaPlan(fechaInicioPlan || null, d.dia);
+            return (
             <div key={d.dia} className="ui-day-block">
-              <p className="text-sm font-semibold text-teal-900">Día {d.dia}</p>
+              <p className="text-sm font-semibold text-teal-900">
+                Día {d.dia}
+                {lblFecha && <span className="ml-2 font-normal text-slate-600">· {lblFecha}</span>}
+              </p>
               <div className="mt-3 grid gap-3 md:grid-cols-3">
                 {(["desayuno", "almuerzo", "cena"] as const).map((slot) => {
                   const c = d.comidas[slot];
@@ -444,7 +564,8 @@ export function MiPlan() {
                 })}
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </section>
     </div>

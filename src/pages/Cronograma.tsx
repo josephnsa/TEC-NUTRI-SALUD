@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -12,7 +12,8 @@ import {
 } from "../lib/nutritionPlan";
 import { StepHeader } from "../components/StepHeader";
 import { IntField } from "../components/NumericInputs";
-import { loadPerfilLocal, savePerfilLocal } from "../lib/perfilStorage";
+import { PERFILES_STORAGE_EVENT, loadPerfilLocal, savePerfilLocal, getActivoPerfilId, loadPerfilMiembroActivo } from "../lib/perfilStorage";
+import { etiquetaFechaDiaPlan } from "../lib/planFechas";
 import { fetchProfileRemote, upsertProfileRemote } from "../lib/profileRemote";
 import { getMercadoActivoParaPlan, getMercadoRealizado } from "../lib/mercadoHistorial";
 import { URL_GOOGLE_AI_STUDIO_API_KEY, agenteRecetasGratisDisponible, generarCronogramaIA } from "../lib/recipesGemini";
@@ -50,11 +51,21 @@ export function Cronograma() {
   const [vistaCronograma, setVistaCronograma] = useState<"plantillas" | "ia">("plantillas");
   const [iaCargando, setIaCargando] = useState(false);
   const [iaError, setIaError] = useState<string | null>(null);
+  const [perfilContextoId, setPerfilContextoId] = useState<string | null>(null);
+
+  const bootDesdeAlmacenamiento = useCallback(() => {
+    const l = loadPerfilLocal();
+    if (l) setPerfil(l);
+    else setPerfil(defaultPerfil);
+    setMercadoActivoId(getMercadoActivoParaPlan());
+    setPerfilContextoId(getActivoPerfilId());
+  }, []);
 
   useEffect(() => {
-    const local = loadPerfilLocal();
-    if (local) setPerfil(local);
-  }, []);
+    bootDesdeAlmacenamiento();
+    window.addEventListener(PERFILES_STORAGE_EVENT, bootDesdeAlmacenamiento);
+    return () => window.removeEventListener(PERFILES_STORAGE_EVENT, bootDesdeAlmacenamiento);
+  }, [bootDesdeAlmacenamiento]);
 
   useEffect(() => {
     if (!user?.id || !isConfigured) return;
@@ -72,9 +83,11 @@ export function Cronograma() {
   useEffect(() => {
     const sync = () => setMercadoActivoId(getMercadoActivoParaPlan());
     window.addEventListener("storage", sync);
+    window.addEventListener(PERFILES_STORAGE_EVENT, sync);
     const id = window.setInterval(sync, 2000);
     return () => {
       window.removeEventListener("storage", sync);
+      window.removeEventListener(PERFILES_STORAGE_EVENT, sync);
       window.clearInterval(id);
     };
   }, []);
@@ -102,7 +115,7 @@ export function Cronograma() {
     setCronogramaIa(null);
     setVistaCronograma("plantillas");
     setIaError(null);
-  }, [diasCronograma, modoCronograma, mercadoActivoId, perfil.estiloDieta]);
+  }, [diasCronograma, modoCronograma, mercadoActivoId, perfil.estiloDieta, perfilContextoId]);
 
   const itemsMercadoActivo = snapshotMercado?.items;
   const nComprados = contarCompradosMercado(itemsMercadoActivo);
@@ -168,6 +181,8 @@ export function Cronograma() {
       setIaCargando(false);
     }
   };
+
+  const fechaIniCron = loadPerfilMiembroActivo()?.fechaInicioPlan ?? null;
 
   return (
     <div className="space-y-8">
@@ -383,9 +398,14 @@ export function Cronograma() {
           )}
         </p>
         <div className="space-y-4">
-          {cronogramaMostrado.map((d) => (
+          {cronogramaMostrado.map((d) => {
+            const lblFecha = etiquetaFechaDiaPlan(fechaIniCron, d.dia);
+            return (
             <div key={d.dia} className="ui-day-block">
-              <p className="text-sm font-semibold text-teal-900">Día {d.dia}</p>
+              <p className="text-sm font-semibold text-teal-900">
+                Día {d.dia}
+                {lblFecha && <span className="ml-2 font-normal text-slate-600">· {lblFecha}</span>}
+              </p>
               <div className="mt-3 grid gap-3 md:grid-cols-3">
                 {(["desayuno", "almuerzo", "cena"] as const).map((slot) => {
                   const c = d.comidas[slot];
@@ -409,7 +429,8 @@ export function Cronograma() {
                 })}
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </section>
     </div>
