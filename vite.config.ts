@@ -10,20 +10,25 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["favicon.svg", "robots.txt"],
       manifest: {
-        name: "NutriSalud",
+        id: "./",
+        name: "NutriSalud — perfil, mercado y menú",
         short_name: "NutriSalud",
-        description: "Perfil, mercado keto y cronograma en tu navegador",
+        description: "Perfil, mercado keto y menú por días en el navegador.",
+        start_url: "./",
+        scope: "./",
         theme_color: "#0d9488",
         background_color: "#f0fdfa",
         display: "standalone",
-        orientation: "portrait-primary",
+        display_override: ["standalone", "browser"],
         lang: "es",
+        dir: "ltr",
+        categories: ["health", "lifestyle", "food"],
         icons: [
           {
             src: "favicon.svg",
             sizes: "512x512",
             type: "image/svg+xml",
-            purpose: "any maskable"
+            purpose: "any"
           }
         ]
       },
