@@ -15,6 +15,7 @@ export function Agente() {
     setRespuesta(null);
     try {
       const perfil = loadPerfilLocal() ?? {
+        nombre: "",
         edad: 30,
         pesoKg: 70,
         tallaCm: 165,

@@ -10,8 +10,8 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["favicon.svg", "robots.txt"],
       manifest: {
-        name: "NutriCamino",
-        short_name: "NutriCamino",
+        name: "NutriSalud",
+        short_name: "NutriSalud",
         description: "Perfil, mercado keto y cronograma en tu navegador",
         theme_color: "#0f766e",
         background_color: "#f0fdfa",

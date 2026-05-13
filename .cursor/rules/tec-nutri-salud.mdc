@@ -4,7 +4,9 @@ globs: src/**/*.{ts,tsx}
 alwaysApply: false
 ---
 
-# TEC Nutri Salud
+# NutriSalud (repo TEC-NUTRI-SALUD)
+
+- Marca en UI: `src/lib/brand.ts` (`MARCA_APP`, etc.).
 
 - Texto de interfaz en **español**; tono cercano y claro en salud (avisos legales: no es consejo médico).
 - Preferir **HashRouter** y rutas bajo `src/pages`.

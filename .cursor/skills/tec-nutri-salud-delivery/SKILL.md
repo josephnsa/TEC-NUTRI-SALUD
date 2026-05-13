@@ -6,9 +6,13 @@ description: >-
   keto, recetas IA (Gemini), UX del recorrido guiado, navegación responsive o CI.
 ---
 
-# TEC Nutri Salud — entrega ordenada (estilo “herramientas”)
+# NutriSalud (TEC Nutri Salud repo) — entrega ordenada (estilo “herramientas”)
 
 Actúa en fases: cada fase tiene entrada/salida clara.
+
+## Marca y copy
+
+- Nombre en UI y PWA: **`MARCA_APP`** / **`MARCA_ESLOGAN`** en `src/lib/brand.ts` (hoy **NutriSalud**). No hardcodear el nombre en páginas si ya existe constante.
 
 ## Regla de oro — orden del producto
 
@@ -32,7 +36,7 @@ No dupliques listas de pasos en páginas sueltas sin importar `recorrido.ts`.
 
 ## Fase 1 — Contexto
 
-- Lee `README.md`, `docs/USER_STORIES.md`, `docs/FLUJO_USUARIO.md`, `docs/MEJORAS_NEGOCIO_Y_PRODUCTO.md` (roadmap) y `.env.example`.
+- Lee `README.md`, `docs/USER_STORIES.md`, `docs/FLUJO_USUARIO.md`, `docs/MEJORAS_NEGOCIO_Y_PRODUCTO.md`, **`docs/PLAN_MEJORAS_FASE2_MULTI_PERFIL_CALENDARIO.md`** (roadmap multiperfil / calendario / historial) y `.env.example`.
 - No commitees secretos; GitHub Actions secrets para build.
 
 ## Fase 2 — App web (Vite + React)
@@ -46,6 +50,8 @@ No dupliques listas de pasos en páginas sueltas sin importar `recorrido.ts`.
 ## Fase 3 — Datos y auth
 
 - Sin Supabase: perfil, lista keto actual e historial de mercados en `localStorage`.
+- **Perfil:** tipo `PerfilUsuario` incluye **`nombre`** (texto); sincroniza con Supabase `profiles.display_name` vía `profileRemote.ts`. Carga/guardado saneado en `perfilStorage.normalizePerfilParsed` (migra JSON antiguo sin `nombre`).
+- **Números en formularios:** usar `IntField` / `DecimalField` de `src/components/NumericInputs.tsx` para edad, peso, talla y “días” (evita ceros a la izquierda y spinners incómodos).
 - Con Supabase: `supabase/schema.sql`, Google OAuth, redirect URLs con `/#/login` y `/#/mi-plan` según panel.
 
 ## Fase 3b — Mercado → cronograma
@@ -54,6 +60,14 @@ No dupliques listas de pasos en páginas sueltas sin importar `recorrido.ts`.
 - Mercado **activo** alimenta modos *mercado* / *mixto* en Mi plan y Cronograma.
 - Botones **Compré todo de una vez** / **Desmarcar todo**; export/import JSON del historial.
 - **Clave de variedad** rota plantillas sin cambiar perfil.
+
+## Belleza (contenido)
+
+- Tips en `src/data/beautyTips.ts`: campo **`categoria`**, orden de secciones **`ORDEN_CATEGORIAS`**, página **`Belleza.tsx`** agrupa por bloque (rutina diaria, rostro, cabello, ojeras, acné, labios/manos). Ampliar tips en el mismo archivo manteniendo precauciones.
+
+## Fase 3c — Roadmap multiperfil / calendario / historial
+
+- **No** mezclar con el MVP hasta tener PR dedicado: seguir **`docs/PLAN_MEJORAS_FASE2_MULTI_PERFIL_CALENDARIO.md`** y Épica D en `MEJORAS_NEGOCIO_Y_PRODUCTO.md` (perfiles múltiples, mercado por perfil, fechas reales, snapshots de cronograma, vista calendario con detalle in-page).
 
 ## Fase 4 — IA opcional (Gemini)
 

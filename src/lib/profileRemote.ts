@@ -15,6 +15,7 @@ type ProfileRow = {
 
 export function rowToPerfil(row: ProfileRow): PerfilUsuario {
   return {
+    nombre: (row.display_name ?? "").trim().slice(0, 80),
     edad: row.age ?? 30,
     pesoKg: Number(row.weight_kg ?? 70),
     tallaCm: Number(row.height_cm ?? 165),
@@ -31,6 +32,7 @@ export function rowToPerfil(row: ProfileRow): PerfilUsuario {
 export function perfilToRow(userId: string, p: PerfilUsuario): Partial<ProfileRow> & { id: string } {
   return {
     id: userId,
+    display_name: p.nombre.trim() ? p.nombre.trim().slice(0, 80) : null,
     age: p.edad,
     weight_kg: p.pesoKg,
     height_cm: p.tallaCm,

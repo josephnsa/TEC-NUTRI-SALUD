@@ -1,3 +1,3 @@
-/** Marca visible en la app (nombre legal del repo puede seguir siendo otro). */
-export const MARCA_APP = "NutriCamino";
-export const MARCA_ESLOGAN = "Tu menú en orden: datos, mercado y recetas";
+/** Marca visible en la app (el repositorio puede conservar otro nombre técnico). */
+export const MARCA_APP = "NutriSalud";
+export const MARCA_ESLOGAN = "Perfil, mercado y menú en un solo flujo";

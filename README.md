@@ -1,4 +1,4 @@
-# NutriCamino
+# NutriSalud
 
 Web progresiva (PWA) sobre **salud alimenticia**, **mercado keto** (lista por días, checklist, guardado para el plan), **plan personalizado** y **cronograma** con plantillas o recetas asistidas, enlaces a video y tips de belleza. Repositorio de código: `TEC-NUTRI-SALUD`.
 

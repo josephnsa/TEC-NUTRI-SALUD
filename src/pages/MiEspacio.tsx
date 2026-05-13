@@ -79,6 +79,11 @@ export function MiEspacio() {
           ) : (
             <>
               <ul className="mt-3 space-y-1 text-sm text-slate-800">
+                {perfil.nombre.trim() ? (
+                  <li>
+                    <span className="text-slate-500">Nombre:</span> {perfil.nombre.trim()}
+                  </li>
+                ) : null}
                 <li>
                   <span className="text-slate-500">Estilo:</span> {perfil.estiloDieta}
                 </li>

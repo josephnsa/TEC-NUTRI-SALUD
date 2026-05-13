@@ -6,6 +6,8 @@ import {
 import type { ListaItem } from "./ketoMercado";
 
 export type PerfilUsuario = {
+  /** Nombre o apodo (visible en resumen y opcional en IA). */
+  nombre: string;
   edad: number;
   pesoKg: number;
   tallaCm: number;
@@ -261,10 +263,14 @@ export function calcularTdeeSedentario(bmr: number): number {
 export function resumenNutricional(p: PerfilUsuario): string[] {
   const bmr = calcularBmr(p);
   const tdee = calcularTdeeSedentario(bmr);
-  const lineas: string[] = [
+  const lineas: string[] = [];
+  if (p.nombre.trim()) {
+    lineas.push(`Perfil: ${p.nombre.trim()}.`);
+  }
+  lineas.push(
     `Estimación energética (orientativa, no diagnóstico): gasto aproximado sedentario ~${tdee} kcal/día.`,
     `Tu IMC aproximado: ${(p.pesoKg / Math.pow(p.tallaCm / 100, 2)).toFixed(1)}.`
-  ];
+  );
   const enf = p.enfermedades.toLowerCase();
   if (enf.includes("diabetes") || enf.includes("dm")) {
     lineas.push(

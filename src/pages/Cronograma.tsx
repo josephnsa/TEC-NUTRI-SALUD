@@ -11,12 +11,14 @@ import {
   type PerfilUsuario
 } from "../lib/nutritionPlan";
 import { StepHeader } from "../components/StepHeader";
+import { IntField } from "../components/NumericInputs";
 import { loadPerfilLocal, savePerfilLocal } from "../lib/perfilStorage";
 import { fetchProfileRemote, upsertProfileRemote } from "../lib/profileRemote";
 import { getMercadoActivoParaPlan, getMercadoRealizado } from "../lib/mercadoHistorial";
 import { URL_GOOGLE_AI_STUDIO_API_KEY, agenteRecetasGratisDisponible, generarCronogramaIA } from "../lib/recipesGemini";
 
 const defaultPerfil: PerfilUsuario = {
+  nombre: "",
   edad: 32,
   pesoKg: 72,
   tallaCm: 168,
@@ -316,17 +318,18 @@ export function Cronograma() {
               Ver plantillas
             </button>
           )}
-          <label className="flex items-center gap-2 text-sm">
-            Días
-            <input
-              type="number"
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <span>Días</span>
+            <IntField
+              label="Días del cronograma"
+              hideLabel
+              value={diasCronograma}
+              onCommit={setDiasCronograma}
               min={3}
               max={30}
-              className="w-20 rounded-lg border px-2 py-1"
-              value={diasCronograma}
-              onChange={(e) => setDiasCronograma(Number(e.target.value))}
+              inputClassName="w-20 rounded-lg border border-slate-200 px-2 py-1 text-center text-slate-900 shadow-sm focus:border-leaf-600 focus:outline-none focus:ring-2 focus:ring-leaf-600/20"
             />
-          </label>
+          </div>
         </div>
         {!agenteRecetasGratisDisponible() && (
           <p className="md:col-span-2 rounded-xl border border-violet-100 bg-violet-50/70 p-3 text-xs text-slate-700">

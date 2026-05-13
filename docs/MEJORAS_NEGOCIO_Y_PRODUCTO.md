@@ -187,7 +187,22 @@ Si María usa cuenta, espera que **perfil** suba a la nube; mercados y cronogram
 - `docs/USER_STORIES.md` — historias actuales; las épicas aquí **actualizan** el backlog cuando se conviertan en historias nuevas numeradas.
 - `docs/BUSINESS_INPUT.md` — reglas de priorización mercado/plantillas; siguen válidas dentro de cada mercado activo.
 - `docs/FLUJO_USUARIO.md` — flujo lineal actual; evolucionará a **flujo con nodos** (perfil ↔ mercados ↔ cronogramas) cuando se implemente Mi espacio.
+- **`docs/PLAN_MEJORAS_FASE2_MULTI_PERFIL_CALENDARIO.md`** — plan técnico y de producto para **multiperfil** (varias personas bajo una cuenta), **fecha de inicio de dieta**, **cronograma por fechas**, **historial comidas** y **vista calendario** (detalle en página, sin saltar a YouTube al elegir día).
 
 ---
 
-*Versión 1 — documento de mejora de negocio (sin implementación obligatoria en este paso).*
+## 8. Épica D — Multiperfil, fechas reales e historial (visión)
+
+**Necesidad de negocio:** una persona con sesión quiere gestionar **varios perfiles** (hijos, hermanos, convivientes), cada uno con **su mercado** y **su cronograma**, y ver el menú **por fecha de calendario** (ej. inicio 13/05/2026 → “día 1” = esa fecha), además de **consultar días pasados** (qué comió) sin perder el dato al recargar.
+
+**Estado:** parcialmente cubierto en el MVP por un solo `perfil` en `localStorage` y un mercado activo global. La implementación completa requiere modelo de datos, UI de selector de perfil y persistencia de snapshots de cronograma; ver el plan enlazado arriba.
+
+**Entregables deseados (resumen):**
+
+- Selector de **perfil activo** + CRUD local (y opcional sync Supabase).
+- Claves de almacenamiento **prefijadas por `perfilId`**: mercado activo, historial mercados, cronogramas guardados.
+- **Fecha inicio plan** → etiquetas de día con fecha civil; grid **calendario** con resumen y panel/ modal de detalle **en la misma app**; enlace a YouTube solo como acción explícita (“Ver video”).
+
+---
+
+*Versión 1.1 — añade Épica D y referencia al plan de fase 2.*

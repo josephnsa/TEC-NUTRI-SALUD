@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { StepHeader } from "../components/StepHeader";
+import { DecimalField, IntField } from "../components/NumericInputs";
 import { useAuth } from "../context/AuthContext";
 import {
   contarCompradosMercado,
@@ -18,6 +19,7 @@ import { URL_GOOGLE_AI_STUDIO_API_KEY, agenteRecetasGratisDisponible, generarCro
 import { RUTA_MI_ESPACIO } from "../lib/recorrido";
 
 const defaultPerfil: PerfilUsuario = {
+  nombre: "",
   edad: 32,
   pesoKg: 72,
   tallaCm: 168,
@@ -213,40 +215,39 @@ export function MiPlan() {
       )}
 
       <div className="grid gap-4 rounded-2xl border border-leaf-100 bg-white p-4 shadow-sm md:grid-cols-2">
-        <label className="text-sm md:col-span-1">
-          <span className="font-medium">Edad</span>
+        <label className="text-sm md:col-span-2">
+          <span className="font-medium">Nombre o apodo</span>
           <input
-            type="number"
-            className="mt-1 w-full rounded-xl border px-3 py-2"
-            min={12}
-            max={100}
-            value={perfil.edad}
-            onChange={(e) => setPerfil({ ...perfil, edad: Number(e.target.value) })}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-slate-900 shadow-sm focus:border-leaf-600 focus:outline-none focus:ring-2 focus:ring-leaf-600/20"
+            value={perfil.nombre}
+            onChange={(e) => setPerfil({ ...perfil, nombre: e.target.value.slice(0, 80) })}
+            placeholder="Ej.: Ana, Luis, Mamá…"
+            maxLength={80}
+            autoComplete="name"
           />
         </label>
-        <label className="text-sm">
-          <span className="font-medium">Peso (kg)</span>
-          <input
-            type="number"
-            className="mt-1 w-full rounded-xl border px-3 py-2"
-            min={30}
-            max={250}
-            step={0.1}
-            value={perfil.pesoKg}
-            onChange={(e) => setPerfil({ ...perfil, pesoKg: Number(e.target.value) })}
-          />
-        </label>
-        <label className="text-sm">
-          <span className="font-medium">Talla (cm)</span>
-          <input
-            type="number"
-            className="mt-1 w-full rounded-xl border px-3 py-2"
-            min={120}
-            max={220}
-            value={perfil.tallaCm}
-            onChange={(e) => setPerfil({ ...perfil, tallaCm: Number(e.target.value) })}
-          />
-        </label>
+        <IntField
+          label="Edad"
+          value={perfil.edad}
+          onCommit={(edad) => setPerfil({ ...perfil, edad })}
+          min={12}
+          max={100}
+        />
+        <DecimalField
+          label="Peso (kg)"
+          value={perfil.pesoKg}
+          onCommit={(pesoKg) => setPerfil({ ...perfil, pesoKg })}
+          min={30}
+          max={250}
+          fractionDigits={1}
+        />
+        <IntField
+          label="Talla (cm)"
+          value={perfil.tallaCm}
+          onCommit={(tallaCm) => setPerfil({ ...perfil, tallaCm })}
+          min={120}
+          max={220}
+        />
         <label className="text-sm">
           <span className="font-medium">Sexo (cálculo energético)</span>
           <select
@@ -357,17 +358,18 @@ export function MiPlan() {
               Ver recetas locales
             </button>
           )}
-          <label className="flex items-center gap-2 text-sm">
-            Días de cronograma
-            <input
-              type="number"
+          <div className="flex items-center gap-2 text-sm">
+            <span className="shrink-0">Días de cronograma</span>
+            <IntField
+              label="Días de cronograma"
+              hideLabel
+              value={diasCronograma}
+              onCommit={setDiasCronograma}
               min={3}
               max={30}
-              className="w-20 rounded-lg border px-2 py-1"
-              value={diasCronograma}
-              onChange={(e) => setDiasCronograma(Number(e.target.value))}
+              inputClassName="w-20 rounded-lg border border-slate-200 px-2 py-1 text-center text-slate-900 shadow-sm focus:border-leaf-600 focus:outline-none focus:ring-2 focus:ring-leaf-600/20"
             />
-          </label>
+          </div>
         </div>
         {!agenteRecetasGratisDisponible() && (
           <p className="md:col-span-2 rounded-xl border border-violet-100 bg-violet-50/70 p-3 text-xs text-slate-700">
