@@ -27,7 +27,8 @@ export function Login() {
     );
   }
 
-  const redirectUrl = `${window.location.origin}${window.location.pathname}#/`;
+  /** Tras OAuth, Supabase redirige aquí; Mi plan carga el perfil remoto si hay sesión. */
+  const redirectUrl = `${window.location.origin}${window.location.pathname}#/mi-plan`;
 
   const onEmail = async (mode: "signin" | "signup") => {
     setLoading(true);
