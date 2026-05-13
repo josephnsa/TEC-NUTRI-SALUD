@@ -15,6 +15,7 @@ import { loadPerfilLocal, savePerfilLocal } from "../lib/perfilStorage";
 import { fetchProfileRemote, upsertProfileRemote } from "../lib/profileRemote";
 import { getMercadoActivoParaPlan, getMercadoRealizado } from "../lib/mercadoHistorial";
 import { URL_GOOGLE_AI_STUDIO_API_KEY, agenteRecetasGratisDisponible, generarCronogramaIA } from "../lib/recipesGemini";
+import { RUTA_MI_ESPACIO } from "../lib/recorrido";
 
 const defaultPerfil: PerfilUsuario = {
   edad: 32,
@@ -168,42 +169,48 @@ export function MiPlan() {
         }
       />
 
-      <section className="rounded-2xl border border-teal-100 bg-teal-50/50 p-4 text-sm text-slate-800">
-        <p className="font-semibold text-teal-900">Mercado vinculado al cronograma</p>
-        {!mercadoActivoId && (
-          <p className="mt-2">
-            No hay mercado activo. Ve a{" "}
-            <Link className="font-semibold text-teal-800 underline" to="/keto-mercado">
-              Mercado keto
-            </Link>{" "}
-            y pulsa &quot;Guardar mercado realizado&quot;.
-          </p>
-        )}
-        {mercadoActivoId && snapshotMercado && (
-          <p className="mt-2">
-            Activo: compra del {new Date(snapshotMercado.createdAt).toLocaleString("es")} · {nComprados} productos
-            marcados como comprados ·{" "}
-            <Link className="font-semibold text-teal-800 underline" to="/keto-mercado">
-              Cambiar en Mercado keto
-            </Link>
-          </p>
-        )}
-        {modoCronograma !== "perfil" && mercadoActivoId && nComprados === 0 && (
-          <p className="mt-2 text-amber-900">
-            En este mercado no hay ítems marcados como comprados; el plan usará rotación variada igual que el modo
-            perfil hasta que marques lo que tienes en casa.
-          </p>
-        )}
+      <div className="flex flex-col gap-2 rounded-xl border border-teal-100 bg-teal-50/50 px-4 py-3 text-sm text-slate-800 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+        <div>
+          <span className="font-semibold text-teal-900">Mercado para el plan</span>
+          {!mercadoActivoId ? (
+            <span className="mt-0.5 block text-teal-800 sm:mt-0 sm:inline sm:ml-2">
+              Sin activo ·{" "}
+              <Link className="font-semibold underline" to="/keto-mercado">
+                paso 2 · Mercado
+              </Link>
+            </span>
+          ) : (
+            <span className="mt-0.5 block text-teal-800 sm:mt-0 sm:inline sm:ml-2">
+              {nComprados} comprados ·{" "}
+              <Link className="font-semibold underline" to="/keto-mercado">
+                editar
+              </Link>
+              {" · "}
+              <Link className="font-semibold underline" to={RUTA_MI_ESPACIO}>
+                ver resumen
+              </Link>
+            </span>
+          )}
+        </div>
         {snapshotMercado && (
           <button
             type="button"
-            className="mt-3 rounded-lg border border-teal-300 bg-white px-3 py-1.5 text-xs font-semibold text-teal-900 hover:bg-teal-50"
+            className="shrink-0 rounded-lg border border-teal-300 bg-white px-3 py-1.5 text-xs font-semibold text-teal-900 hover:bg-teal-50"
             onClick={alinearDiasConMercado}
           >
-            Usar misma cantidad de días que el mercado ({snapshotMercado.dias} días)
+            Alinear {snapshotMercado.dias} días con el mercado
           </button>
         )}
-      </section>
+      </div>
+      {modoCronograma !== "perfil" && mercadoActivoId && nComprados === 0 && (
+        <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950">
+          Modo mercado/mixto sin ítems comprados: el cronograma rota como en modo perfil hasta que marques tu despensa en{" "}
+          <Link className="font-semibold underline" to="/keto-mercado">
+            Mercado keto
+          </Link>
+          .
+        </p>
+      )}
 
       <div className="grid gap-4 rounded-2xl border border-leaf-100 bg-white p-4 shadow-sm md:grid-cols-2">
         <label className="text-sm md:col-span-1">

@@ -15,3 +15,11 @@ export function loadPerfilLocal(): PerfilUsuario | null {
 export function savePerfilLocal(p: PerfilUsuario) {
   localStorage.setItem(PERFIL_KEY, JSON.stringify(p));
 }
+
+export function perfilGuardadoEnDispositivo(): boolean {
+  try {
+    return Boolean(localStorage.getItem(PERFIL_KEY));
+  } catch {
+    return false;
+  }
+}

@@ -7,12 +7,14 @@ import { MiPlan } from "./pages/MiPlan";
 import { Cronograma } from "./pages/Cronograma";
 import { Login } from "./pages/Login";
 import { Agente } from "./pages/Agente";
+import { MiEspacio } from "./pages/MiEspacio";
 
 export default function App() {
   return (
     <Layout>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/mi-espacio" element={<MiEspacio />} />
         <Route path="/keto-mercado" element={<KetoMercado />} />
         <Route path="/belleza" element={<Belleza />} />
         <Route path="/mi-plan" element={<MiPlan />} />

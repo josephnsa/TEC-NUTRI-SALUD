@@ -11,7 +11,11 @@ La implementación expone este orden en:
 
 - `src/lib/recorrido.ts` — definición única de pasos y rutas.
 - `src/components/StepHeader.tsx` — franja “paso X de 3” en Mi plan, Mercado y Cronograma.
-- `src/components/Layout.tsx` — navegación desktop y móvil en el mismo orden (Datos, Mercado, Menú, …).
+- `src/components/Layout.tsx` — navegación con **Resumen** (`/#/mi-espacio`) visible además del orden Datos → Mercado → Menú (…).
+
+## Mi resumen / Tu espacio
+
+Pantalla **`/#/mi-espacio`** (`MiEspacio.tsx`): vista rápida del avance en los tres pasos (perfil guardado, mercado activo o pendiente, cronograma generado), **siguiente paso sugerido** y enlaces a cada pantalla. No sustituye los pasos numerados; sirve para orientación y accesos desde la home y la barra inferior.
 
 ## Pasos numerados
 

@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { FlujoUsuarioBanner } from "../components/FlujoUsuarioBanner";
-import { PASOS_RECORRIDO_PRINCIPAL } from "../lib/recorrido";
+import { PASOS_RECORRIDO_PRINCIPAL, RUTA_MI_ESPACIO } from "../lib/recorrido";
 
 export function Home() {
   return (
@@ -53,6 +53,12 @@ export function Home() {
           >
             Ver menú (cronograma)
           </Link>
+          <Link
+            to={RUTA_MI_ESPACIO}
+            className="rounded-2xl border border-white/35 bg-white/5 px-5 py-3 text-sm font-semibold text-emerald-50 hover:bg-white/10"
+          >
+            Mi resumen
+          </Link>
         </div>
       </section>
 
@@ -61,7 +67,7 @@ export function Home() {
       <section>
         <h2 className="font-display text-lg font-semibold text-leaf-900">Todo en la app</h2>
         <p className="mt-1 text-sm text-slate-600">Explora también estas secciones.</p>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {[
             {
               t: "1 · Mis datos",
@@ -77,6 +83,11 @@ export function Home() {
               t: "3 · Cronograma",
               d: "Plantillas o IA; video por receta.",
               to: "/cronograma"
+            },
+            {
+              t: "Mi resumen",
+              d: "Estado del recorrido y enlaces rápidos a cada paso.",
+              to: RUTA_MI_ESPACIO
             },
             {
               t: "Belleza natural",

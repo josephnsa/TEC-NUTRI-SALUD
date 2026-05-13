@@ -37,7 +37,7 @@ Con la misma clave: **chat** en Asistente y, en **Mi plan** o **Cronograma**, el
 3. Añade secretos opcionales del build: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_GEMINI_API_KEY`.
 4. Haz push a `main`; el workflow `.github/workflows/pages.yml` genera `dist/` y publica.
 
-La app usa **HashRouter** (`/#/ruta`) para evitar errores 404 en Pages. Rutas principales: `/#/`, `/#/keto-mercado`, `/#/cronograma`, `/#/mi-plan`, etc.
+La app usa **HashRouter** (`/#/ruta`) para evitar errores 404 en Pages. Rutas principales: `/#/`, `/#/mi-espacio`, `/#/keto-mercado`, `/#/cronograma`, `/#/mi-plan`, etc.
 
 ## Documentación interna
 

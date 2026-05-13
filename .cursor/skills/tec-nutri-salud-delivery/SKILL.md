@@ -18,6 +18,8 @@ El flujo **visible y de negocio** es siempre:
 2. **Mercado** → `/#/keto-mercado`
 3. **Menú (cronograma)** → `/#/cronograma`
 
+**Resumen del recorrido:** `/#/mi-espacio` (`RUTA_MI_ESPACIO` en `recorrido.ts`, pantalla `MiEspacio.tsx`) — estado de pasos 1–3 y siguiente paso sugerido; enlaces en **Layout** (“Resumen”) y en la home.
+
 Opcional después: **Asistente** (`PASO_ASISTENTE`), **Belleza**, **Login**.
 
 Al cambiar copy, rutas o orden de pasos:
@@ -38,7 +40,7 @@ No dupliques listas de pasos en páginas sueltas sin importar `recorrido.ts`.
 - `HashRouter` (`/#/ruta`) por GitHub Pages.
 - `base: "./"` en Vite.
 - UI en **español**, **responsive**, tactil-friendly (targets ≥44px donde aplique), **PWA** (`vite-plugin-pwa`).
-- **Navegación**: desktop y móvil siguen el orden Datos → Mercado → Menú (+ Belleza + IA); barra inferior con `safe-area` vía padding en el `<nav>` fijo.
+- **Navegación**: desktop **Resumen** primero, luego Datos → Mercado → Menú (+ Belleza + IA); móvil **Inicio**, **Resumen**, mismo orden de pasos e IA (Belleza solo escritorio o desde la home); barra inferior con `safe-area` vía padding en el `<nav>` fijo.
 - Pantallas núcleo del recorrido usan **`StepHeader`** con `pasoActual={1|2|3}` para coherencia sin repetir párrafos largos.
 
 ## Fase 3 — Datos y auth

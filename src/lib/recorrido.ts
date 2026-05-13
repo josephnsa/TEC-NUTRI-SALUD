@@ -50,3 +50,6 @@ export const PASO_ASISTENTE = {
   to: "/agente",
   descripcionBanner: "Preguntas puntuales con Gemini (orientativo; mismo sistema que las recetas IA)."
 } as const;
+
+/** Centro tipo dashboard: estado del recorrido sin repetir formularios. */
+export const RUTA_MI_ESPACIO = "/mi-espacio" as const;

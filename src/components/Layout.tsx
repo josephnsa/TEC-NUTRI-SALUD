@@ -1,7 +1,7 @@
 import { NavLink } from "react-router-dom";
 import type { ReactNode } from "react";
 import { useAuth } from "../context/AuthContext";
-import { PASO_ASISTENTE, PASOS_RECORRIDO_PRINCIPAL } from "../lib/recorrido";
+import { PASO_ASISTENTE, PASOS_RECORRIDO_PRINCIPAL, RUTA_MI_ESPACIO } from "../lib/recorrido";
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
   `rounded-xl px-3 py-2 text-sm font-medium transition ${
@@ -19,6 +19,9 @@ export function Layout({ children }: { children: ReactNode }) {
             TEC Nutri Salud
           </NavLink>
           <nav className="hidden flex-wrap items-center justify-end gap-0.5 md:flex lg:gap-1">
+            <NavLink to={RUTA_MI_ESPACIO} className={linkClass} title="Resumen del recorrido y accesos">
+              Resumen
+            </NavLink>
             {PASOS_RECORRIDO_PRINCIPAL.map((p) => (
               <NavLink key={p.to} to={p.to} className={linkClass} title={p.descripcionBanner}>
                 {p.navDesktop}
@@ -59,6 +62,14 @@ export function Layout({ children }: { children: ReactNode }) {
           >
             Inicio
           </NavLink>
+          <NavLink
+            to={RUTA_MI_ESPACIO}
+            className={({ isActive }) =>
+              `${linkClass({ isActive })} min-w-[3rem] shrink-0 px-1.5 py-2 text-center text-[10px] leading-tight`
+            }
+          >
+            Resumen
+          </NavLink>
           {PASOS_RECORRIDO_PRINCIPAL.map((p) => (
             <NavLink
               key={p.to}
@@ -70,14 +81,6 @@ export function Layout({ children }: { children: ReactNode }) {
               {p.navCorto}
             </NavLink>
           ))}
-          <NavLink
-            to="/belleza"
-            className={({ isActive }) =>
-              `${linkClass({ isActive })} min-w-[3rem] shrink-0 px-1.5 py-2 text-center text-[10px] leading-tight`
-            }
-          >
-            Tips
-          </NavLink>
           <NavLink
             to={PASO_ASISTENTE.to}
             className={({ isActive }) =>
