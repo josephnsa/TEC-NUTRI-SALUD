@@ -202,6 +202,7 @@ Si María usa cuenta, espera que **perfil** suba a la nube; mercados y cronogram
 - Selector de **perfil activo** + CRUD local (y opcional sync Supabase).
 - Claves de almacenamiento **prefijadas por `perfilId`**: mercado activo, historial mercados, cronogramas guardados.
 - **Fecha inicio plan** → etiquetas de día con fecha civil; grid **calendario** con resumen y panel/ modal de detalle **en la misma app**; enlace a YouTube solo como acción explícita (“Ver video”).
+- **Diario visual:** fotos y vídeos **propios** por día (o por comida), vista de detalle con **galería + reproductor in-page**, **progreso** del día (seguimiento del plan) y preservación de **calidad** (p. ej. IndexedDB + miniaturas en rejilla); ver **`docs/PLAN_MEJORAS_FASE2_MULTI_PERFIL_CALENDARIO.md`** §3.4 y §4.
 
 ---
 

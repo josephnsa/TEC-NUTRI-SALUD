@@ -67,7 +67,7 @@ No dupliques listas de pasos en páginas sueltas sin importar `recorrido.ts`.
 
 ## Fase 3c — Roadmap multiperfil / calendario / historial
 
-- **No** mezclar con el MVP hasta tener PR dedicado: seguir **`docs/PLAN_MEJORAS_FASE2_MULTI_PERFIL_CALENDARIO.md`** y Épica D en `MEJORAS_NEGOCIO_Y_PRODUCTO.md` (perfiles múltiples, mercado por perfil, fechas reales, snapshots de cronograma, vista calendario con detalle in-page).
+- **No** mezclar con el MVP hasta tener PR dedicado: seguir **`docs/PLAN_MEJORAS_FASE2_MULTI_PERFIL_CALENDARIO.md`** y Épica D en `MEJORAS_NEGOCIO_Y_PRODUCTO.md` (perfiles múltiples, mercado por perfil, fechas reales, snapshots de cronograma, vista calendario con detalle in-page, **fotos/vídeo propios por día**, progreso del día, calidad vía IndexedDB + miniaturas).
 
 ## Fase 4 — IA opcional (Gemini)
 
