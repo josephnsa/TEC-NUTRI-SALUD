@@ -11,13 +11,13 @@ type Props = {
 };
 
 const pillBase =
-  "inline-flex items-center justify-center rounded-full px-3 py-1.5 text-xs font-semibold transition sm:text-sm";
+  "inline-flex items-center justify-center rounded-full px-3 py-1.5 text-xs font-semibold transition-all duration-200 sm:text-sm";
 
 export function StepHeader({ pasoActual, titulo, subtitulo }: Props) {
   return (
     <header className="space-y-4">
-      <div className="rounded-2xl border border-emerald-200/90 bg-gradient-to-br from-emerald-50 via-white to-teal-50 px-4 py-4 shadow-sm sm:px-5">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-800">
+      <div className="rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/95 via-white to-cyan-50/90 px-4 py-4 shadow-md shadow-teal-900/5 backdrop-blur-sm sm:px-5">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">
           Recorrido guiado · paso {pasoActual} de 3
         </p>
         <nav className="mt-3 flex flex-wrap gap-2" aria-label="Pasos del recorrido principal">
@@ -29,8 +29,8 @@ export function StepHeader({ pasoActual, titulo, subtitulo }: Props) {
                 to={p.to}
                 className={`${pillBase} ${
                   active
-                    ? "bg-emerald-700 text-white shadow-md ring-2 ring-emerald-600/30"
-                    : "border border-emerald-200 bg-white text-emerald-900 hover:bg-emerald-50"
+                    ? "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md shadow-glow-sm ring-2 ring-emerald-400/35"
+                    : "border border-emerald-200/90 bg-white/90 text-emerald-900 shadow-sm hover:border-teal-300 hover:bg-white hover:shadow"
                 }`}
                 aria-current={active ? "step" : undefined}
               >
@@ -45,7 +45,7 @@ export function StepHeader({ pasoActual, titulo, subtitulo }: Props) {
         </p>
       </div>
       <div>
-        <h1 className="font-display text-2xl font-bold tracking-tight text-leaf-900 sm:text-3xl">{titulo}</h1>
+        <h1 className="font-display text-2xl font-bold tracking-tight text-teal-950 sm:text-3xl">{titulo}</h1>
         {subtitulo ? <p className="mt-2 max-w-2xl text-sm text-slate-600">{subtitulo}</p> : null}
       </div>
     </header>

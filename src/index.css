@@ -11,3 +11,11 @@ html {
     @apply border-slate-200;
   }
 }
+
+/* Animaciones respetan prefers-reduced-motion vía utilidades motion-reduce: en componentes */
+
+@layer utilities {
+  .text-gradient-brand {
+    @apply bg-gradient-to-r from-teal-700 via-emerald-600 to-cyan-600 bg-clip-text text-transparent;
+  }
+}

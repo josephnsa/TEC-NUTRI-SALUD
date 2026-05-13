@@ -47,7 +47,14 @@ No dupliques listas de pasos en páginas sueltas sin importar `recorrido.ts`.
 - **Navegación**: desktop **Resumen** primero, luego Datos → Mercado → Menú (+ Belleza + IA); móvil **Inicio**, **Resumen**, mismo orden de pasos e IA (Belleza solo escritorio o desde la home); barra inferior con `safe-area` vía padding en el `<nav>` fijo.
 - Pantallas núcleo del recorrido usan **`StepHeader`** con `pasoActual={1|2|3}` para coherencia sin repetir párrafos largos.
 
-## Fase 3 — Datos y auth
+## Fase 2b — Diseño visual (actualización continua)
+
+- **Tokens** en `tailwind.config.js`: `bg-mesh`, sombras `shadow-glow` / `shadow-dock`, animaciones `animate-fade-up`, `animate-aurora-soft` (suaves, no intrusivas).
+- **Global:** `index.html` usa `bg-mesh`; `index.css` define `.text-gradient-brand` para logotipo/ títulos de acento.
+- **Layout:** cabecera y barra inferior tipo *glass* (`backdrop-blur`), enlaces activos con **gradiente** teal→esmeralda.
+- **Movimiento:** combinar `motion-safe:` con `motion-reduce:` / `motion-reduce:animate-none` para **prefers-reduced-motion** (obligatorio en nuevas animaciones).
+- **Referencia UI:** `Home.tsx` (hero con orbes y entradas escalonadas) y `StepHeader.tsx`; nuevas pantallas deben alinearse (cards blancas translúcidas, bordes suaves, hover con elevación leve).
+- Plan detallado: **§8** en `docs/PLAN_MEJORAS_FASE2_MULTI_PERFIL_CALENDARIO.md` (fase **2.0** en tabla §6).
 
 - Sin Supabase: perfil, lista keto actual e historial de mercados en `localStorage`.
 - **Perfil:** tipo `PerfilUsuario` incluye **`nombre`** (texto); sincroniza con Supabase `profiles.display_name` vía `profileRemote.ts`. Carga/guardado saneado en `perfilStorage.normalizePerfilParsed` (migra JSON antiguo sin `nombre`).

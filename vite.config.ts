@@ -13,7 +13,7 @@ export default defineConfig({
         name: "NutriSalud",
         short_name: "NutriSalud",
         description: "Perfil, mercado keto y cronograma en tu navegador",
-        theme_color: "#0f766e",
+        theme_color: "#0d9488",
         background_color: "#f0fdfa",
         display: "standalone",
         orientation: "portrait-primary",

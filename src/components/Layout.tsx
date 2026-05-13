@@ -5,23 +5,29 @@ import { MARCA_APP } from "../lib/brand";
 import { PASO_ASISTENTE, PASOS_RECORRIDO_PRINCIPAL, RUTA_MI_ESPACIO } from "../lib/recorrido";
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
-  `rounded-xl px-3 py-2 text-sm font-medium transition ${
-    isActive ? "bg-leaf-700 text-white shadow" : "text-slate-700 hover:bg-leaf-100"
+  `rounded-xl px-3 py-2 text-sm font-medium transition-all duration-200 ${
+    isActive
+      ? "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md shadow-glow-sm ring-1 ring-white/25"
+      : "text-slate-700 hover:bg-white/80 hover:text-teal-900 hover:shadow-sm"
   }`;
 
 const btnSalirClass =
-  "rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50";
+  "rounded-xl border border-slate-200/90 bg-white/90 px-3 py-2 text-sm font-semibold text-slate-800 shadow-sm backdrop-blur-sm transition hover:border-teal-200 hover:bg-white hover:shadow";
 
 export function Layout({ children }: { children: ReactNode }) {
   const { user, signOut, isConfigured } = useAuth();
 
   return (
     <div className="min-h-dvh flex flex-col">
-      <header className="sticky top-0 z-40 border-b border-leaf-100 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/90">
+      <header className="sticky top-0 z-40 border-b border-white/40 bg-white/75 shadow-sm backdrop-blur-xl supports-[backdrop-filter]:bg-white/65">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-3 py-2.5 sm:gap-3 sm:px-4 sm:py-3">
           <NavLink
             to="/"
-            className="min-w-0 shrink font-display text-base font-bold leading-tight text-leaf-900 sm:text-lg"
+            className={({ isActive }) =>
+              `min-w-0 shrink font-display text-base font-bold leading-tight tracking-tight transition sm:text-lg ${
+                isActive ? "text-gradient-brand" : "text-gradient-brand opacity-[0.92] hover:opacity-100"
+              }`
+            }
           >
             {MARCA_APP}
           </NavLink>
@@ -35,7 +41,7 @@ export function Layout({ children }: { children: ReactNode }) {
               ) : (
                 <NavLink
                   to="/login"
-                  className="rounded-xl bg-leaf-700 px-3 py-2 text-sm font-semibold text-white shadow hover:bg-leaf-900"
+                  className="rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 px-3 py-2 text-sm font-semibold text-white shadow-md shadow-glow-sm ring-1 ring-white/20 transition hover:brightness-110 active:scale-[0.98] motion-reduce:active:scale-100"
                 >
                   Ingresar
                 </NavLink>
@@ -71,56 +77,58 @@ export function Layout({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-5xl flex-1 px-3 py-5 pb-28 sm:px-4 sm:py-6 md:pb-8">{children}</main>
+      <main className="mx-auto w-full max-w-5xl flex-1 px-3 py-6 pb-28 sm:px-4 sm:py-8 md:pb-10">{children}</main>
 
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-leaf-100 bg-white/98 backdrop-blur md:hidden">
-        <div className="mx-auto flex max-w-lg justify-between gap-0.5 overflow-x-auto px-1 pt-1.5 pb-[max(0.35rem,env(safe-area-inset-bottom))]">
-          <NavLink
-            to="/"
-            className={({ isActive }) =>
-              `${linkClass({ isActive })} min-w-[3rem] shrink-0 px-1.5 py-2 text-center text-[10px] leading-tight`
-            }
-          >
-            Inicio
-          </NavLink>
-          <NavLink
-            to={RUTA_MI_ESPACIO}
-            className={({ isActive }) =>
-              `${linkClass({ isActive })} min-w-[3rem] shrink-0 px-1.5 py-2 text-center text-[10px] leading-tight`
-            }
-          >
-            Resumen
-          </NavLink>
-          {PASOS_RECORRIDO_PRINCIPAL.map((p) => (
+      <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
+        <div className="mx-auto max-w-lg rounded-t-2xl border border-white/50 border-b-0 bg-white/85 shadow-dock backdrop-blur-xl">
+          <div className="flex justify-between gap-0.5 overflow-x-auto px-1.5 pt-2 pb-[max(0.4rem,env(safe-area-inset-bottom))]">
             <NavLink
-              key={p.to}
-              to={p.to}
+              to="/"
               className={({ isActive }) =>
                 `${linkClass({ isActive })} min-w-[3rem] shrink-0 px-1.5 py-2 text-center text-[10px] leading-tight`
               }
             >
-              {p.navCorto}
+              Inicio
             </NavLink>
-          ))}
-          <NavLink
-            to={PASO_ASISTENTE.to}
-            className={({ isActive }) =>
-              `${linkClass({ isActive })} min-w-[3rem] shrink-0 px-1.5 py-2 text-center text-[10px] leading-tight`
-            }
-          >
-            {PASO_ASISTENTE.navCorto}
-          </NavLink>
-        </div>
-        {!isConfigured && (
-          <div className="pb-1.5 pt-0.5 text-center">
-            <span className="text-[10px] text-amber-800">
-              Cuenta en la nube opcional ·{" "}
-              <NavLink to="/login" className="font-semibold underline">
-                configurar
+            <NavLink
+              to={RUTA_MI_ESPACIO}
+              className={({ isActive }) =>
+                `${linkClass({ isActive })} min-w-[3rem] shrink-0 px-1.5 py-2 text-center text-[10px] leading-tight`
+              }
+            >
+              Resumen
+            </NavLink>
+            {PASOS_RECORRIDO_PRINCIPAL.map((p) => (
+              <NavLink
+                key={p.to}
+                to={p.to}
+                className={({ isActive }) =>
+                  `${linkClass({ isActive })} min-w-[3rem] shrink-0 px-1.5 py-2 text-center text-[10px] leading-tight`
+                }
+              >
+                {p.navCorto}
               </NavLink>
-            </span>
+            ))}
+            <NavLink
+              to={PASO_ASISTENTE.to}
+              className={({ isActive }) =>
+                `${linkClass({ isActive })} min-w-[3rem] shrink-0 px-1.5 py-2 text-center text-[10px] leading-tight`
+              }
+            >
+              {PASO_ASISTENTE.navCorto}
+            </NavLink>
           </div>
-        )}
+          {!isConfigured && (
+            <div className="border-t border-teal-100/60 px-2 pb-2 pt-1 text-center">
+              <span className="text-[10px] text-amber-800">
+                Cuenta en la nube opcional ·{" "}
+                <NavLink to="/login" className="font-semibold underline decoration-teal-600/50">
+                  configurar
+                </NavLink>
+              </span>
+            </div>
+          )}
+        </div>
       </nav>
     </div>
   );

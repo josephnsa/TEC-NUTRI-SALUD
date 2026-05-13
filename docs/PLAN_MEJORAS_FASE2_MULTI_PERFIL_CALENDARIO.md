@@ -124,6 +124,7 @@ Recomendación: **local primero** + export/import ya existente extendido a “fa
 
 | Fase | Entrega | Riesgo |
 |------|---------|--------|
+| 2.0 | **Refresh visual global** (tokens, mesh, nav, micro-motion con `motion-reduce`) | Bajo |
 | 2.1 | `perfiles[]` + selector + migración desde perfil único | Medio |
 | 2.2 | Prefijar mercado activo/historial por `perfilId` | Medio |
 | 2.3 | `fechaInicioPlan` + etiquetas de día con fecha en UI | Bajo–medio |
@@ -148,12 +149,36 @@ Recomendación: **local primero** + export/import ya existente extendido a “fa
 
 ---
 
-## 8. Instrucciones para el agente (Cursor)
+## 8. Rediseño visual, animación y look actual (transversal)
+
+Objetivo: una interfaz **más moderna y vistosa** sin sacrificar legibilidad ni accesibilidad.
+
+**Dirección de diseño**
+
+- **Paleta:** gradientes suaves (teal / esmeralda / toques fríos), acentos en botones primarios; fondo con **mesh** ligero en lugar de plano único.
+- **Profundidad:** sombras difusas (`shadow-*` / “glow” muy suave), **glass** en cabecera y barra inferior (`backdrop-blur`, bordes semitransparentes).
+- **Movimiento:** microinteracciones (`transition`, `hover:scale` leve en tarjetas), **entrada en stagger** en home; usar siempre **`motion-reduce:`** / `prefers-reduced-motion` para desactivar o acortar animaciones.
+- **Tipografía:** mantener DM Sans + Fraunces; jerarquía clara (display solo en títulos).
+- **Componentes futuros (calendario, galería):** cards con radio grande, estados hover/focus visibles, skeleton loaders donde haya carga.
+
+**Entregables incrementales**
+
+1. **Tokens globales** (Tailwind `extend`: sombras, keyframes `fade-up`, `mesh` en `backgroundImage`).
+2. **Layout + Home** como vitrina del nuevo lenguaje visual.
+3. **StepHeader** y bloques repetidos alineados al mismo sistema.
+4. **Auditoría rápida** contraste texto/fondo en hero y CTAs.
+
+**Fase en la tabla de implementación (§6):** puede iniciarse en **paralelo** a 2.1 como **2.0 — refresh visual global** (PR dedicado, bajo riesgo si no toca lógica de negocio).
+
+---
+
+## 9. Instrucciones para el agente (Cursor)
 
 - Antes de tocar perfil/mercado/cronograma en profundidad, lee este plan y `docs/MEJORAS_NEGOCIO_Y_PRODUCTO.md`.
 - Mantén compatibilidad: migración automática desde claves `v1` actuales.
 - Prefiere PRs pequeños: 2.1 solo perfiles, luego mercado, luego fechas, etc.
 - Para **fotos/vídeo**: priorizar **IndexedDB** + miniaturas; documentar límites de tamaño y fallback si el navegador agota cuota.
+- Para **UI / diseño**: seguir **§8** (tokens, contraste, `motion-reduce`); no añadir animaciones pesadas sin variante reducida.
 
 ---
 
