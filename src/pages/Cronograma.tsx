@@ -10,7 +10,7 @@ import {
   type ModoCronograma,
   type PerfilUsuario
 } from "../lib/nutritionPlan";
-import { FlujoUsuarioBanner } from "../components/FlujoUsuarioBanner";
+import { StepHeader } from "../components/StepHeader";
 import { loadPerfilLocal, savePerfilLocal } from "../lib/perfilStorage";
 import { fetchProfileRemote, upsertProfileRemote } from "../lib/profileRemote";
 import { getMercadoActivoParaPlan, getMercadoRealizado } from "../lib/mercadoHistorial";
@@ -171,33 +171,29 @@ export function Cronograma() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="font-display text-2xl font-bold text-leaf-900">Cronograma</h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Menú por días con recetas y enlace a YouTube por comida (búsqueda alineada al plato). Cantidades orientativas{" "}
-            <strong>para 1 persona</strong>; si cocinas para más, escala proporciones. Usa tu perfil y el{" "}
-            <strong>mercado guardado</strong>; datos completos en{" "}
-            <Link className="font-semibold text-leaf-800 underline" to="/mi-plan">
-              Mi plan
-            </Link>
-            .
-          </p>
-          {loadingRemote && <p className="mt-1 text-xs text-slate-500">Sincronizando perfil…</p>}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 flex-1">
+          <StepHeader
+            pasoActual={3}
+            titulo="Cronograma · tu menú"
+            subtitulo={
+              loadingRemote
+                ? "Sincronizando perfil…"
+                : "Aquí generas o ves el menú (plantillas o IA). Porciones para 1 persona; YouTube por receta. Usa los pasos 1 y 2 si aún no configuraste datos o mercado."
+            }
+          />
         </div>
         <Link
           to="/keto-mercado"
-          className="shrink-0 rounded-xl border border-leaf-200 bg-leaf-50 px-3 py-2 text-center text-sm font-semibold text-leaf-900 hover:bg-leaf-100"
+          className="shrink-0 self-start rounded-xl border border-leaf-200 bg-white px-4 py-2.5 text-center text-sm font-semibold text-leaf-900 shadow-sm hover:bg-leaf-50 sm:mt-14"
         >
-          Ir al mercado keto
+          Volver al mercado
         </Link>
       </div>
 
       {status && (
         <p className="rounded-xl border border-teal-200 bg-teal-50 px-3 py-2 text-sm text-teal-900">{status}</p>
       )}
-
-      <FlujoUsuarioBanner variant="compact" />
 
       <section className="rounded-2xl border border-teal-100 bg-teal-50/50 p-4 text-sm text-slate-800">
         <p className="font-semibold text-teal-900">Mercado activo</p>

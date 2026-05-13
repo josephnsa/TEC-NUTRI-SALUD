@@ -43,7 +43,7 @@ La app usa **HashRouter** (`/#/ruta`) para evitar errores 404 en Pages. Rutas pr
 
 - **Despliegue, variables, Supabase y agentes IA:** `docs/DEPLOYMENT.md`
 - Historias de usuario: `docs/USER_STORIES.md`
-- Flujo unificado (mercado → plan → cronograma + IA): `docs/FLUJO_USUARIO.md`
+- Flujo unificado (orden datos → mercado → menú): `docs/FLUJO_USUARIO.md` · definición en código: `src/lib/recorrido.ts`
 - Input de negocio: `docs/BUSINESS_INPUT.md`
 - **Roadmap de mejoras (perfil, N mercados, N cronogramas, UX):** `docs/MEJORAS_NEGOCIO_Y_PRODUCTO.md`
 - Skill de entrega para el agente: `.cursor/skills/tec-nutri-salud-delivery/SKILL.md`

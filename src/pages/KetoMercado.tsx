@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { StepHeader } from "../components/StepHeader";
 import {
   generarListaKeto,
   loadListaLocal,
@@ -146,27 +147,19 @@ export function KetoMercado() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-2xl font-bold text-leaf-900">Mercado dieta keto</h1>
-        <p className="mt-1 text-sm text-slate-600">
-          Selecciona el periodo y el número de personas. Cuando termines la compra, guarda el mercado realizado para
-          enlazarlo con tu cronograma y recetas en <Link className="font-semibold text-leaf-800 underline" to="/mi-plan">Mi plan</Link>.
-        </p>
-      </div>
+      <StepHeader
+        pasoActual={2}
+        titulo="Mercado dieta keto"
+        subtitulo="Genera la lista, compra y marca lo que trajiste. Guardar te lleva al cronograma (paso 3) con la despensa enlazada."
+      />
 
-      <div className="rounded-2xl border border-leaf-200 bg-leaf-50/80 p-4 text-sm text-slate-800">
-        <p className="font-semibold text-leaf-900">Flujo de negocio</p>
-        <ol className="mt-2 list-decimal space-y-1 pl-5">
-          <li>Genera la lista y compra.</li>
-          <li>Marca lo que ya compraste (o usa <strong>Compré todo de una vez</strong> si llevaste la lista completa).</li>
-          <li>Pulsa &quot;Guardar mercado realizado&quot; → se abre tu <strong>Cronograma</strong>.</li>
-          <li>
-            En <Link className="font-semibold text-leaf-800 underline" to="/cronograma">Cronograma</Link> o{" "}
-            <Link className="font-semibold text-leaf-800 underline" to="/mi-plan">Mi plan</Link>: modo Mercado o Mixto,
-            plantillas o <strong>Agente IA recetas</strong> (cantidades para <strong>1 persona</strong> + video por plato).
-          </li>
-        </ol>
-      </div>
+      <p className="rounded-xl border border-amber-100 bg-amber-50/80 px-4 py-3 text-xs text-amber-950">
+        ¿Primera vez? Completa antes{" "}
+        <Link className="font-semibold text-amber-900 underline" to="/mi-plan">
+          paso 1 · Mis datos
+        </Link>{" "}
+        para que el menú respete tu perfil.
+      </p>
 
       <div className="flex flex-wrap gap-2">
         <button

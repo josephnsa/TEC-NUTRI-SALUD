@@ -1,44 +1,50 @@
 # Flujo unificado de usuario (TEC Nutri Salud)
 
-Documento corto para alinear negocio y pantallas. La app sigue un solo camino lógico.
+Documento corto para alinear negocio y pantallas. La app sigue **un orden fijo en producto**: datos → mercado → menú.
 
 ## Idea central
 
-**Mercado real → perfil → cronograma con recetas y video.**  
-Las cantidades del cronograma son **orientativas para 1 persona**; si cocinas para más comensales, multiplicas proporciones. El mercado keto puede planificarse para varias personas en la lista de compra; el texto de cada receta del menú se simplifica a **una porción** para que sea fácil de escalar mentalmente.
+**Mis datos → Mercado keto → Cronograma** (menú con recetas y video).  
+Las cantidades del cronograma son **orientativas para 1 persona**; si cocinas para más comensales, multiplicas proporciones. El mercado puede planificarse para varias personas en la lista de compra; el texto de cada receta del menú se simplifica a **una porción** para escalar mentalmente.
+
+La implementación expone este orden en:
+
+- `src/lib/recorrido.ts` — definición única de pasos y rutas.
+- `src/components/StepHeader.tsx` — franja “paso X de 3” en Mi plan, Mercado y Cronograma.
+- `src/components/Layout.tsx` — navegación desktop y móvil en el mismo orden (Datos, Mercado, Menú, …).
 
 ## Pasos numerados
 
 ```mermaid
 flowchart LR
-  A[Mercado keto] --> B[Guardar mercado]
-  B --> C[Cronograma]
-  D[Mi plan: perfil] --> C
-  C --> E{¿Fuente de menú?}
+  A[Mis datos / Mi plan] --> B[Mercado keto]
+  B --> C[Guardar mercado]
+  C --> D[Cronograma]
+  D --> E{¿Fuente de menú?}
   E --> F[Plantillas locales]
   E --> G[Agente IA Gemini]
   F --> H[Receta + buscar video YouTube]
   G --> H
 ```
 
-1. **Mercado keto**  
-   Eliges días y comensales para la **lista de compra**. Marcas lo comprado (o “todo de una vez”). **Guardar mercado realizado** crea el vínculo con el plan y te lleva al cronograma.
+1. **Mis datos (Mi plan)**  
+   Perfil: datos corporales, gustos, estilo de dieta. Debe hacerse **primero** para que mercado y cronograma respeten exclusiones y modo nutricional orientativo.
 
-2. **Mi plan**  
-   Perfil (datos, gustos, estilo de dieta). Opcional antes del mercado si ya conoces tu perfil; si no, puedes hacerlo después.
+2. **Mercado keto**  
+   Días y comensales para la **lista de compra**. Marcas lo comprado (o “todo de una vez”). **Guardar mercado realizado** enlaza la despensa al plan y navega al cronograma.
 
 3. **Cronograma**  
-   Eliges **modo**: solo perfil, mercado activo o mixto; número de días; **Nuevas combinaciones** (plantillas) o **Agente IA recetas**.  
-   Cada comida muestra texto de receta y **“Buscar video para esta receta”**: abre YouTube con una búsqueda que incluye el **nombre del plato**, las palabras clave del modelo y tu **estilo de dieta** (keto / mediterránea / saludable).
+   Modo perfil / mercado / mixto; días; **Nuevas combinaciones** (plantillas) o **Agente IA recetas**.  
+   Cada comida: **“Buscar video para esta receta”** (YouTube alineado al plato + estilo de dieta).
 
-4. **Asistente**  
-   Misma API Gemini para **preguntas sueltas** (orientativo). Para menús estructurados por día, el camino oficial es el cronograma con agente IA.
+4. **Asistente** (opcional)  
+   Misma API Gemini para **preguntas sueltas**. El menú estructurado por día es siempre el cronograma.
 
 ## Qué hace el agente en recetas
 
 - Devuelve JSON con `titulo`, `receta` y `videoQuery`.
-- **Receta**: formato acordado *Ingredientes (1 porción)* + *Pasos*, con cantidades medibles.
-- **videoQuery**: coherentes con el plato para mejorar la relevancia en YouTube (sin URLs embebidas; solo búsqueda).
+- **Receta**: *Ingredientes (1 porción)* + *Pasos*, con cantidades medibles.
+- **videoQuery**: coherentes con el plato para YouTube (solo búsqueda).
 
 ## Fuera de este flujo
 

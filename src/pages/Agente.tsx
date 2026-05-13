@@ -52,16 +52,11 @@ export function Agente() {
           construir. Sin clave, verás un mensaje de modo local.
         </p>
         <p className="mt-2 text-xs text-slate-500">
-          Para menús día a día con <strong>cantidades para 1 persona</strong> y enlace de{" "}
-          <strong>YouTube alineado a cada plato</strong>, usa{" "}
+          Paso opcional (después de datos → mercado → menú). La misma clave Gemini sirve para{" "}
           <a className="font-semibold text-leaf-800 underline" href="#/cronograma">
-            Cronograma
-          </a>{" "}
-          o{" "}
-          <a className="font-semibold text-leaf-800 underline" href="#/mi-plan">
-            Mi plan
-          </a>{" "}
-          → &quot;Generar recetas con agente IA (gratis)&quot;.
+            recetas del cronograma
+          </a>
+          .
         </p>
         <p className="mt-2 text-xs text-slate-500">
           Estado API: {geminiDisponible() ? "clave detectada en build" : "sin clave (solo texto fijo)"}.{" "}

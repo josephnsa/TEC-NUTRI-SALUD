@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { FlujoUsuarioBanner } from "../components/FlujoUsuarioBanner";
+import { StepHeader } from "../components/StepHeader";
 import { useAuth } from "../context/AuthContext";
 import {
   contarCompradosMercado,
@@ -158,21 +158,15 @@ export function MiPlan() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display text-2xl font-bold text-leaf-900">Mi plan alimenticio</h1>
-        <p className="mt-1 text-sm text-slate-600">
-          Tu perfil define estilo y restricciones. El <strong>mercado guardado</strong> alimenta el cronograma cuando
-          eliges modo mercado o mixto. Abre la pantalla{" "}
-          <Link className="font-semibold text-leaf-800 underline" to="/cronograma">
-            Cronograma
-          </Link>{" "}
-          para ver solo el menú y recetas. Las recomendaciones son educativas; ante patología, consulta a tu equipo de
-          salud.
-        </p>
-        {loadingRemote && <p className="mt-2 text-xs text-slate-500">Cargando perfil desde la nube…</p>}
-      </div>
-
-      <FlujoUsuarioBanner variant="compact" />
+      <StepHeader
+        pasoActual={1}
+        titulo="Mi plan alimenticio"
+        subtitulo={
+          loadingRemote
+            ? "Sincronizando perfil desde la nube…"
+            : "Guarda tus datos y preferencias; luego sigue al mercado y al cronograma desde la barra de pasos de arriba. Orientativo, no clínico."
+        }
+      />
 
       <section className="rounded-2xl border border-teal-100 bg-teal-50/50 p-4 text-sm text-slate-800">
         <p className="font-semibold text-teal-900">Mercado vinculado al cronograma</p>

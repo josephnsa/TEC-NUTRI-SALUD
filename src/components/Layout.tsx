@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import type { ReactNode } from "react";
 import { useAuth } from "../context/AuthContext";
+import { PASO_ASISTENTE, PASOS_RECORRIDO_PRINCIPAL } from "../lib/recorrido";
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
   `rounded-xl px-3 py-2 text-sm font-medium transition ${
@@ -12,26 +13,22 @@ export function Layout({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-dvh flex flex-col">
-      <header className="sticky top-0 z-40 border-b border-leaf-100 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3">
-          <NavLink to="/" className="font-display text-lg font-bold text-leaf-900">
+      <header className="sticky top-0 z-40 border-b border-leaf-100 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/90">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-3 py-2.5 sm:gap-3 sm:px-4 sm:py-3">
+          <NavLink to="/" className="min-w-0 shrink font-display text-base font-bold text-leaf-900 sm:text-lg">
             TEC Nutri Salud
           </NavLink>
-          <nav className="hidden items-center gap-1 md:flex">
-            <NavLink to="/keto-mercado" className={linkClass}>
-              Mercado keto
-            </NavLink>
+          <nav className="hidden flex-wrap items-center justify-end gap-0.5 md:flex lg:gap-1">
+            {PASOS_RECORRIDO_PRINCIPAL.map((p) => (
+              <NavLink key={p.to} to={p.to} className={linkClass} title={p.descripcionBanner}>
+                {p.navDesktop}
+              </NavLink>
+            ))}
             <NavLink to="/belleza" className={linkClass}>
               Belleza
             </NavLink>
-            <NavLink to="/mi-plan" className={linkClass}>
-              Mi plan
-            </NavLink>
-            <NavLink to="/cronograma" className={linkClass}>
-              Cronograma
-            </NavLink>
-            <NavLink to="/agente" className={linkClass}>
-              Asistente
+            <NavLink to={PASO_ASISTENTE.to} className={linkClass}>
+              {PASO_ASISTENTE.navDesktop}
             </NavLink>
             {user ? (
               <button
@@ -50,55 +47,52 @@ export function Layout({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 pb-24 md:pb-8">{children}</main>
+      <main className="mx-auto w-full max-w-5xl flex-1 px-3 py-5 pb-28 sm:px-4 sm:py-6 md:pb-8">{children}</main>
 
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-leaf-100 bg-white/95 px-2 py-2 backdrop-blur md:hidden">
-        <div className="mx-auto flex max-w-lg justify-center gap-0.5 overflow-x-auto px-1">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-leaf-100 bg-white/98 backdrop-blur md:hidden">
+        <div className="mx-auto flex max-w-lg justify-between gap-0.5 overflow-x-auto px-1 pt-1.5 pb-[max(0.35rem,env(safe-area-inset-bottom))]">
           <NavLink
             to="/"
-            className={({ isActive }) => `${linkClass({ isActive })} min-w-[3.25rem] shrink-0 px-2 py-2 text-center text-[11px]`}
+            className={({ isActive }) =>
+              `${linkClass({ isActive })} min-w-[3rem] shrink-0 px-1.5 py-2 text-center text-[10px] leading-tight`
+            }
           >
             Inicio
           </NavLink>
-          <NavLink
-            to="/keto-mercado"
-            className={({ isActive }) => `${linkClass({ isActive })} min-w-[3.25rem] shrink-0 px-2 py-2 text-center text-[11px]`}
-          >
-            Keto
-          </NavLink>
+          {PASOS_RECORRIDO_PRINCIPAL.map((p) => (
+            <NavLink
+              key={p.to}
+              to={p.to}
+              className={({ isActive }) =>
+                `${linkClass({ isActive })} min-w-[3rem] shrink-0 px-1.5 py-2 text-center text-[10px] leading-tight`
+              }
+            >
+              {p.navCorto}
+            </NavLink>
+          ))}
           <NavLink
             to="/belleza"
-            className={({ isActive }) => `${linkClass({ isActive })} min-w-[3.25rem] shrink-0 px-2 py-2 text-center text-[11px]`}
+            className={({ isActive }) =>
+              `${linkClass({ isActive })} min-w-[3rem] shrink-0 px-1.5 py-2 text-center text-[10px] leading-tight`
+            }
           >
             Tips
           </NavLink>
           <NavLink
-            to="/mi-plan"
-            className={({ isActive }) => `${linkClass({ isActive })} min-w-[3.25rem] shrink-0 px-2 py-2 text-center text-[11px]`}
+            to={PASO_ASISTENTE.to}
+            className={({ isActive }) =>
+              `${linkClass({ isActive })} min-w-[3rem] shrink-0 px-1.5 py-2 text-center text-[10px] leading-tight`
+            }
           >
-            Plan
-          </NavLink>
-          <NavLink
-            to="/cronograma"
-            className={({ isActive }) => `${linkClass({ isActive })} min-w-[3.25rem] shrink-0 px-2 py-2 text-center text-[11px]`}
-          >
-            Crono
-          </NavLink>
-          <NavLink
-            to="/agente"
-            className={({ isActive }) => `${linkClass({ isActive })} min-w-[3.25rem] shrink-0 px-2 py-2 text-center text-[11px]`}
-          >
-            IA
+            {PASO_ASISTENTE.navCorto}
           </NavLink>
         </div>
         {!user && (
-          <div className="mt-1 text-center">
-            <NavLink to="/login" className="text-xs text-leaf-700 underline">
+          <div className="pb-1.5 pt-0.5 text-center">
+            <NavLink to="/login" className="text-[11px] text-leaf-700 underline">
               Cuenta
             </NavLink>
-            {!isConfigured && (
-              <span className="ml-2 text-[10px] text-amber-700">Supabase opcional</span>
-            )}
+            {!isConfigured && <span className="ml-2 text-[10px] text-amber-700">Supabase opcional</span>}
           </div>
         )}
       </nav>
