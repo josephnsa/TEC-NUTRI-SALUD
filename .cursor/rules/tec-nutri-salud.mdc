@@ -1,0 +1,14 @@
+---
+description: Convenciones del proyecto TEC Nutri Salud (React, PWA, Supabase, Pages)
+globs: src/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# TEC Nutri Salud
+
+- Texto de interfaz en **español**; tono cercano y claro en salud (avisos legales: no es consejo médico).
+- Preferir **HashRouter** y rutas bajo `src/pages`.
+- Estilos con **Tailwind**; componentes pequeños en `src/components`.
+- Lógica de negocio en `src/lib` (`nutritionPlan`, `ketoMercado`, `mercadoHistorial`, `recipesGemini`, `geminiAgent`, `profileRemote`).
+- No incrustar secretos: variables `VITE_*` solo por entorno o CI.
+- Tras cambios visibles, comprobar vista móvil (nav inferior) y **PWA** (manifest + SW).

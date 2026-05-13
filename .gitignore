@@ -1,0 +1,40 @@
+# Dependencias y artefactos de build
+node_modules/
+dist/
+
+# Variables de entorno (nunca secretos al repo)
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Logs y depuración
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Cachés de herramientas
+.cache/
+.parcel-cache/
+.turbo/
+*.tsbuildinfo
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDEs (opcional: quita .vscode si quieres versionar ajustes del equipo)
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Temporales de editores
+*.swp
+*.swo
+*~
+
+# Cobertura de tests (si se añaden)
+coverage/
