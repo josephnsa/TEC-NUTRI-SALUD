@@ -27,7 +27,7 @@ Perfil usuario (JSON): ${JSON.stringify(perfil)}
 Responde de forma breve, práctica y segura.`;
 
   const prompt = `${system}\n\nPregunta del usuario:\n${pregunta}`;
-  let lastErr: unknown;
+  const fallos: string[] = [];
   for (let i = 0; i < GEMINI_MODEL_IDS.length; i++) {
     const modelId = GEMINI_MODEL_IDS[i]!;
     try {
@@ -36,12 +36,11 @@ Responde de forma breve, práctica y segura.`;
       const text = result.response.text();
       return text.trim() || "Sin respuesta del modelo.";
     } catch (e) {
-      lastErr = e;
-      if (i === GEMINI_MODEL_IDS.length - 1) break;
+      const msg = e instanceof Error ? e.message : String(e);
+      fallos.push(`${modelId}: ${msg}`);
     }
   }
-  const msg = lastErr instanceof Error ? lastErr.message : String(lastErr);
   throw new Error(
-    `No respondió ningún modelo Gemini (${msg}). Revisa en Google AI Studio que la API Generative Language esté habilitada.`
+    `No respondió ningún modelo Gemini. Intentos:\n${fallos.join("\n")}\n\nEn Google Cloud: APIs & Services → habilita «Generative Language API». Revisa también restricciones de la clave (referrers / APIs permitidas).`
   );
 }
