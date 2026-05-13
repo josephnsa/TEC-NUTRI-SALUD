@@ -159,8 +159,12 @@ export function KetoMercado() {
         <ol className="mt-2 list-decimal space-y-1 pl-5">
           <li>Genera la lista y compra.</li>
           <li>Marca lo que ya compraste (o usa <strong>Compré todo de una vez</strong> si llevaste la lista completa).</li>
-          <li>Pulsa &quot;Guardar mercado realizado&quot; → se abre automáticamente tu <strong>Cronograma</strong>.</li>
-          <li>En Cronograma o Mi plan elige modo &quot;Mercado&quot; o &quot;Mixto&quot; y usa &quot;Nuevas combinaciones&quot; para variar sugerencias.</li>
+          <li>Pulsa &quot;Guardar mercado realizado&quot; → se abre tu <strong>Cronograma</strong>.</li>
+          <li>
+            En <Link className="font-semibold text-leaf-800 underline" to="/cronograma">Cronograma</Link> o{" "}
+            <Link className="font-semibold text-leaf-800 underline" to="/mi-plan">Mi plan</Link>: modo Mercado o Mixto,
+            plantillas o <strong>Agente IA recetas</strong> (cantidades para <strong>1 persona</strong> + video por plato).
+          </li>
         </ol>
       </div>
 

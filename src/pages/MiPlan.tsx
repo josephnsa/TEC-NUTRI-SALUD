@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { FlujoUsuarioBanner } from "../components/FlujoUsuarioBanner";
 import { useAuth } from "../context/AuthContext";
 import {
   contarCompradosMercado,
   generarCronograma,
   resumenNutricional,
-  youtubeBusqueda,
+  youtubeBusquedaPlato,
   type DiaPlan,
   type ModoCronograma,
   type PerfilUsuario
@@ -146,7 +147,7 @@ export function MiPlan() {
       setCronogramaIa(plan);
       setVistaCronograma("ia");
       setStatus(
-        `Recetas generadas por el agente IA gratuito para ${plan.length} día(s), según tu perfil, modo "${modoCronograma}" y el mercado guardado. Los enlaces llevan a YouTube.`
+        `Agente IA: ${plan.length} día(s) con recetas orientadas a 1 persona y enlaces de video por plato (Gemini).`
       );
     } catch (e) {
       setIaError(e instanceof Error ? e.message : "Error al generar con IA.");
@@ -170,6 +171,8 @@ export function MiPlan() {
         </p>
         {loadingRemote && <p className="mt-2 text-xs text-slate-500">Cargando perfil desde la nube…</p>}
       </div>
+
+      <FlujoUsuarioBanner variant="compact" />
 
       <section className="rounded-2xl border border-teal-100 bg-teal-50/50 p-4 text-sm text-slate-800">
         <p className="font-semibold text-teal-900">Mercado vinculado al cronograma</p>
@@ -410,13 +413,13 @@ export function MiPlan() {
         <p className="text-sm text-slate-600">
           {vistaCronograma === "ia" && cronogramaIa?.length === diasCronograma ? (
             <>
-              Mostrando <strong>recetas del agente IA gratuito</strong> (Google Gemini) para los {diasCronograma}{" "}
-              días, con búsqueda de video por comida. No es consejo médico.
+              Recetas del <strong>agente IA</strong> con ingredientes para <strong>1 persona</strong> y enlace de video
+              por plato. Orientativo, no clínico.
             </>
           ) : (
             <>
-              Vista local (plantillas + rotación). Los enlaces abren búsquedas en YouTube. Pulsa &quot;Generar recetas
-              con agente IA (gratis)&quot; para un menú distinto por día según perfil y mercado.
+              Plantillas locales (~1 porción). Pulsa &quot;Generar recetas con agente IA (gratis)&quot; para textos más
+              largos con cantidades explícitas y video alineado al nombre del plato.
             </>
           )}
         </p>
@@ -433,14 +436,14 @@ export function MiPlan() {
                     <div key={slot} className="rounded-xl bg-leaf-50/80 p-3">
                       <p className="text-xs font-semibold uppercase tracking-wide text-leaf-800">{tituloSlot}</p>
                       <p className="mt-1 font-medium text-slate-900">{c.titulo}</p>
-                      <p className="mt-1 text-xs text-slate-600">{c.receta}</p>
+                      <p className="mt-1 whitespace-pre-wrap text-xs text-slate-600">{c.receta}</p>
                       <a
                         className="mt-2 inline-block text-sm font-semibold text-leaf-800 underline"
-                        href={youtubeBusqueda(c.videoQuery)}
+                        href={youtubeBusquedaPlato(c.titulo, c.videoQuery, perfil.estiloDieta)}
                         target="_blank"
                         rel="noreferrer"
                       >
-                        Ver videos sugeridos
+                        Buscar video para esta receta
                       </a>
                     </div>
                   );

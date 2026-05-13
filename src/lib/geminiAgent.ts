@@ -23,6 +23,7 @@ export async function consultarAgenteNutricion(
   const genAI = new GoogleGenerativeAI(key);
   const system = `Eres asistente de nutrición y estilo de vida en español. 
 Reglas: no diagnosticar; recomendar consultar a médico/dietista ante enfermedad o medicación.
+Si sugieres recetas o listas de comidas, indica cantidades orientativas para UNA (1) persona salvo que el usuario pida otra cosa.
 Perfil usuario (JSON): ${JSON.stringify(perfil)}
 Responde de forma breve, práctica y segura.`;
 

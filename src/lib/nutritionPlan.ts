@@ -233,6 +233,18 @@ export function youtubeBusqueda(query: string): string {
   return `https://www.youtube.com/results?search_query=${q}`;
 }
 
+/** Une el nombre del plato + palabras clave + estilo para que los videos suelan coincidir con la receta mostrada. */
+export function youtubeBusquedaPlato(
+  titulo: string,
+  videoQuery: string,
+  estiloDieta?: PerfilUsuario["estiloDieta"]
+): string {
+  const estiloTxt =
+    estiloDieta === "keto" ? "keto" : estiloDieta === "mediterranea" ? "mediterránea" : "saludable";
+  const core = `${titulo.trim()} ${(videoQuery || "").trim()}`.replace(/\s+/g, " ").trim();
+  return youtubeBusqueda(`${core} receta ${estiloTxt} español`);
+}
+
 /** Mifflin-St Jeor */
 export function calcularBmr(p: PerfilUsuario): number {
   const { pesoKg, tallaCm, edad, sexo } = p;

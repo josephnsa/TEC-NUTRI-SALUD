@@ -25,18 +25,31 @@ function compradosResumen(items: ListaItem[] | undefined): string {
   return nombres.join("; ");
 }
 
+/** Refuerza la consulta de YouTube para que incluya el nombre del plato si la IA omitió parte del título. */
+function alinearVideoQuery(titulo: string, videoQuery: string): string {
+  const t = titulo.trim();
+  const v = (videoQuery || "").trim();
+  if (!v) return `${t} receta paso a paso`;
+  const primer = t.split(/\s+/)[0]?.toLowerCase() ?? "";
+  if (primer.length >= 4 && v.toLowerCase().includes(primer)) return v;
+  return `${t} ${v}`.replace(/\s+/g, " ").trim();
+}
+
 function normalizeSlot(x: unknown): { titulo: string; receta: string; videoQuery: string } {
   if (!x || typeof x !== "object") {
     return {
       titulo: "Comida sugerida",
-      receta: "Ajusta ingredientes a tu plan y preferencias.",
+      receta: "Ingredientes (1 porción): a tu gusto según despensa. · Pasos: combina y cocina con lo disponible.",
       videoQuery: "receta saludable casera español"
     };
   }
   const o = x as Record<string, unknown>;
   const titulo = String(o.titulo ?? "Plato").trim() || "Plato";
-  const receta = String(o.receta ?? "").trim() || "Preparación al gusto con ingredientes disponibles.";
-  const videoQuery = String(o.videoQuery ?? o.titulo ?? "receta").trim() || titulo;
+  const receta =
+    String(o.receta ?? "").trim() ||
+    "Ingredientes (1 porción): ver despensa. · Pasos: preparar al gusto respetando tu estilo de dieta.";
+  const videoRaw = String(o.videoQuery ?? "").trim();
+  const videoQuery = alinearVideoQuery(titulo, videoRaw || titulo);
   return { titulo, receta, videoQuery };
 }
 
@@ -78,7 +91,7 @@ async function generarChunkModelo(
     model: modelId,
     generationConfig: {
       responseMimeType: "application/json",
-      maxOutputTokens: 8192,
+      maxOutputTokens: 12288,
       temperature: 0.65
     }
   });
@@ -98,12 +111,14 @@ Perfil (JSON): ${JSON.stringify(perfil)}
 Modo de contexto: ${modo}. ${instruccionModo}
 Alimentos del mercado (comprados): ${mercadoTxt}
 
-Reglas:
+Reglas obligatorias:
+- Porciones: TODAS las recetas son para EXACTAMENTE UNA (1) persona. Indica cantidades concretas (g, ml, cucharadas, unidades). El usuario escalará mentalmente si cocina para más gente.
+- Formato de "receta" en un solo texto, sin saltos de línea JSON:
+  "Ingredientes (1 porción): … · Pasos: …" — ingredientes con cantidades medibles; pasos numerados breves (máx. ~520 caracteres por campo receta).
+- "titulo": nombre corto y claro del plato (será visible junto al video).
+- "videoQuery": 6-14 palabras en español para buscar en YouTube el MISMO plato que describe titulo+receta (incluye ingrediente principal + técnica + estilo de dieta según estiloDieta: keto / mediterránea / saludable). Sin URL. Debe ser coherente con el título (ej. si el título dice "pollo", la query debe mencionar pollo o sinónimo).
 - Respeta estiloDieta: keto (muy bajo carbohidrato), mediterranea o balanceada.
-- Evita o minimiza ingredientes listados en alimentosEvitar.
-- Ten en cuenta enfermedades solo como precaución textual breve en recetas (no diagnosticar).
-- receta: máximo 220 caracteres, pasos cortos.
-- videoQuery: 4-8 palabras clave en español para buscar en YouTube (sin URL).
+- Evita ingredientes en alimentosEvitar; enfermedades solo como precaución breve, sin diagnosticar.
 
 Devuelve SOLO un JSON: array de longitud ${diasChunk}. Cada elemento:
 {

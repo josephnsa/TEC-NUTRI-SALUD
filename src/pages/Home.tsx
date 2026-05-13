@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { FlujoUsuarioBanner } from "../components/FlujoUsuarioBanner";
 
 export function Home() {
   return (
@@ -35,6 +36,8 @@ export function Home() {
         </div>
       </section>
 
+      <FlujoUsuarioBanner />
+
       <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {[
           {
@@ -44,12 +47,12 @@ export function Home() {
           },
           {
             t: "Plan según tu perfil",
-            d: "Perfil + mercado guardado, plantillas o agente IA gratuito (Google AI Studio) para menú por días y videos.",
+            d: "Perfil + mercado guardado; cronograma con cantidades ~1 persona y video por receta (plantillas o IA).",
             to: "/mi-plan"
           },
           {
             t: "Cronograma",
-            d: "Solo el menú por días: recetas, videos y modo mercado/perfil/mixto. Se abre al guardar el mercado.",
+            d: "Menú por días, modo perfil/mercado/mixto, agente IA opcional. Se abre al guardar el mercado.",
             to: "/cronograma"
           },
           {

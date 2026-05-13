@@ -5,11 +5,12 @@ import {
   contarCompradosMercado,
   generarCronograma,
   resumenNutricional,
-  youtubeBusqueda,
+  youtubeBusquedaPlato,
   type DiaPlan,
   type ModoCronograma,
   type PerfilUsuario
 } from "../lib/nutritionPlan";
+import { FlujoUsuarioBanner } from "../components/FlujoUsuarioBanner";
 import { loadPerfilLocal, savePerfilLocal } from "../lib/perfilStorage";
 import { fetchProfileRemote, upsertProfileRemote } from "../lib/profileRemote";
 import { getMercadoActivoParaPlan, getMercadoRealizado } from "../lib/mercadoHistorial";
@@ -160,7 +161,7 @@ export function Cronograma() {
       const plan = await generarCronogramaIA(perfil, diasCronograma, itemsMercadoActivo, modoCronograma);
       setCronogramaIa(plan);
       setVistaCronograma("ia");
-      setStatus(`Agente IA gratuito: ${plan.length} día(s) generados.`);
+      setStatus(`Agente IA: ${plan.length} día(s); porciones 1 persona y video por comida.`);
     } catch (e) {
       setIaError(e instanceof Error ? e.message : "Error IA.");
     } finally {
@@ -174,8 +175,9 @@ export function Cronograma() {
         <div>
           <h1 className="font-display text-2xl font-bold text-leaf-900">Cronograma</h1>
           <p className="mt-1 text-sm text-slate-600">
-            Menú semanal con recetas y enlaces a videos. Se actualiza con tu perfil y el{" "}
-            <strong>mercado guardado</strong>. Edita datos personales en{" "}
+            Menú por días con recetas y enlace a YouTube por comida (búsqueda alineada al plato). Cantidades orientativas{" "}
+            <strong>para 1 persona</strong>; si cocinas para más, escala proporciones. Usa tu perfil y el{" "}
+            <strong>mercado guardado</strong>; datos completos en{" "}
             <Link className="font-semibold text-leaf-800 underline" to="/mi-plan">
               Mi plan
             </Link>
@@ -194,6 +196,8 @@ export function Cronograma() {
       {status && (
         <p className="rounded-xl border border-teal-200 bg-teal-50 px-3 py-2 text-sm text-teal-900">{status}</p>
       )}
+
+      <FlujoUsuarioBanner variant="compact" />
 
       <section className="rounded-2xl border border-teal-100 bg-teal-50/50 p-4 text-sm text-slate-800">
         <p className="font-semibold text-teal-900">Mercado activo</p>
@@ -362,9 +366,15 @@ export function Cronograma() {
         <h2 className="font-display text-lg font-semibold text-leaf-900">Días y recetas</h2>
         <p className="text-sm text-slate-600">
           {vistaCronograma === "ia" && cronogramaIa?.length === diasCronograma ? (
-            <>Vista <strong>agente IA gratuito</strong> · YouTube por comida.</>
+            <>
+              Vista <strong>agente IA gratuito</strong> (Gemini): recetas con ingredientes para <strong>1 porción</strong>{" "}
+              y búsqueda de video acorde a cada plato.
+            </>
           ) : (
-            <>Vista <strong>plantillas</strong> · YouTube por comida.</>
+            <>
+              Vista <strong>plantillas</strong> (cantidades orientativas ~1 persona). Enlace abre YouTube con el plato y
+              tu estilo de dieta.
+            </>
           )}
         </p>
         <div className="space-y-4">
@@ -380,14 +390,14 @@ export function Cronograma() {
                     <div key={slot} className="rounded-xl bg-leaf-50/80 p-3">
                       <p className="text-xs font-semibold uppercase tracking-wide text-leaf-800">{tituloSlot}</p>
                       <p className="mt-1 font-medium text-slate-900">{c.titulo}</p>
-                      <p className="mt-1 text-xs text-slate-600">{c.receta}</p>
+                      <p className="mt-1 whitespace-pre-wrap text-xs text-slate-600">{c.receta}</p>
                       <a
                         className="mt-2 inline-block text-sm font-semibold text-leaf-800 underline"
-                        href={youtubeBusqueda(c.videoQuery)}
+                        href={youtubeBusquedaPlato(c.titulo, c.videoQuery, perfil.estiloDieta)}
                         target="_blank"
                         rel="noreferrer"
                       >
-                        Ver videos
+                        Buscar video para esta receta
                       </a>
                     </div>
                   );
