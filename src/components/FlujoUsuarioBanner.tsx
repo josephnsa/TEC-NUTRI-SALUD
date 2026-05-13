@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { MARCA_APP } from "../lib/brand";
 import { PASOS_RECORRIDO_PRINCIPAL, PASO_ASISTENTE } from "../lib/recorrido";
 
 const PASOS_UI = [
@@ -37,8 +38,7 @@ export function FlujoUsuarioBanner({ className = "", variant = "default" }: Prop
           ))}
         </ol>
         <p className="mt-3 border-t border-teal-200/80 pt-2 text-xs text-slate-600">
-          En el menú superior los tres primeros pasos siguen este orden: <strong>Datos → Mercado → Menú</strong>.
-          Porciones del cronograma: <strong>1 persona</strong> (multiplica si cocinas para más).
+          Porciones del cronograma: orientativas para <strong>1 persona</strong> (multiplica si cocinas para más).
         </p>
       </aside>
     );
@@ -47,12 +47,11 @@ export function FlujoUsuarioBanner({ className = "", variant = "default" }: Prop
   return (
     <section
       className={`rounded-2xl border border-leaf-200 bg-white p-5 shadow-sm ${className}`}
-      aria-label="Cómo usar TEC Nutri Salud"
+      aria-label={`Cómo usar ${MARCA_APP}`}
     >
-      <h2 className="font-display text-lg font-semibold text-leaf-900">Tu recorrido (3 pasos + opcional)</h2>
+      <h2 className="font-display text-lg font-semibold text-leaf-900">Tu recorrido sugerido</h2>
       <p className="mt-1 text-sm text-slate-600">
-        Primero tus <strong>datos</strong>, luego el <strong>mercado</strong>, después el <strong>cronograma</strong>. El
-        asistente IA es extra para dudas sueltas.
+        Tres pasos para el menú; el asistente es opcional para dudas puntuales.
       </p>
       <ol className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {PASOS_UI.map((p) => (
@@ -75,8 +74,7 @@ export function FlujoUsuarioBanner({ className = "", variant = "default" }: Prop
         ))}
       </ol>
       <p className="mt-4 rounded-xl bg-slate-50 px-3 py-2 text-xs text-slate-600">
-        Diseño responsive y PWA: mismo flujo en móvil y escritorio; usa los accesos del menú inferior en el teléfono en
-        el mismo orden.
+        Seguiremos puliendo textos y funciones según feedback.
       </p>
     </section>
   );

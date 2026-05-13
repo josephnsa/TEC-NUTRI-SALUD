@@ -10,9 +10,9 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["favicon.svg", "robots.txt"],
       manifest: {
-        name: "TEC Nutri Salud",
-        short_name: "TEC Nutri",
-        description: "Salud alimenticia, mercado keto y belleza natural",
+        name: "NutriCamino",
+        short_name: "NutriCamino",
+        description: "Perfil, mercado keto y cronograma en tu navegador",
         theme_color: "#0f766e",
         background_color: "#f0fdfa",
         display: "standalone",

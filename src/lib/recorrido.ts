@@ -6,7 +6,7 @@ export type PasoRecorridoDef = {
   tituloPagina: string;
   /** Etiqueta corta para navegación móvil */
   navCorto: string;
-  /** Etiqueta escritorio (puede incluir número) */
+  /** Etiqueta escritorio (sin números; el orden ya lo marca el flujo) */
   navDesktop: string;
   to: string;
   descripcionBanner: string;
@@ -17,7 +17,7 @@ export const PASOS_RECORRIDO_PRINCIPAL: readonly PasoRecorridoDef[] = [
     paso: 1,
     tituloPagina: "Mis datos",
     navCorto: "Datos",
-    navDesktop: "1 · Datos",
+    navDesktop: "Datos",
     to: "/mi-plan",
     descripcionBanner:
       "Edad, peso, gustos y estilo de dieta. Aquí se guarda tu perfil; lo usarán el mercado y el cronograma."
@@ -26,7 +26,7 @@ export const PASOS_RECORRIDO_PRINCIPAL: readonly PasoRecorridoDef[] = [
     paso: 2,
     tituloPagina: "Mercado keto",
     navCorto: "Mercado",
-    navDesktop: "2 · Mercado",
+    navDesktop: "Mercado",
     to: "/keto-mercado",
     descripcionBanner:
       "Lista por días y comensales, marca comprados y guarda el mercado realizado para vincularlo al menú."
@@ -35,7 +35,7 @@ export const PASOS_RECORRIDO_PRINCIPAL: readonly PasoRecorridoDef[] = [
     paso: 3,
     tituloPagina: "Cronograma",
     navCorto: "Menú",
-    navDesktop: "3 · Menú",
+    navDesktop: "Menú",
     to: "/cronograma",
     descripcionBanner:
       "Menú por días (plantillas o agente IA), porciones orientativas para 1 persona y video por plato."
@@ -48,7 +48,7 @@ export const PASO_ASISTENTE = {
   navDesktop: "Asistente",
   navCorto: "IA",
   to: "/agente",
-  descripcionBanner: "Preguntas puntuales con Gemini (orientativo; mismo sistema que las recetas IA)."
+  descripcionBanner: "Preguntas concretas sobre nutrición o menús (orientativo, sin sustituir consejo médico)."
 } as const;
 
 /** Centro tipo dashboard: estado del recorrido sin repetir formularios. */

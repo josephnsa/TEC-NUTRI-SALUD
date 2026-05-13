@@ -73,8 +73,8 @@ export function Login() {
   return (
     <div className="mx-auto max-w-md space-y-6 rounded-2xl border border-leaf-100 bg-white p-6 shadow-sm">
       <div>
-        <h1 className="font-display text-2xl font-bold text-leaf-900">Entrar o registrarse</h1>
-        <p className="mt-1 text-sm text-slate-600">Cuenta gratuita con Supabase (email o Google).</p>
+        <h1 className="font-display text-2xl font-bold text-leaf-900">Ingresar o crear cuenta</h1>
+        <p className="mt-1 text-sm text-slate-600">Opcional: sincroniza tu perfil con la nube (Supabase: email o Google).</p>
       </div>
 
       <button

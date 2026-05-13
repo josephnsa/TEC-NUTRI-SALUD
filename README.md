@@ -1,6 +1,6 @@
-# TEC Nutri Salud
+# NutriCamino
 
-Web progresiva (PWA) sobre **salud alimenticia**, **mercado keto** (días, personas, checklist, **guardar mercado realizado** e historial activo para el plan), **plan personalizado** (edad, peso, talla, condiciones, alimentos a evitar, **cronograma según perfil y/o mercado**, plantillas o **recetas con agente IA gratuito** — Google Gemini vía AI Studio —, enlaces a videos en YouTube), **tips de belleza natural** y **asistente opcional** de chat con la misma clave gratuita.
+Web progresiva (PWA) sobre **salud alimenticia**, **mercado keto** (lista por días, checklist, guardado para el plan), **plan personalizado** y **cronograma** con plantillas o recetas asistidas, enlaces a video y tips de belleza. Repositorio de código: `TEC-NUTRI-SALUD`.
 
 Stack: **Vite + React + TypeScript + Tailwind**, **Supabase** (auth email/Google + tabla `profiles`, capa gratuita), **GitHub Pages** (hosting estático gratuito).
 
