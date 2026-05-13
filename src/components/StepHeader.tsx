@@ -18,7 +18,7 @@ export function StepHeader({ pasoActual, titulo, subtitulo }: Props) {
     <header className="space-y-4">
       <div className="rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/95 via-white to-cyan-50/90 px-4 py-4 shadow-md shadow-teal-900/5 backdrop-blur-sm sm:px-5">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">
-          Recorrido guiado · paso {pasoActual} de 3
+          Paso {pasoActual} de 3
         </p>
         <nav className="mt-3 flex flex-wrap gap-2" aria-label="Pasos del recorrido principal">
           {PASOS_RECORRIDO_PRINCIPAL.map((p) => {

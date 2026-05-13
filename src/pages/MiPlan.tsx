@@ -111,9 +111,9 @@ export function MiPlan() {
     savePerfilLocal(perfil);
     if (user?.id && isConfigured) {
       const ok = await upsertProfileRemote(user.id, perfil);
-      setStatus(ok ? "Guardado en la nube y en este dispositivo." : "Guardado solo en el dispositivo (revisa Supabase).");
+      setStatus(ok ? "Guardado en la nube y en el dispositivo." : "Solo en el dispositivo; revisa Supabase.");
     } else {
-      setStatus("Guardado en este dispositivo. Inicia sesión y configura Supabase para sincronizar.");
+      setStatus("Guardado en el dispositivo. Inicia sesión para sincronizar.");
     }
   };
 
@@ -125,20 +125,20 @@ export function MiPlan() {
     } catch {
       /* ignore */
     }
-    setStatus("Sugerencias del cronograma renovadas (misma lógica, otra rotación).");
+    setStatus("Sugerencias renovadas.");
   };
 
   const alinearDiasConMercado = () => {
     if (!snapshotMercado) return;
     const d = Math.min(30, Math.max(3, Math.round(snapshotMercado.dias)));
     setDiasCronograma(d);
-    setStatus(`Días del cronograma alineados con el mercado (${d} días).`);
+    setStatus(`Días alineados con el mercado (${d}).`);
   };
 
   const cargarRecetasIA = async () => {
     if (!agenteRecetasGratisDisponible()) {
       setIaError(
-        `Para el agente IA gratuito: crea una clave en Google AI Studio (${URL_GOOGLE_AI_STUDIO_API_KEY}), ponla como VITE_GEMINI_API_KEY y vuelve a ejecutar el build.`
+        `Clave en Google AI Studio (${URL_GOOGLE_AI_STUDIO_API_KEY}) → variable VITE_GEMINI_API_KEY y rebuild.`
       );
       return;
     }
@@ -149,9 +149,7 @@ export function MiPlan() {
       const plan = await generarCronogramaIA(perfil, diasCronograma, itemsMercadoActivo, modoCronograma);
       setCronogramaIa(plan);
       setVistaCronograma("ia");
-      setStatus(
-        `Agente IA: ${plan.length} día(s) con recetas orientadas a 1 persona y enlaces de video por plato (Gemini).`
-      );
+      setStatus(`IA: ${plan.length} día(s); ~1 porción y video por plato.`);
     } catch (e) {
       setIaError(e instanceof Error ? e.message : "Error al generar con IA.");
     } finally {
@@ -164,31 +162,27 @@ export function MiPlan() {
       <StepHeader
         pasoActual={1}
         titulo="Mi plan alimenticio"
-        subtitulo={
-          loadingRemote
-            ? "Sincronizando perfil desde la nube…"
-            : "Guarda tus datos y preferencias; luego sigue al mercado y al cronograma desde la barra de pasos de arriba. Orientativo, no clínico."
-        }
+        subtitulo={loadingRemote ? "Sincronizando perfil…" : undefined}
       />
 
-      <div className="flex flex-col gap-2 rounded-xl border border-teal-100 bg-teal-50/50 px-4 py-3 text-sm text-slate-800 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+      <div className="ui-card-muted flex flex-col gap-2 px-4 py-3 text-sm text-slate-800 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <div>
           <span className="font-semibold text-teal-900">Mercado para el plan</span>
           {!mercadoActivoId ? (
             <span className="mt-0.5 block text-teal-800 sm:mt-0 sm:inline sm:ml-2">
               Sin activo ·{" "}
-              <Link className="font-semibold underline" to="/keto-mercado">
+              <Link className="font-semibold text-teal-900 underline decoration-teal-500/50 hover:decoration-teal-700" to="/keto-mercado">
                 paso 2 · Mercado
               </Link>
             </span>
           ) : (
             <span className="mt-0.5 block text-teal-800 sm:mt-0 sm:inline sm:ml-2">
               {nComprados} comprados ·{" "}
-              <Link className="font-semibold underline" to="/keto-mercado">
+              <Link className="font-semibold text-teal-900 underline decoration-teal-500/50 hover:decoration-teal-700" to="/keto-mercado">
                 editar
               </Link>
               {" · "}
-              <Link className="font-semibold underline" to={RUTA_MI_ESPACIO}>
+              <Link className="font-semibold text-teal-900 underline decoration-teal-500/50 hover:decoration-teal-700" to={RUTA_MI_ESPACIO}>
                 ver resumen
               </Link>
             </span>
@@ -197,7 +191,7 @@ export function MiPlan() {
         {snapshotMercado && (
           <button
             type="button"
-            className="shrink-0 rounded-lg border border-teal-300 bg-white px-3 py-1.5 text-xs font-semibold text-teal-900 hover:bg-teal-50"
+            className="ui-btn-secondary shrink-0 px-3 py-1.5 text-xs"
             onClick={alinearDiasConMercado}
           >
             Alinear {snapshotMercado.dias} días con el mercado
@@ -205,20 +199,20 @@ export function MiPlan() {
         )}
       </div>
       {modoCronograma !== "perfil" && mercadoActivoId && nComprados === 0 && (
-        <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950">
-          Modo mercado/mixto sin ítems comprados: el cronograma rota como en modo perfil hasta que marques tu despensa en{" "}
-          <Link className="font-semibold underline" to="/keto-mercado">
+        <p className="rounded-lg border border-amber-200/80 bg-amber-50/90 px-3 py-2 text-xs text-amber-950 shadow-sm backdrop-blur-sm">
+          Modo mercado/mixto sin comprados: el menú rota como solo perfil. Marca en{" "}
+          <Link className="font-semibold text-teal-900 underline decoration-teal-500/50 hover:decoration-teal-700" to="/keto-mercado">
             Mercado keto
           </Link>
           .
         </p>
       )}
 
-      <div className="grid gap-4 rounded-2xl border border-leaf-100 bg-white p-4 shadow-sm md:grid-cols-2">
+      <div className="ui-card grid gap-4 md:grid-cols-2">
         <label className="text-sm md:col-span-2">
           <span className="font-medium">Nombre o apodo</span>
           <input
-            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-slate-900 shadow-sm focus:border-leaf-600 focus:outline-none focus:ring-2 focus:ring-leaf-600/20"
+            className="mt-1 w-full rounded-xl border border-emerald-200/80 bg-white/90 px-3 py-2 text-slate-900 shadow-sm backdrop-blur-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/25"
             value={perfil.nombre}
             onChange={(e) => setPerfil({ ...perfil, nombre: e.target.value.slice(0, 80) })}
             placeholder="Ej.: Ana, Luis, Mamá…"
@@ -251,7 +245,7 @@ export function MiPlan() {
         <label className="text-sm">
           <span className="font-medium">Sexo (cálculo energético)</span>
           <select
-            className="mt-1 w-full rounded-xl border px-3 py-2"
+            className="mt-1 w-full rounded-xl border border-emerald-200/80 bg-white/90 px-3 py-2 shadow-sm backdrop-blur-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
             value={perfil.sexo}
             onChange={(e) => setPerfil({ ...perfil, sexo: e.target.value as PerfilUsuario["sexo"] })}
           >
@@ -263,7 +257,7 @@ export function MiPlan() {
         <label className="text-sm md:col-span-2">
           <span className="font-medium">Enfermedades o condiciones (texto libre)</span>
           <textarea
-            className="mt-1 w-full rounded-xl border px-3 py-2"
+            className="mt-1 w-full rounded-xl border border-emerald-200/80 bg-white/90 px-3 py-2 shadow-sm backdrop-blur-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
             rows={2}
             value={perfil.enfermedades}
             onChange={(e) => setPerfil({ ...perfil, enfermedades: e.target.value })}
@@ -273,7 +267,7 @@ export function MiPlan() {
         <label className="text-sm md:col-span-2">
           <span className="font-medium">Alimentos que no te gustan (separar con coma)</span>
           <input
-            className="mt-1 w-full rounded-xl border px-3 py-2"
+            className="mt-1 w-full rounded-xl border border-emerald-200/80 bg-white/90 px-3 py-2 shadow-sm backdrop-blur-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
             value={perfil.alimentosEvitar}
             onChange={(e) => setPerfil({ ...perfil, alimentosEvitar: e.target.value })}
             placeholder="Ej.: pescado, cilantro"
@@ -282,7 +276,7 @@ export function MiPlan() {
         <label className="text-sm md:col-span-2">
           <span className="font-medium">Estilo de plan</span>
           <select
-            className="mt-1 w-full rounded-xl border px-3 py-2"
+            className="mt-1 w-full rounded-xl border border-emerald-200/80 bg-white/90 px-3 py-2 shadow-sm backdrop-blur-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
             value={perfil.estiloDieta}
             onChange={(e) => setPerfil({ ...perfil, estiloDieta: e.target.value as PerfilUsuario["estiloDieta"] })}
           >
@@ -292,8 +286,8 @@ export function MiPlan() {
           </select>
         </label>
 
-        <fieldset className="md:col-span-2 space-y-2 rounded-xl border border-slate-100 p-3">
-          <legend className="px-1 text-sm font-medium text-slate-800">Cronograma según</legend>
+        <fieldset className="md:col-span-2 space-y-2 rounded-xl border border-emerald-100/80 bg-white/50 p-3 backdrop-blur-sm">
+          <legend className="px-1 text-sm font-medium text-teal-900">Cronograma según</legend>
           <label className="flex items-center gap-2 text-sm">
             <input
               type="radio"
@@ -301,7 +295,7 @@ export function MiPlan() {
               checked={modoCronograma === "perfil"}
               onChange={() => setModoCronograma("perfil")}
             />
-            Solo perfil (rotación variada de recetas)
+            Solo perfil
           </label>
           <label className="flex items-center gap-2 text-sm">
             <input
@@ -310,7 +304,7 @@ export function MiPlan() {
               checked={modoCronograma === "mercado"}
               onChange={() => setModoCronograma("mercado")}
             />
-            Mercado activo (prioriza lo que compraste)
+            Mercado activo
           </label>
           <label className="flex items-center gap-2 text-sm">
             <input
@@ -319,7 +313,7 @@ export function MiPlan() {
               checked={modoCronograma === "mixto"}
               onChange={() => setModoCronograma("mixto")}
             />
-            Mixto (recomendado: perfil + ingredientes comprados)
+            Mixto
           </label>
         </fieldset>
 
@@ -327,14 +321,14 @@ export function MiPlan() {
           <button
             type="button"
             onClick={() => void guardar()}
-            className="rounded-xl bg-leaf-700 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-leaf-900"
+            className="ui-btn-primary"
           >
             Guardar perfil
           </button>
           <button
             type="button"
             onClick={nuevasCombinaciones}
-            className="rounded-xl border border-leaf-300 bg-white px-4 py-2 text-sm font-semibold text-leaf-900 hover:bg-leaf-50"
+            className="ui-btn-secondary"
           >
             Nuevas combinaciones
           </button>
@@ -342,18 +336,18 @@ export function MiPlan() {
             type="button"
             disabled={iaCargando}
             onClick={() => void cargarRecetasIA()}
-            className="rounded-xl bg-violet-700 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-violet-900 disabled:opacity-60"
+            className="ui-btn-violet"
           >
-            {iaCargando ? "Generando recetas con agente…" : "Generar recetas con agente IA (gratis)"}
+            {iaCargando ? "Generando…" : "Recetas con IA (gratis)"}
           </button>
           {vistaCronograma === "ia" && cronogramaIa && (
             <button
               type="button"
               onClick={() => {
                 setVistaCronograma("plantillas");
-                setStatus("Mostrando cronograma local (plantillas).");
+                setStatus("Vista plantillas.");
               }}
-              className="rounded-xl border border-violet-200 bg-white px-4 py-2 text-sm font-semibold text-violet-900 hover:bg-violet-50"
+              className="ui-btn-ghost-violet"
             >
               Ver recetas locales
             </button>
@@ -367,35 +361,34 @@ export function MiPlan() {
               onCommit={setDiasCronograma}
               min={3}
               max={30}
-              inputClassName="w-20 rounded-lg border border-slate-200 px-2 py-1 text-center text-slate-900 shadow-sm focus:border-leaf-600 focus:outline-none focus:ring-2 focus:ring-leaf-600/20"
+              inputClassName="w-20 rounded-lg border border-emerald-200/90 bg-white/90 px-2 py-1 text-center text-slate-900 shadow-sm backdrop-blur-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/25"
             />
           </div>
         </div>
         {!agenteRecetasGratisDisponible() && (
-          <p className="md:col-span-2 rounded-xl border border-violet-100 bg-violet-50/70 p-3 text-xs text-slate-700">
-            Las recetas las genera el <strong>mismo agente IA gratuito de Google</strong> (Gemini vía{" "}
+          <p className="md:col-span-2 rounded-xl border border-violet-200/80 bg-violet-50/80 p-3 text-xs text-slate-700 shadow-sm backdrop-blur-sm">
+            Recetas con Gemini: clave en{" "}
             <a
-              className="font-semibold text-leaf-800 underline"
+              className="font-semibold text-teal-800 underline decoration-teal-400/70 hover:text-teal-950"
               href={URL_GOOGLE_AI_STUDIO_API_KEY}
               target="_blank"
               rel="noreferrer"
             >
               Google AI Studio
-            </a>
-            , sin tarjeta en el plan gratuito con límites). Crea una clave, configura{" "}
-            <code className="rounded bg-white px-1">VITE_GEMINI_API_KEY</code> en <code className="rounded bg-white px-1">.env</code> o en GitHub Actions y vuelve a construir. También sirve para la pantalla{" "}
-            <Link className="font-semibold text-leaf-800 underline" to="/agente">
+            </a>{" "}
+            → <code className="rounded bg-white px-1">VITE_GEMINI_API_KEY</code> y rebuild. Misma clave en{" "}
+            <Link className="font-semibold text-teal-800 underline decoration-teal-400/70 hover:text-teal-950" to="/agente">
               Asistente
             </Link>
             .
           </p>
         )}
         {iaError && <p className="md:col-span-2 text-sm text-red-700">{iaError}</p>}
-        {status && <p className="md:col-span-2 text-sm text-leaf-800">{status}</p>}
+        {status && <p className="md:col-span-2 text-sm font-medium text-teal-900">{status}</p>}
       </div>
 
-      <section className="rounded-2xl border border-leaf-100 bg-white p-4 shadow-sm">
-        <h2 className="font-display text-lg font-semibold text-leaf-900">Resumen orientativo</h2>
+      <section className="ui-card">
+        <h2 className="ui-section-title">Resumen orientativo</h2>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
           {resumen.map((r) => (
             <li key={r}>{r}</li>
@@ -405,43 +398,41 @@ export function MiPlan() {
 
       <section className="space-y-4" id="cronograma">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="font-display text-lg font-semibold text-leaf-900">Cronograma con recetas y videos</h2>
+          <h2 className="ui-section-title text-gradient-brand">Cronograma con recetas y videos</h2>
           <Link
             to="/cronograma"
-            className="text-sm font-semibold text-leaf-800 underline hover:text-leaf-950"
+            className="ui-btn-secondary shrink-0 text-center text-sm"
           >
-            Pantalla solo cronograma →
+            Pantalla solo cronograma
           </Link>
         </div>
         <p className="text-sm text-slate-600">
           {vistaCronograma === "ia" && cronogramaIa?.length === diasCronograma ? (
             <>
-              Recetas del <strong>agente IA</strong> con ingredientes para <strong>1 persona</strong> y enlace de video
-              por plato. Orientativo, no clínico.
+              Vista <strong>IA</strong>: ~1 porción y video por plato. Orientativo.
             </>
           ) : (
             <>
-              Plantillas locales (~1 porción). Pulsa &quot;Generar recetas con agente IA (gratis)&quot; para textos más
-              largos con cantidades explícitas y video alineado al nombre del plato.
+              Vista <strong>plantillas</strong> (~1 porción). Usa &quot;Recetas con IA&quot; para cantidades detalladas.
             </>
           )}
         </p>
         <div className="space-y-4">
           {cronogramaMostrado.map((d) => (
-            <div key={d.dia} className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
-              <p className="text-sm font-semibold text-leaf-800">Día {d.dia}</p>
+            <div key={d.dia} className="ui-day-block">
+              <p className="text-sm font-semibold text-teal-900">Día {d.dia}</p>
               <div className="mt-3 grid gap-3 md:grid-cols-3">
                 {(["desayuno", "almuerzo", "cena"] as const).map((slot) => {
                   const c = d.comidas[slot];
                   const tituloSlot =
                     slot === "desayuno" ? "Desayuno" : slot === "almuerzo" ? "Almuerzo" : "Cena";
                   return (
-                    <div key={slot} className="rounded-xl bg-leaf-50/80 p-3">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-leaf-800">{tituloSlot}</p>
+                    <div key={slot} className="ui-meal-slot">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-teal-800">{tituloSlot}</p>
                       <p className="mt-1 font-medium text-slate-900">{c.titulo}</p>
                       <p className="mt-1 whitespace-pre-wrap text-xs text-slate-600">{c.receta}</p>
                       <a
-                        className="mt-2 inline-block text-sm font-semibold text-leaf-800 underline"
+                        className="ui-video-link"
                         href={youtubeBusquedaPlato(c.titulo, c.videoQuery, perfil.estiloDieta)}
                         target="_blank"
                         rel="noreferrer"

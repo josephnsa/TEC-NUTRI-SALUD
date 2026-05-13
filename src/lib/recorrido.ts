@@ -19,8 +19,7 @@ export const PASOS_RECORRIDO_PRINCIPAL: readonly PasoRecorridoDef[] = [
     navCorto: "Datos",
     navDesktop: "Datos",
     to: "/mi-plan",
-    descripcionBanner:
-      "Edad, peso, gustos y estilo de dieta. Aquí se guarda tu perfil; lo usarán el mercado y el cronograma."
+    descripcionBanner: "Perfil para mercado y menú (orientativo, no clínico)."
   },
   {
     paso: 2,
@@ -28,8 +27,7 @@ export const PASOS_RECORRIDO_PRINCIPAL: readonly PasoRecorridoDef[] = [
     navCorto: "Mercado",
     navDesktop: "Mercado",
     to: "/keto-mercado",
-    descripcionBanner:
-      "Lista por días y comensales, marca comprados y guarda el mercado realizado para vincularlo al menú."
+    descripcionBanner: "Lista, marca comprados y guarda para enlazar al menú."
   },
   {
     paso: 3,
@@ -37,8 +35,7 @@ export const PASOS_RECORRIDO_PRINCIPAL: readonly PasoRecorridoDef[] = [
     navCorto: "Menú",
     navDesktop: "Menú",
     to: "/cronograma",
-    descripcionBanner:
-      "Menú por días (plantillas o agente IA), porciones orientativas para 1 persona y video por plato."
+    descripcionBanner: "Menú por días: plantillas o IA; ~1 porción; video por plato."
   }
 ] as const;
 
@@ -48,7 +45,7 @@ export const PASO_ASISTENTE = {
   navDesktop: "Asistente",
   navCorto: "IA",
   to: "/agente",
-  descripcionBanner: "Preguntas concretas sobre nutrición o menús (orientativo, sin sustituir consejo médico)."
+  descripcionBanner: "Dudas de nutrición o menús (orientativo; no sustituye consejo médico)."
 } as const;
 
 /** Centro tipo dashboard: estado del recorrido sin repetir formularios. */

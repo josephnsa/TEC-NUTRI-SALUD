@@ -38,11 +38,11 @@ export function Agente() {
       <div>
         <h1 className="font-display text-2xl font-bold text-leaf-900">Asistente nutricional</h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-700">
-          Haz una pregunta concreta sobre alimentación o menús; tendremos en cuenta tu perfil si lo guardaste en{" "}
+          Pregunta concreta; usamos tu perfil si lo guardaste en{" "}
           <Link className="font-semibold text-emerald-800 underline hover:no-underline" to="/mi-plan">
             Mis datos
           </Link>
-          . Para menús por día usa el{" "}
+          . Menús por día:{" "}
           <Link className="font-semibold text-emerald-800 underline hover:no-underline" to="/cronograma">
             Cronograma
           </Link>
@@ -75,8 +75,7 @@ export function Agente() {
       )}
 
       <p className="text-xs leading-relaxed text-slate-600">
-        Orientación general: no sustituye consejo médico ni dietético personalizado. Si tienes condiciones de salud o
-        medicación, consulta con un profesional.
+        Orientación general; no sustituye consejo médico ni dietético profesional.
       </p>
     </div>
   );

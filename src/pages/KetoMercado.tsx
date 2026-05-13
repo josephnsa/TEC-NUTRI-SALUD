@@ -83,11 +83,9 @@ export function KetoMercado() {
     guardarMercadoRealizado(dias, personas, items);
     refreshHistorial();
     if (n === 0) {
-      setMsg(
-        "Mercado guardado. Abriendo tu cronograma… (marca comprados la próxima vez para priorizar mejor ingredientes)."
-      );
+      setMsg("Guardado. Abriendo cronograma… (marca comprados para priorizar ingredientes).");
     } else {
-      setMsg("Mercado guardado. Abriendo tu cronograma…");
+      setMsg("Guardado. Abriendo cronograma…");
     }
     navigate("/cronograma", { state: { desdeMercado: true } });
   };
@@ -95,7 +93,7 @@ export function KetoMercado() {
   const activar = (id: string) => {
     setMercadoActivoParaPlan(id);
     refreshHistorial();
-    setMsg("Este mercado quedó activo para el cronograma.");
+    setMsg("Mercado activo para el plan.");
   };
 
   const borrar = (id: string) => {
@@ -115,7 +113,7 @@ export function KetoMercado() {
       const r = importarRespaldoMercadoJson(texto);
       if (r.ok) {
         refreshHistorial();
-        setMsg(`Respaldo importado: ${r.fusionados} mercado(s) fusionados con tu historial local.`);
+        setMsg(`Importado: ${r.fusionados} mercado(s).`);
       } else {
         setMsg(r.error);
       }
@@ -146,79 +144,71 @@ export function KetoMercado() {
   };
 
   return (
-    <div className="space-y-6">
-      <StepHeader
-        pasoActual={2}
-        titulo="Mercado dieta keto"
-        subtitulo="Genera la lista, compra y marca lo que trajiste. Guardar te lleva al cronograma (paso 3) con la despensa enlazada."
-      />
+    <div className="space-y-8">
+      <StepHeader pasoActual={2} titulo="Mercado dieta keto" />
 
-      <p className="rounded-xl border border-amber-100 bg-amber-50/80 px-4 py-3 text-xs text-amber-950">
-        ¿Primera vez? Completa antes{" "}
-        <Link className="font-semibold text-amber-900 underline" to="/mi-plan">
-          paso 1 · Mis datos
-        </Link>{" "}
-        para que el menú respete tu perfil.
+      <p className="rounded-xl border border-amber-200/80 bg-amber-50/85 px-4 py-3 text-xs text-amber-950 shadow-sm backdrop-blur-sm">
+        Antes completa{" "}
+        <Link
+          className="font-semibold text-amber-950 underline decoration-amber-600/50 hover:decoration-amber-800"
+          to="/mi-plan"
+        >
+          Mis datos
+        </Link>
+        .
       </p>
 
       <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={guardarMercado}
-          className="rounded-xl bg-teal-800 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-teal-950"
-        >
+        <button type="button" onClick={guardarMercado} className="ui-btn-primary">
           Guardar mercado realizado
         </button>
-        <Link
-          to="/cronograma"
-          className="inline-flex items-center rounded-xl border border-leaf-300 bg-white px-4 py-2 text-sm font-semibold text-leaf-900 hover:bg-leaf-50"
-        >
+        <Link to="/cronograma" className="ui-btn-secondary inline-flex items-center justify-center">
           Ver cronograma
         </Link>
       </div>
-      {msg && <p className="text-sm text-slate-700">{msg}</p>}
+      {msg && (
+        <p className="rounded-xl border border-teal-200/80 bg-teal-50/90 px-3 py-2 text-sm text-teal-900 shadow-sm backdrop-blur-sm">
+          {msg}
+        </p>
+      )}
 
-      <div className="grid gap-4 rounded-2xl border border-leaf-100 bg-white p-4 shadow-sm md:grid-cols-3">
+      <div className="ui-card grid gap-4 md:grid-cols-3">
         <label className="text-sm">
-          <span className="font-medium text-slate-800">Días de compra</span>
+          <span className="font-medium text-teal-950">Días de compra</span>
           <input
             type="number"
             min={1}
             max={30}
-            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2"
+            className="mt-1 w-full rounded-xl border border-emerald-200/80 bg-white/90 px-3 py-2 shadow-sm backdrop-blur-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
             value={dias}
             onChange={(e) => setDias(Number(e.target.value))}
           />
         </label>
         <label className="text-sm">
-          <span className="font-medium text-slate-800">Personas</span>
+          <span className="font-medium text-teal-950">Personas</span>
           <input
             type="number"
             min={1}
             max={12}
-            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2"
+            className="mt-1 w-full rounded-xl border border-emerald-200/80 bg-white/90 px-3 py-2 shadow-sm backdrop-blur-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
             value={personas}
             onChange={(e) => setPersonas(Number(e.target.value))}
           />
         </label>
         <div className="flex items-end">
-          <button
-            type="button"
-            onClick={regenerar}
-            className="w-full rounded-xl bg-leaf-700 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-leaf-900"
-          >
+          <button type="button" onClick={regenerar} className="ui-btn-primary w-full">
             Generar / actualizar lista
           </button>
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-        <span className="text-sm font-medium text-slate-700">Selección rápida:</span>
+      <div className="ui-card-muted flex flex-wrap items-center gap-2 px-4 py-3">
+        <span className="text-sm font-medium text-teal-900">Selección rápida:</span>
         <button
           type="button"
           onClick={marcarTodosComprados}
           disabled={todosComprados}
-          className="rounded-xl bg-leaf-700 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-leaf-900 disabled:cursor-not-allowed disabled:opacity-50"
+          className="ui-btn-primary disabled:cursor-not-allowed disabled:opacity-50"
         >
           Compré todo de una vez
         </button>
@@ -226,29 +216,27 @@ export function KetoMercado() {
           type="button"
           onClick={desmarcarTodosComprados}
           disabled={ningunoComprado}
-          className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+          className="ui-btn-secondary disabled:cursor-not-allowed disabled:opacity-50"
         >
           Desmarcar todo
         </button>
       </div>
 
-      <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-3 text-sm text-slate-700">
-        <p className="font-medium text-slate-900">Respaldo del historial</p>
-        <p className="mt-1 text-xs text-slate-600">
-          Descarga un JSON con tus mercados guardados o importa uno para fusionarlo (por ejemplo, otro dispositivo).
-        </p>
+      <div className="rounded-2xl border border-dashed border-emerald-300/70 bg-white/90 px-4 py-3 text-sm text-slate-700 shadow-sm backdrop-blur-sm">
+        <p className="font-medium text-teal-950">Respaldo (JSON)</p>
+        <p className="mt-1 text-xs text-slate-600">Descarga o importa para fusionar entre dispositivos.</p>
         <div className="mt-2 flex flex-wrap gap-2">
           <button
             type="button"
             onClick={() => descargarRespaldoMercadoJson()}
-            className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 hover:bg-slate-50"
+            className="ui-btn-secondary px-3 py-1.5 text-xs"
           >
             Descargar JSON
           </button>
           <button
             type="button"
             onClick={() => inputRespaldoRef.current?.click()}
-            className="rounded-xl border border-leaf-300 bg-leaf-50 px-3 py-1.5 text-xs font-semibold text-leaf-900 hover:bg-leaf-100"
+            className="ui-btn-violet px-3 py-1.5 text-xs"
           >
             Importar JSON
           </button>
@@ -263,8 +251,8 @@ export function KetoMercado() {
       </div>
 
       {historial.length > 0 && (
-        <section className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
-          <h2 className="font-display text-lg font-semibold text-leaf-900">Historial de mercados</h2>
+        <section className="ui-card">
+          <h2 className="ui-section-title">Historial de mercados</h2>
           <ul className="mt-3 space-y-2">
             {historial.map((h) => {
               const comprados = contarComprados(h.items);
@@ -273,8 +261,10 @@ export function KetoMercado() {
               return (
                 <li
                   key={h.id}
-                  className={`flex flex-wrap items-center justify-between gap-2 rounded-xl border px-3 py-2 text-sm ${
-                    esActivo ? "border-leaf-400 bg-leaf-50" : "border-slate-100"
+                  className={`flex flex-wrap items-center justify-between gap-2 rounded-xl border px-3 py-2 text-sm backdrop-blur-sm transition motion-safe:hover:shadow ${
+                    esActivo
+                      ? "border-emerald-300/90 bg-gradient-to-r from-emerald-50/90 to-teal-50/50 shadow-sm"
+                      : "border-white/80 bg-white/80 shadow-sm"
                   }`}
                 >
                   <div>
@@ -283,13 +273,15 @@ export function KetoMercado() {
                       {" "}
                       · {h.dias} días, {h.personas} pers. · {comprados} comprados
                     </span>
-                    {esActivo && <span className="ml-2 text-xs font-semibold text-leaf-800">(activo para plan)</span>}
+                    {esActivo && (
+                      <span className="ml-2 text-xs font-semibold text-teal-800">(activo para plan)</span>
+                    )}
                   </div>
                   <div className="flex gap-2">
                     {!esActivo && (
                       <button
                         type="button"
-                        className="rounded-lg border border-leaf-200 px-2 py-1 text-xs font-semibold text-leaf-800 hover:bg-leaf-50"
+                        className="ui-btn-secondary px-2 py-1 text-xs"
                         onClick={() => activar(h.id)}
                       >
                         Usar para plan
@@ -297,7 +289,7 @@ export function KetoMercado() {
                     )}
                     <button
                       type="button"
-                      className="rounded-lg border border-red-200 px-2 py-1 text-xs text-red-700 hover:bg-red-50"
+                      className="rounded-lg border border-red-200/90 bg-white/90 px-2 py-1 text-xs text-red-700 shadow-sm backdrop-blur-sm transition hover:bg-red-50"
                       onClick={() => borrar(h.id)}
                     >
                       Borrar
@@ -310,23 +302,25 @@ export function KetoMercado() {
         </section>
       )}
 
-      <div className="space-y-6">
+      <div className="space-y-8">
         {Array.from(grupos.entries()).map(([cat, list]) => (
           <section key={cat}>
-            <h2 className="mb-2 font-display text-lg font-semibold text-leaf-800">{labels[cat] ?? cat}</h2>
+            <h2 className="ui-section-title mb-2 text-gradient-brand">{labels[cat] ?? cat}</h2>
             <ul className="space-y-2">
               {list.map((it) => (
                 <li
                   key={it.id}
-                  className={`flex items-start gap-3 rounded-2xl border px-3 py-3 ${
-                    it.comprado ? "border-leaf-200 bg-leaf-50/60" : "border-slate-100 bg-white"
+                  className={`flex items-start gap-3 rounded-2xl border px-3 py-3 shadow-sm backdrop-blur-sm transition motion-safe:hover:shadow-md ${
+                    it.comprado
+                      ? "border-emerald-200/90 bg-gradient-to-br from-emerald-50/80 to-white/90"
+                      : "border-white/80 bg-white/95"
                   }`}
                 >
                   <input
                     type="checkbox"
                     checked={it.comprado}
                     onChange={() => toggle(it.id)}
-                    className="mt-1 h-5 w-5 rounded border-slate-300 text-leaf-700"
+                    className="mt-1 h-5 w-5 rounded border-emerald-300 text-teal-600 focus:ring-teal-500/30"
                     aria-label={`Marcar ${it.nombre}`}
                   />
                   <div className="flex-1">

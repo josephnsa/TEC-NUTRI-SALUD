@@ -6,9 +6,7 @@ export function Belleza() {
       <header className="space-y-2">
         <h1 className="font-display text-2xl font-bold text-leaf-900 sm:text-3xl">Belleza natural</h1>
         <p className="max-w-2xl text-sm leading-relaxed text-slate-700">
-          Ideas caseras organizadas por tema: rutina diaria, rostro, cabello, ojeras, acné y cuidado de labios/manos.
-          Son complementos suaves; si tienes alergias o piel sensible, prueba en una zona pequeña primero. Seguiremos
-          ampliando contenido según feedback.
+          Tips caseros por tema. Si tienes alergias o piel sensible, prueba en una zona pequeña.
         </p>
       </header>
 

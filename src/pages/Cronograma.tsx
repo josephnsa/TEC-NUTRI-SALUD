@@ -90,7 +90,7 @@ export function Cronograma() {
       setDiasCronograma(d);
       setModoCronograma("mixto");
     }
-    setStatus("Cronograma listo según el mercado que acabas de guardar.");
+    setStatus("Menú alineado con el mercado guardado.");
   }, [desdeMercado, location.key]);
 
   const snapshotMercado = useMemo(() => {
@@ -151,9 +151,7 @@ export function Cronograma() {
 
   const cargarRecetasIA = async () => {
     if (!agenteRecetasGratisDisponible()) {
-      setIaError(
-        `Activa el agente IA gratuito: clave en Google AI Studio (${URL_GOOGLE_AI_STUDIO_API_KEY}) → VITE_GEMINI_API_KEY y rebuild.`
-      );
+      setIaError(`Clave en Google AI Studio (${URL_GOOGLE_AI_STUDIO_API_KEY}) → VITE_GEMINI_API_KEY y rebuild.`);
       return;
     }
     setIaCargando(true);
@@ -163,7 +161,7 @@ export function Cronograma() {
       const plan = await generarCronogramaIA(perfil, diasCronograma, itemsMercadoActivo, modoCronograma);
       setCronogramaIa(plan);
       setVistaCronograma("ia");
-      setStatus(`Agente IA: ${plan.length} día(s); porciones 1 persona y video por comida.`);
+      setStatus(`IA: ${plan.length} día(s); ~1 porción y video por comida.`);
     } catch (e) {
       setIaError(e instanceof Error ? e.message : "Error IA.");
     } finally {
@@ -178,31 +176,32 @@ export function Cronograma() {
           <StepHeader
             pasoActual={3}
             titulo="Cronograma · tu menú"
-            subtitulo={
-              loadingRemote
-                ? "Sincronizando perfil…"
-                : "Aquí generas o ves el menú (plantillas o IA). Porciones para 1 persona; YouTube por receta. Usa los pasos 1 y 2 si aún no configuraste datos o mercado."
-            }
+            subtitulo={loadingRemote ? "Sincronizando perfil…" : undefined}
           />
         </div>
         <Link
           to="/keto-mercado"
-          className="shrink-0 self-start rounded-xl border border-leaf-200 bg-white px-4 py-2.5 text-center text-sm font-semibold text-leaf-900 shadow-sm hover:bg-leaf-50 sm:mt-14"
+          className="ui-btn-secondary shrink-0 self-start text-center sm:mt-14"
         >
           Volver al mercado
         </Link>
       </div>
 
       {status && (
-        <p className="rounded-xl border border-teal-200 bg-teal-50 px-3 py-2 text-sm text-teal-900">{status}</p>
+        <p className="rounded-xl border border-teal-200/80 bg-teal-50/90 px-3 py-2 text-sm text-teal-900 shadow-sm backdrop-blur-sm">
+          {status}
+        </p>
       )}
 
-      <section className="rounded-2xl border border-teal-100 bg-teal-50/50 p-4 text-sm text-slate-800">
+      <section className="ui-card-muted text-sm text-slate-800">
         <p className="font-semibold text-teal-900">Mercado activo</p>
         {!mercadoActivoId && (
           <p className="mt-2">
             Sin mercado guardado.{" "}
-            <Link className="font-semibold text-teal-800 underline" to="/keto-mercado">
+            <Link
+              className="font-semibold text-teal-900 underline decoration-teal-500/50 hover:decoration-teal-700"
+              to="/keto-mercado"
+            >
               Mercado keto
             </Link>
           </p>
@@ -210,7 +209,10 @@ export function Cronograma() {
         {mercadoActivoId && snapshotMercado && (
           <p className="mt-2">
             {new Date(snapshotMercado.createdAt).toLocaleString("es")} · {nComprados} comprados ·{" "}
-            <Link className="font-semibold text-teal-800 underline" to="/keto-mercado">
+            <Link
+              className="font-semibold text-teal-900 underline decoration-teal-500/50 hover:decoration-teal-700"
+              to="/keto-mercado"
+            >
               Editar lista
             </Link>
           </p>
@@ -218,7 +220,7 @@ export function Cronograma() {
         {snapshotMercado && (
           <button
             type="button"
-            className="mt-3 rounded-lg border border-teal-300 bg-white px-3 py-1.5 text-xs font-semibold text-teal-900 hover:bg-teal-50"
+            className="ui-btn-secondary mt-3 px-3 py-1.5 text-xs"
             onClick={alinearDiasConMercado}
           >
             Alinear días con el mercado ({snapshotMercado.dias})
@@ -226,11 +228,14 @@ export function Cronograma() {
         )}
       </section>
 
-      <div className="rounded-2xl border border-leaf-100 bg-white p-4 shadow-sm">
-        <h2 className="font-display text-sm font-semibold text-slate-800">Perfil rápido (estilo de dieta)</h2>
+      <div className="ui-card">
+        <h2 className="font-display text-sm font-semibold text-teal-950">Perfil rápido (estilo de dieta)</h2>
         <p className="mt-1 text-xs text-slate-500">
           Para edad, peso y condiciones usa{" "}
-          <Link to="/mi-plan" className="underline">
+          <Link
+            to="/mi-plan"
+            className="font-semibold text-teal-900 underline decoration-teal-500/50 hover:decoration-teal-700"
+          >
             Mi plan
           </Link>
           .
@@ -239,7 +244,7 @@ export function Cronograma() {
           <label className="text-sm">
             <span className="font-medium">Estilo</span>
             <select
-              className="mt-1 block rounded-xl border px-3 py-2"
+              className="mt-1 block w-full rounded-xl border border-emerald-200/80 bg-white/90 px-3 py-2 shadow-sm backdrop-blur-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
               value={perfil.estiloDieta}
               onChange={(e) => setPerfil({ ...perfil, estiloDieta: e.target.value as PerfilUsuario["estiloDieta"] })}
             >
@@ -251,16 +256,16 @@ export function Cronograma() {
           <button
             type="button"
             onClick={() => void guardarPerfilRapido()}
-            className="rounded-xl bg-leaf-700 px-3 py-2 text-sm font-semibold text-white hover:bg-leaf-900"
+            className="ui-btn-primary px-3 py-2"
           >
             Guardar estilo
           </button>
         </div>
       </div>
 
-      <div className="grid gap-4 rounded-2xl border border-leaf-100 bg-white p-4 shadow-sm md:grid-cols-2">
-        <fieldset className="md:col-span-2 space-y-2 rounded-xl border border-slate-100 p-3">
-          <legend className="px-1 text-sm font-medium text-slate-800">Cronograma según</legend>
+      <div className="ui-card grid gap-4 md:grid-cols-2">
+        <fieldset className="md:col-span-2 space-y-2 rounded-xl border border-emerald-100/80 bg-white/50 p-3 backdrop-blur-sm">
+          <legend className="px-1 text-sm font-medium text-teal-900">Cronograma según</legend>
           <label className="flex items-center gap-2 text-sm">
             <input
               type="radio"
@@ -294,7 +299,7 @@ export function Cronograma() {
           <button
             type="button"
             onClick={nuevasCombinaciones}
-            className="rounded-xl border border-leaf-300 bg-white px-4 py-2 text-sm font-semibold text-leaf-900 hover:bg-leaf-50"
+            className="ui-btn-secondary"
           >
             Nuevas combinaciones
           </button>
@@ -302,7 +307,7 @@ export function Cronograma() {
             type="button"
             disabled={iaCargando}
             onClick={() => void cargarRecetasIA()}
-            className="rounded-xl bg-violet-700 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-violet-900 disabled:opacity-60"
+            className="ui-btn-violet"
           >
             {iaCargando ? "Agente…" : "Agente IA recetas (gratis)"}
           </button>
@@ -313,7 +318,7 @@ export function Cronograma() {
                 setVistaCronograma("plantillas");
                 setStatus("Vista plantillas.");
               }}
-              className="rounded-xl border border-violet-200 px-4 py-2 text-sm font-semibold text-violet-900"
+              className="ui-btn-ghost-violet"
             >
               Ver plantillas
             </button>
@@ -327,33 +332,36 @@ export function Cronograma() {
               onCommit={setDiasCronograma}
               min={3}
               max={30}
-              inputClassName="w-20 rounded-lg border border-slate-200 px-2 py-1 text-center text-slate-900 shadow-sm focus:border-leaf-600 focus:outline-none focus:ring-2 focus:ring-leaf-600/20"
+              inputClassName="w-20 rounded-lg border border-emerald-200/90 bg-white/90 px-2 py-1 text-center text-slate-900 shadow-sm backdrop-blur-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/25"
             />
           </div>
         </div>
         {!agenteRecetasGratisDisponible() && (
-          <p className="md:col-span-2 rounded-xl border border-violet-100 bg-violet-50/70 p-3 text-xs text-slate-700">
-            Recetas con el <strong>agente IA gratuito</strong> de{" "}
+          <p className="md:col-span-2 rounded-xl border border-violet-200/80 bg-violet-50/80 p-3 text-xs text-slate-700 shadow-sm backdrop-blur-sm">
+            Gemini: clave en{" "}
             <a
-              className="font-semibold text-leaf-800 underline"
+              className="font-semibold text-teal-900 underline decoration-teal-500/50 hover:decoration-teal-700"
               href={URL_GOOGLE_AI_STUDIO_API_KEY}
               target="_blank"
               rel="noreferrer"
             >
               Google AI Studio
-            </a>
-            : configura <code className="rounded bg-white px-1">VITE_GEMINI_API_KEY</code> y reconstruye (igual que el{" "}
-            <Link className="font-semibold text-leaf-800 underline" to="/agente">
+            </a>{" "}
+            → <code className="rounded bg-white px-1">VITE_GEMINI_API_KEY</code> y rebuild. Misma clave en{" "}
+            <Link
+              className="font-semibold text-teal-900 underline decoration-teal-500/50 hover:decoration-teal-700"
+              to="/agente"
+            >
               Asistente
             </Link>
-            ).
+            .
           </p>
         )}
         {iaError && <p className="md:col-span-2 text-sm text-red-700">{iaError}</p>}
       </div>
 
-      <section className="rounded-2xl border border-leaf-100 bg-white p-4 shadow-sm">
-        <h2 className="font-display text-lg font-semibold text-leaf-900">Resumen orientativo</h2>
+      <section className="ui-card">
+        <h2 className="ui-section-title">Resumen orientativo</h2>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
           {resumen.map((r) => (
             <li key={r}>{r}</li>
@@ -362,36 +370,34 @@ export function Cronograma() {
       </section>
 
       <section className="space-y-4" id="lista-cronograma">
-        <h2 className="font-display text-lg font-semibold text-leaf-900">Días y recetas</h2>
+        <h2 className="ui-section-title text-gradient-brand">Días y recetas</h2>
         <p className="text-sm text-slate-600">
           {vistaCronograma === "ia" && cronogramaIa?.length === diasCronograma ? (
             <>
-              Vista <strong>agente IA gratuito</strong> (Gemini): recetas con ingredientes para <strong>1 porción</strong>{" "}
-              y búsqueda de video acorde a cada plato.
+              Vista <strong>IA</strong> (Gemini): ~1 porción y video por plato.
             </>
           ) : (
             <>
-              Vista <strong>plantillas</strong> (cantidades orientativas ~1 persona). Enlace abre YouTube con el plato y
-              tu estilo de dieta.
+              Vista <strong>plantillas</strong> (~1 porción). El enlace abre YouTube con el plato y tu dieta.
             </>
           )}
         </p>
         <div className="space-y-4">
           {cronogramaMostrado.map((d) => (
-            <div key={d.dia} className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
-              <p className="text-sm font-semibold text-leaf-800">Día {d.dia}</p>
+            <div key={d.dia} className="ui-day-block">
+              <p className="text-sm font-semibold text-teal-900">Día {d.dia}</p>
               <div className="mt-3 grid gap-3 md:grid-cols-3">
                 {(["desayuno", "almuerzo", "cena"] as const).map((slot) => {
                   const c = d.comidas[slot];
                   const tituloSlot =
                     slot === "desayuno" ? "Desayuno" : slot === "almuerzo" ? "Almuerzo" : "Cena";
                   return (
-                    <div key={slot} className="rounded-xl bg-leaf-50/80 p-3">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-leaf-800">{tituloSlot}</p>
+                    <div key={slot} className="ui-meal-slot">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-teal-800">{tituloSlot}</p>
                       <p className="mt-1 font-medium text-slate-900">{c.titulo}</p>
                       <p className="mt-1 whitespace-pre-wrap text-xs text-slate-600">{c.receta}</p>
                       <a
-                        className="mt-2 inline-block text-sm font-semibold text-leaf-800 underline"
+                        className="ui-video-link"
                         href={youtubeBusquedaPlato(c.titulo, c.videoQuery, perfil.estiloDieta)}
                         target="_blank"
                         rel="noreferrer"

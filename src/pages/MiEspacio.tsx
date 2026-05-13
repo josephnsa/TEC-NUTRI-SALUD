@@ -52,8 +52,7 @@ export function MiEspacio() {
         <p className="text-xs font-semibold uppercase tracking-wider text-emerald-800">Mi resumen</p>
         <h1 className="font-display text-2xl font-bold text-leaf-900 sm:text-3xl">Tu espacio</h1>
         <p className="max-w-2xl text-sm text-slate-600">
-          Vista rápida del recorrido <strong>datos → mercado → menú</strong>. Los detalles están en cada paso; aquí solo
-          ves el estado y los accesos directos.
+          Estado del flujo <strong>datos → mercado → menú</strong> y accesos rápidos.
         </p>
       </header>
 
@@ -106,9 +105,7 @@ export function MiEspacio() {
           {!snapshotMercado ? (
             <>
               <p className="mt-2 text-sm text-slate-700">Sin mercado activo para el plan.</p>
-              {nHistorial > 0 && (
-                <p className="mt-1 text-xs text-slate-500">Tienes {nHistorial} entrada(s) en historial local.</p>
-              )}
+              {nHistorial > 0 && <p className="mt-1 text-xs text-slate-500">Historial: {nHistorial}</p>}
               <Link
                 to="/keto-mercado"
                 className="mt-4 inline-flex rounded-xl bg-teal-800 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-950"
@@ -140,9 +137,7 @@ export function MiEspacio() {
 
         <section className="rounded-2xl border border-violet-100 bg-gradient-to-b from-violet-50/80 to-white p-5 shadow-sm">
           <p className="text-xs font-bold uppercase tracking-wide text-violet-900">Paso 3 · Menú</p>
-          <p className="mt-2 text-sm text-slate-700">
-            Genera plantillas o recetas con IA, modo perfil/mercado/mixto y enlaces a video por plato.
-          </p>
+          <p className="mt-2 text-sm text-slate-700">Plantillas o IA; video por plato.</p>
           <Link
             to="/cronograma"
             className="mt-4 inline-flex rounded-xl bg-violet-700 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-900"

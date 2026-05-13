@@ -70,14 +70,12 @@ export function Home() {
         </div>
 
         <p className="relative z-10 mt-6 max-w-xl text-xs leading-relaxed text-emerald-100/90">
-          La app mejora con el tiempo: mismo orden en móvil y escritorio. Tus datos en este dispositivo se guardan en el
-          navegador hasta que los borres.
+          Los datos en este dispositivo se guardan en el navegador hasta que los borres.
         </p>
       </section>
 
       <section className="motion-safe:animate-fade-up motion-reduce:animate-none">
         <h2 className="font-display text-xl font-semibold text-gradient-brand">Explora la app</h2>
-        <p className="mt-1 text-sm text-slate-600">Accesos directos a cada zona.</p>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {[
             {

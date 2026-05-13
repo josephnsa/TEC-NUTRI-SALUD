@@ -19,3 +19,36 @@ html {
     @apply bg-gradient-to-r from-teal-700 via-emerald-600 to-cyan-600 bg-clip-text text-transparent;
   }
 }
+
+@layer components {
+  .ui-card {
+    @apply rounded-2xl border border-white/80 bg-white/95 p-4 shadow-md shadow-teal-900/5 backdrop-blur-sm;
+  }
+  .ui-card-muted {
+    @apply rounded-2xl border border-emerald-200/70 bg-gradient-to-br from-teal-50/90 via-white/95 to-cyan-50/50 p-4 shadow-md shadow-teal-900/5 backdrop-blur-sm;
+  }
+  .ui-btn-primary {
+    @apply rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-glow-sm ring-1 ring-white/25 transition hover:brightness-110 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:active:scale-100;
+  }
+  .ui-btn-secondary {
+    @apply rounded-xl border border-emerald-200/90 bg-white/90 px-4 py-2 text-sm font-semibold text-teal-900 shadow-sm backdrop-blur-sm transition hover:border-teal-300 hover:bg-white hover:shadow-md;
+  }
+  .ui-btn-violet {
+    @apply rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-violet-500/25 ring-1 ring-white/20 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .ui-btn-ghost-violet {
+    @apply rounded-xl border border-violet-200/90 bg-violet-50/90 px-4 py-2 text-sm font-semibold text-violet-900 shadow-sm backdrop-blur-sm transition hover:bg-violet-100/90;
+  }
+  .ui-meal-slot {
+    @apply rounded-xl border border-emerald-100/90 bg-gradient-to-b from-white to-emerald-50/40 p-3 shadow-sm transition motion-safe:hover:border-teal-200/80 motion-safe:hover:shadow;
+  }
+  .ui-day-block {
+    @apply rounded-2xl border border-white/80 bg-white/95 p-4 shadow-md shadow-teal-900/5 backdrop-blur-sm transition duration-300 motion-safe:hover:-translate-y-0.5 motion-safe:hover:shadow-lg motion-reduce:hover:translate-y-0;
+  }
+  .ui-section-title {
+    @apply font-display text-lg font-semibold text-teal-950;
+  }
+  .ui-video-link {
+    @apply mt-2 inline-block text-sm font-semibold text-teal-700 underline decoration-teal-300/80 underline-offset-2 transition hover:text-teal-900 hover:decoration-teal-600;
+  }
+}

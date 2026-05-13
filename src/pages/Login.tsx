@@ -14,14 +14,13 @@ export function Login() {
       <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-950">
         <p className="font-semibold">Supabase no configurado</p>
         <p className="mt-2">
-          Crea un proyecto gratuito en{" "}
+          Proyecto en{" "}
           <a className="underline" href="https://supabase.com/dashboard" target="_blank" rel="noreferrer">
-            supabase.com
+            Supabase
           </a>
-          , copia URL y anon key en un archivo <code className="rounded bg-white px-1">.env</code> como{" "}
-          <code className="rounded bg-white px-1">VITE_SUPABASE_URL</code> y{" "}
-          <code className="rounded bg-white px-1">VITE_SUPABASE_ANON_KEY</code>, ejecuta el SQL de{" "}
-          <code className="rounded bg-white px-1">supabase/schema.sql</code> y vuelve a cargar la app.
+          : <code className="rounded bg-white px-1">VITE_SUPABASE_URL</code> y{" "}
+          <code className="rounded bg-white px-1">VITE_SUPABASE_ANON_KEY</code> en <code className="rounded bg-white px-1">.env</code>; SQL en{" "}
+          <code className="rounded bg-white px-1">supabase/schema.sql</code>.
         </p>
       </div>
     );
@@ -74,7 +73,7 @@ export function Login() {
     <div className="mx-auto max-w-md space-y-6 rounded-2xl border border-leaf-100 bg-white p-6 shadow-sm">
       <div>
         <h1 className="font-display text-2xl font-bold text-leaf-900">Ingresar o crear cuenta</h1>
-        <p className="mt-1 text-sm text-slate-600">Opcional: sincroniza tu perfil con la nube (Supabase: email o Google).</p>
+        <p className="mt-1 text-sm text-slate-600">Opcional: sincroniza el perfil (email o Google).</p>
       </div>
 
       <button

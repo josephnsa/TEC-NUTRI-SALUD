@@ -38,7 +38,7 @@ export function FlujoUsuarioBanner({ className = "", variant = "default" }: Prop
           ))}
         </ol>
         <p className="mt-3 border-t border-teal-200/80 pt-2 text-xs text-slate-600">
-          Porciones del cronograma: orientativas para <strong>1 persona</strong> (multiplica si cocinas para más).
+          Porciones del menú: orientativas para <strong>1 persona</strong>.
         </p>
       </aside>
     );
@@ -49,10 +49,8 @@ export function FlujoUsuarioBanner({ className = "", variant = "default" }: Prop
       className={`rounded-2xl border border-leaf-200 bg-white p-5 shadow-sm ${className}`}
       aria-label={`Cómo usar ${MARCA_APP}`}
     >
-      <h2 className="font-display text-lg font-semibold text-leaf-900">Tu recorrido sugerido</h2>
-      <p className="mt-1 text-sm text-slate-600">
-        Tres pasos para el menú; el asistente es opcional para dudas puntuales.
-      </p>
+      <h2 className="font-display text-lg font-semibold text-leaf-900">Recorrido sugerido</h2>
+      <p className="mt-1 text-sm text-slate-600">Datos → mercado → menú; el asistente es opcional.</p>
       <ol className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {PASOS_UI.map((p) => (
           <li
@@ -73,9 +71,6 @@ export function FlujoUsuarioBanner({ className = "", variant = "default" }: Prop
           </li>
         ))}
       </ol>
-      <p className="mt-4 rounded-xl bg-slate-50 px-3 py-2 text-xs text-slate-600">
-        Seguiremos puliendo textos y funciones según feedback.
-      </p>
     </section>
   );
 }
