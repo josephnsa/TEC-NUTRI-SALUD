@@ -30,7 +30,10 @@ export function FlujoUsuarioBanner({ className = "", variant = "default" }: Prop
         <ol className="mt-2 list-decimal space-y-1 pl-5 marker:text-teal-800">
           {PASOS_UI.map((p) => (
             <li key={p.n}>
-              <Link to={p.to} className="font-semibold text-teal-900 underline hover:no-underline">
+              <Link
+                to={p.to}
+                className="font-semibold text-teal-900 underline decoration-teal-500/50 hover:decoration-teal-700"
+              >
                 {p.titulo}
               </Link>
               : {p.desc}
@@ -46,24 +49,24 @@ export function FlujoUsuarioBanner({ className = "", variant = "default" }: Prop
 
   return (
     <section
-      className={`rounded-2xl border border-leaf-200 bg-white p-5 shadow-sm ${className}`}
+      className={`rounded-2xl border border-emerald-200/80 bg-white/95 p-5 shadow-md shadow-teal-900/5 backdrop-blur-sm ${className}`}
       aria-label={`Cómo usar ${MARCA_APP}`}
     >
-      <h2 className="font-display text-lg font-semibold text-leaf-900">Recorrido sugerido</h2>
+      <h2 className="font-display text-lg font-semibold text-teal-950">Recorrido sugerido</h2>
       <p className="mt-1 text-sm text-slate-600">Datos → mercado → menú; el asistente es opcional.</p>
       <ol className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {PASOS_UI.map((p) => (
           <li
             key={p.n}
             className={`flex gap-3 rounded-xl border p-3 text-sm text-slate-800 ${
-              p.n <= 3 ? "border-emerald-200 bg-emerald-50/50" : "border-leaf-100 bg-leaf-50/40"
+              p.n <= 3 ? "border-emerald-200 bg-emerald-50/50" : "border-violet-200/90 bg-violet-50/50"
             }`}
           >
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-700 text-xs font-bold text-white">
               {p.n}
             </span>
             <div>
-              <Link to={p.to} className="font-semibold text-leaf-900 underline hover:no-underline">
+              <Link to={p.to} className="font-semibold text-teal-950 underline decoration-teal-500/50 hover:decoration-teal-700">
                 {p.titulo}
               </Link>
               <p className="mt-1 text-xs text-slate-600">{p.desc}</p>

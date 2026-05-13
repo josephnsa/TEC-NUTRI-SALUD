@@ -19,33 +19,32 @@ export const ORDEN_CATEGORIAS: { id: BeautyCategoria; titulo: string; intro: str
   {
     id: "rutina-diaria",
     titulo: "Rutina diaria",
-    intro:
-      "Orden sugerido: limpiar → hidratar → proteger (día). Por la noche, retira bien protector/suciedad antes de humectar. Ajusta a tu piel y clima."
+    intro: "Limpia → hidrata → SPF (día). Por la noche, retira bien antes de humectar. Ajusta a tu piel."
   },
   {
     id: "rostro",
     titulo: "Rostro e hidratación",
-    intro: "Mascarillas y cuidados suaves para luminosidad y barrera cutánea."
+    intro: "Mascarillas suaves para luminosidad y barrera."
   },
   {
     id: "cabello",
     titulo: "Cabello",
-    intro: "Nutrición puntual y hábitos suaves; el cabello sano combina corte, menos calor y buen lavado."
+    intro: "Menos calor al secar y nutrición puntual."
   },
   {
     id: "ojos-y-ojeras",
     titulo: "Ojos y ojeras",
-    intro: "Frío, descanso y suavidad: la ojera mejora mucho con sueño regular y protección solar diaria."
+    intro: "Frío suave, descanso y SPF diario ayudan a la zona."
   },
   {
     id: "acne-y-granos",
     titulo: "Acné y granos",
-    intro: "Ideas muy suaves de apoyo; el acné persistente merece valoración dermatológica."
+    intro: "Apoyo muy suave; acné persistente: dermatología."
   },
   {
     id: "labios-y-manos",
     titulo: "Labios y manos",
-    intro: "Zonas que delatan sequedad; hidratar después de lavar manos y antes de dormir."
+    intro: "Hidrata tras lavarte las manos y antes de dormir."
   }
 ];
 
@@ -64,7 +63,7 @@ export const beautyTips: BeautyTip[] = [
     categoria: "rutina-diaria",
     titulo: "Rutina de noche (relajación + piel)",
     descripcion:
-      "Retira maquillaje o SPF con limpiador o aceite suave; segunda pasada con gel leve si lo necesitas. Humectante un poco más nutritivo que por el día. Evita pantallas 20 min antes de dormir para mejor descanso (y menos ojera).",
+      "Retira maquillaje o SPF con limpiador o aceite suave; segunda pasada con gel leve si hace falta. Humectante un poco más nutritivo que por el día.",
     ingredientes: ["Limpiador o bálsamo desmaquillante", "Gel limpiador suave (opcional)", "Crema de noche"],
     precaucion: "No combines muchos activos fuertes la misma noche sin orientación."
   },

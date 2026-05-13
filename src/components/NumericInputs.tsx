@@ -50,7 +50,7 @@ export function IntField({
       aria-label={hideLabel ? label : undefined}
       className={
         inputClassName ??
-        "mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-slate-900 shadow-sm focus:border-leaf-600 focus:outline-none focus:ring-2 focus:ring-leaf-600/20"
+        "mt-1 w-full rounded-xl border border-emerald-200/80 bg-white/90 px-3 py-2 text-slate-900 shadow-sm backdrop-blur-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
       }
       value={text}
       onChange={(e) => {
@@ -116,7 +116,7 @@ export function DecimalField({ label, value, onCommit, min, max, fractionDigits,
         type="text"
         inputMode="decimal"
         autoComplete="off"
-        className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-slate-900 shadow-sm focus:border-leaf-600 focus:outline-none focus:ring-2 focus:ring-leaf-600/20"
+        className="mt-1 w-full rounded-xl border border-emerald-200/80 bg-white/90 px-3 py-2 text-slate-900 shadow-sm backdrop-blur-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
         value={text}
         onChange={(e) => {
           let t = e.target.value.replace(",", ".").replace(/[^\d.]/g, "");

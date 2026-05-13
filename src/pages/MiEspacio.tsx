@@ -50,28 +50,25 @@ export function MiEspacio() {
     <div className="space-y-8">
       <header className="space-y-2">
         <p className="text-xs font-semibold uppercase tracking-wider text-emerald-800">Mi resumen</p>
-        <h1 className="font-display text-2xl font-bold text-leaf-900 sm:text-3xl">Tu espacio</h1>
+        <h1 className="font-display text-2xl font-bold text-teal-950 sm:text-3xl">Tu espacio</h1>
         <p className="max-w-2xl text-sm text-slate-600">
           Estado del flujo <strong>datos → mercado → menú</strong> y accesos rápidos.
         </p>
       </header>
 
       {user && (
-        <p className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700">
+        <p className="rounded-xl border border-teal-200/80 bg-teal-50/90 px-4 py-2 text-sm text-teal-900 shadow-sm backdrop-blur-sm">
           Sesión: <strong>{user.email ?? user.id}</strong>
         </p>
       )}
 
       <div className="grid gap-4 md:grid-cols-3">
-        <section className="rounded-2xl border border-emerald-100 bg-gradient-to-b from-emerald-50/90 to-white p-5 shadow-sm">
+        <section className="ui-card-muted">
           <p className="text-xs font-bold uppercase tracking-wide text-emerald-800">Paso 1 · Datos</p>
           {!tienePerfilLocal || !perfil ? (
             <>
               <p className="mt-2 text-sm text-slate-700">Aún no hay perfil guardado en este dispositivo.</p>
-              <Link
-                to="/mi-plan"
-                className="mt-4 inline-flex rounded-xl bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-900"
-              >
+              <Link to="/mi-plan" className="ui-btn-primary mt-4 inline-flex">
                 Ir a Mis datos
               </Link>
             </>
@@ -93,23 +90,23 @@ export function MiEspacio() {
                   <span className="text-slate-500">Talla:</span> {perfil.tallaCm} cm
                 </li>
               </ul>
-              <Link to="/mi-plan" className="mt-4 inline-block text-sm font-semibold text-emerald-800 underline">
+              <Link
+                to="/mi-plan"
+                className="mt-4 inline-block text-sm font-semibold text-teal-900 underline decoration-teal-500/50 hover:decoration-teal-700"
+              >
                 Editar perfil →
               </Link>
             </>
           )}
         </section>
 
-        <section className="rounded-2xl border border-teal-100 bg-gradient-to-b from-teal-50/90 to-white p-5 shadow-sm">
+        <section className="ui-card-muted">
           <p className="text-xs font-bold uppercase tracking-wide text-teal-800">Paso 2 · Mercado</p>
           {!snapshotMercado ? (
             <>
               <p className="mt-2 text-sm text-slate-700">Sin mercado activo para el plan.</p>
               {nHistorial > 0 && <p className="mt-1 text-xs text-slate-500">Historial: {nHistorial}</p>}
-              <Link
-                to="/keto-mercado"
-                className="mt-4 inline-flex rounded-xl bg-teal-800 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-950"
-              >
+              <Link to="/keto-mercado" className="ui-btn-primary mt-4 inline-flex">
                 Ir al mercado
               </Link>
             </>
@@ -128,73 +125,91 @@ export function MiEspacio() {
                   <span className="text-slate-500">Comprados:</span> {nComprados} ítems
                 </li>
               </ul>
-              <Link to="/keto-mercado" className="mt-4 inline-block text-sm font-semibold text-teal-900 underline">
+              <Link
+                to="/keto-mercado"
+                className="mt-4 inline-block text-sm font-semibold text-teal-900 underline decoration-teal-500/50 hover:decoration-teal-700"
+              >
                 Editar o cambiar mercado →
               </Link>
             </>
           )}
         </section>
 
-        <section className="rounded-2xl border border-violet-100 bg-gradient-to-b from-violet-50/80 to-white p-5 shadow-sm">
+        <section className="rounded-2xl border border-violet-200/80 bg-gradient-to-b from-violet-50/85 to-white/95 p-5 shadow-md shadow-violet-900/5 backdrop-blur-sm">
           <p className="text-xs font-bold uppercase tracking-wide text-violet-900">Paso 3 · Menú</p>
           <p className="mt-2 text-sm text-slate-700">Plantillas o IA; video por plato.</p>
-          <Link
-            to="/cronograma"
-            className="mt-4 inline-flex rounded-xl bg-violet-700 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-900"
-          >
+          <Link to="/cronograma" className="ui-btn-violet mt-4 inline-flex">
             Abrir cronograma
           </Link>
-          <Link to={PASO_ASISTENTE.to} className="mt-3 block text-xs font-semibold text-violet-800 underline">
-            Asistente IA (opcional) →
+          <Link
+            to={PASO_ASISTENTE.to}
+            className="mt-3 block text-xs font-semibold text-violet-900 underline decoration-violet-400/60 hover:decoration-violet-700"
+          >
+            Asistente (opcional) →
           </Link>
         </section>
       </div>
 
-      <section className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/80 p-5">
-        <p className="text-sm font-semibold text-slate-800">Siguiente paso sugerido</p>
-        <Link
-          to={siguiente.to}
-          className="mt-3 inline-flex rounded-xl bg-leaf-700 px-5 py-3 text-sm font-bold text-white shadow hover:bg-leaf-900"
-        >
+      <section className="rounded-2xl border border-dashed border-emerald-300/70 bg-white/90 p-5 shadow-sm backdrop-blur-sm">
+        <p className="text-sm font-semibold text-teal-950">Siguiente paso sugerido</p>
+        <Link to={siguiente.to} className="ui-btn-primary mt-3 inline-flex px-5 py-3">
           {siguiente.texto}
         </Link>
-        <div className="mt-4 flex flex-wrap gap-3 text-xs font-semibold text-slate-600">
-          <Link to="/mi-plan" className="underline hover:text-leaf-900">
+        <div className="mt-4 flex flex-wrap gap-3 text-xs font-semibold">
+          <Link
+            to="/mi-plan"
+            className="text-teal-900 underline decoration-teal-500/50 hover:decoration-teal-700"
+          >
             Paso 1
           </Link>
           <span className="text-slate-300">·</span>
-          <Link to="/keto-mercado" className="underline hover:text-leaf-900">
+          <Link
+            to="/keto-mercado"
+            className="text-teal-900 underline decoration-teal-500/50 hover:decoration-teal-700"
+          >
             Paso 2
           </Link>
           <span className="text-slate-300">·</span>
-          <Link to="/cronograma" className="underline hover:text-leaf-900">
+          <Link
+            to="/cronograma"
+            className="text-teal-900 underline decoration-teal-500/50 hover:decoration-teal-700"
+          >
             Paso 3
           </Link>
         </div>
       </section>
 
-      <nav className="rounded-2xl border border-leaf-100 bg-white p-4 text-sm shadow-sm" aria-label="Ir a secciones">
-        <p className="font-medium text-slate-700">Accesos del recorrido</p>
-        <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-emerald-800">
+      <nav className="ui-card text-sm" aria-label="Ir a secciones">
+        <p className="font-medium text-teal-950">Accesos del recorrido</p>
+        <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
           {PASOS_RECORRIDO_PRINCIPAL.map((p) => (
             <li key={p.to}>
-              <Link to={p.to} className="font-semibold underline hover:no-underline">
+              <Link
+                to={p.to}
+                className="font-semibold text-teal-900 underline decoration-teal-500/50 hover:decoration-teal-700"
+              >
                 {p.navDesktop}
               </Link>
             </li>
           ))}
           <li>
-            <Link to="/belleza" className="font-semibold underline hover:no-underline">
+            <Link
+              to="/belleza"
+              className="font-semibold text-teal-900 underline decoration-teal-500/50 hover:decoration-teal-700"
+            >
               Belleza
             </Link>
           </li>
           <li>
-            <Link to={PASO_ASISTENTE.to} className="font-semibold underline hover:no-underline">
+            <Link
+              to={PASO_ASISTENTE.to}
+              className="font-semibold text-teal-900 underline decoration-teal-500/50 hover:decoration-teal-700"
+            >
               Asistente
             </Link>
           </li>
           <li>
-            <Link to="/" className="font-semibold underline hover:no-underline">
+            <Link to="/" className="font-semibold text-teal-900 underline decoration-teal-500/50 hover:decoration-teal-700">
               Inicio
             </Link>
           </li>

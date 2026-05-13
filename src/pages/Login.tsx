@@ -11,7 +11,7 @@ export function Login() {
 
   if (!supabaseConfigured || !supabase) {
     return (
-      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-950">
+      <div className="rounded-2xl border border-amber-200/80 bg-amber-50/90 p-6 text-sm text-amber-950 shadow-sm backdrop-blur-sm">
         <p className="font-semibold">Supabase no configurado</p>
         <p className="mt-2">
           Proyecto en{" "}
@@ -70,9 +70,9 @@ export function Login() {
   };
 
   return (
-    <div className="mx-auto max-w-md space-y-6 rounded-2xl border border-leaf-100 bg-white p-6 shadow-sm">
+    <div className="ui-card mx-auto max-w-md space-y-6">
       <div>
-        <h1 className="font-display text-2xl font-bold text-leaf-900">Ingresar o crear cuenta</h1>
+        <h1 className="font-display text-2xl font-bold text-teal-950">Ingresar o crear cuenta</h1>
         <p className="mt-1 text-sm text-slate-600">Opcional: sincroniza el perfil (email o Google).</p>
       </div>
 
@@ -80,51 +80,51 @@ export function Login() {
         type="button"
         disabled={loading}
         onClick={() => void onGoogle()}
-        className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50"
+        className="ui-btn-secondary flex w-full items-center justify-center gap-2"
       >
         Continuar con Google
       </button>
 
       <form onSubmit={onSubmit} className="space-y-3">
         <label className="block text-sm">
-          <span className="font-medium">Email</span>
+          <span className="font-medium text-teal-950">Email</span>
           <input
             type="email"
             required
-            className="mt-1 w-full rounded-xl border px-3 py-2"
+            className="mt-1 w-full rounded-xl border border-emerald-200/80 bg-white/90 px-3 py-2 shadow-sm backdrop-blur-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
         </label>
         <label className="block text-sm">
-          <span className="font-medium">Contraseña</span>
+          <span className="font-medium text-teal-950">Contraseña</span>
           <input
             type="password"
             required
             minLength={6}
-            className="mt-1 w-full rounded-xl border px-3 py-2"
+            className="mt-1 w-full rounded-xl border border-emerald-200/80 bg-white/90 px-3 py-2 shadow-sm backdrop-blur-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
         </label>
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-xl bg-leaf-700 py-2 text-sm font-semibold text-white hover:bg-leaf-900 disabled:opacity-60"
-        >
+        <button type="submit" disabled={loading} className="ui-btn-primary w-full">
           Entrar
         </button>
         <button
           type="button"
           disabled={loading}
           onClick={() => void onEmail("signup")}
-          className="w-full rounded-xl border border-leaf-200 py-2 text-sm font-semibold text-leaf-900 hover:bg-leaf-50"
+          className="ui-btn-secondary w-full"
         >
           Crear cuenta
         </button>
       </form>
 
-      {msg && <p className="text-sm text-slate-700">{msg}</p>}
+      {msg && (
+        <p className="rounded-xl border border-teal-200/80 bg-teal-50/90 px-3 py-2 text-sm text-teal-900 shadow-sm backdrop-blur-sm">
+          {msg}
+        </p>
+      )}
     </div>
   );
 }
