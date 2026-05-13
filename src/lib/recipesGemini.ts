@@ -1,13 +1,12 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { ListaItem } from "./ketoMercado";
 import type { DiaPlan, ModoCronograma, PerfilUsuario } from "./nutritionPlan";
+import { GEMINI_MODEL_IDS } from "./geminiModels";
 import { URL_GOOGLE_AI_STUDIO_API_KEY } from "./googleAiStudio";
 
 export { URL_GOOGLE_AI_STUDIO_API_KEY } from "./googleAiStudio";
 
 const key = import.meta.env.VITE_GEMINI_API_KEY ?? "";
-
-const MODELOS = ["gemini-2.0-flash", "gemini-1.5-flash"] as const;
 const CHUNK_DIAS = 10;
 
 export function geminiRecetasDisponible(): boolean {
@@ -147,15 +146,15 @@ export async function generarCronogramaIA(
     const chunk = Math.min(CHUNK_DIAS, total - hecho);
     const offsetDia = hecho + 1;
     let chunkOk = false;
-    for (let m = 0; m < MODELOS.length; m++) {
+    for (let m = 0; m < GEMINI_MODEL_IDS.length; m++) {
       try {
-        const slice = await generarChunkModelo(MODELOS[m]!, perfil, chunk, offsetDia, mercadoItems, modo);
+        const slice = await generarChunkModelo(GEMINI_MODEL_IDS[m]!, perfil, chunk, offsetDia, mercadoItems, modo);
         partes.push(...slice);
         hecho += chunk;
         chunkOk = true;
         break;
       } catch (e) {
-        if (m === MODELOS.length - 1) {
+        if (m === GEMINI_MODEL_IDS.length - 1) {
           throw e instanceof Error ? e : new Error(String(e));
         }
       }
