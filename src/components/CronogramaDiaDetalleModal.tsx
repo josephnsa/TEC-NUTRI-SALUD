@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { youtubeBusquedaPlato, type PerfilUsuario } from "../lib/nutritionPlan";
 import type { DiaPlanConFecha } from "../lib/cronogramaHistorial";
 import {
@@ -35,8 +36,8 @@ export function CronogramaDiaDetalleModal({ open, onClose, dia, perfilId, perfil
   const [cargando, setCargando] = useState(false);
   const [notaDraft, setNotaDraft] = useState("");
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
-  const [nubeSubiendo, setNubeSubiendo] = useState(false);
-  const [nubeMsg, setNubeMsg] = useState<string | null>(null);
+  /** Solo si falló la copia en la cuenta (las fotos siguen en el dispositivo). */
+  const [avisoCopiaCuenta, setAvisoCopiaCuenta] = useState<string | null>(null);
 
   const fechaIso = dia?.fecha ?? null;
 
@@ -55,7 +56,7 @@ export function CronogramaDiaDetalleModal({ open, onClose, dia, perfilId, perfil
     if (!open) return;
     void recargar();
     setTab("plan");
-    setNubeMsg(null);
+    setAvisoCopiaCuenta(null);
   }, [open, recargar]);
 
   useEffect(() => {
@@ -135,10 +136,17 @@ export function CronogramaDiaDetalleModal({ open, onClose, dia, perfilId, perfil
       if (soloImagen && !f.type.startsWith("image/")) continue;
       if (!soloImagen && !f.type.startsWith("video/")) continue;
       const newId = await addDiaMedia(perfilId, fechaIso, f, slot);
-      if (newId && user?.id) {
+      if (newId && user?.id && isConfigured) {
         const mime = f.type || (f.name.toLowerCase().endsWith(".mp4") ? "video/mp4" : "image/jpeg");
         const path = await subirEvidenciaBlob(user.id, perfilId, fechaIso, slot, newId, f, mime);
-        if (path) await setDiaMediaRemotePath(perfilId, fechaIso, newId, path);
+        if (path) {
+          await setDiaMediaRemotePath(perfilId, fechaIso, newId, path);
+          setAvisoCopiaCuenta(null);
+        } else {
+          setAvisoCopiaCuenta(
+            "No se pudo guardar la copia en tu cuenta (sigue en este dispositivo). Revisa la conexión o el tamaño del archivo."
+          );
+        }
       }
     }
     await recargar();
@@ -148,7 +156,7 @@ export function CronogramaDiaDetalleModal({ open, onClose, dia, perfilId, perfil
     if (!perfilId || !fechaIso) return;
     const recActual = await getDiaAdjuntosRecord(perfilId, fechaIso);
     const mediaAEliminar = recActual?.medias.find((m) => m.id === mediaId);
-    if (mediaAEliminar?.remotePath && user?.id) {
+    if (mediaAEliminar?.remotePath && user?.id && isConfigured) {
       await eliminarEvidenciaRemota(mediaAEliminar.remotePath);
     }
     await removeDiaMedia(perfilId, fechaIso, mediaId);
@@ -165,35 +173,6 @@ export function CronogramaDiaDetalleModal({ open, onClose, dia, perfilId, perfil
     if (!perfilId) return;
     await updateDiaMeta(perfilId, fechaIso, { seguimientoPlan: v });
     await recargar();
-  };
-
-  const subirEvidenciasNube = async () => {
-    if (!user?.id || !perfilId || !fechaIso) return;
-    setNubeMsg(null);
-    const fresh = await getDiaAdjuntosRecord(perfilId, fechaIso);
-    const pend = fresh?.medias.filter((m) => !m.remotePath) ?? [];
-    if (!pend.length) {
-      setNubeMsg("No hay archivos pendientes o ya están en la nube.");
-      return;
-    }
-    setNubeSubiendo(true);
-    let ok = 0;
-    for (const m of pend) {
-      const mime =
-        m.kind === "image" ? m.blob.type || "image/jpeg" : m.blob.type || "video/mp4";
-      const path = await subirEvidenciaBlob(user.id, perfilId, fechaIso, m.slot, m.id, m.blob, mime);
-      if (path) {
-        const saved = await setDiaMediaRemotePath(perfilId, fechaIso, m.id, path);
-        if (saved) ok++;
-      }
-    }
-    setNubeSubiendo(false);
-    await recargar();
-    if (ok < pend.length) {
-      setNubeMsg(`Subidos ${ok} de ${pend.length}. Revisa tamaño (máx. ~50 MB), tipo MIME o cuota del proyecto Supabase.`);
-    } else {
-      setNubeMsg(`Listo: ${ok} archivo(s) en tu espacio Supabase (gratis dentro de la cuota).`);
-    }
   };
 
   const tabBtn = (id: TabId, label: string) => (
@@ -264,9 +243,7 @@ export function CronogramaDiaDetalleModal({ open, onClose, dia, perfilId, perfil
           <div className="min-h-0 flex-1 overflow-y-auto p-4">
             {tab === "plan" && (
               <div className="space-y-4">
-                <p className="text-xs text-slate-500">
-                  Recetas sugeridas. El enlace a YouTube es opcional y abre en una pestaña nueva.
-                </p>
+                <p className="text-xs text-slate-500">Ideas de receta. Puedes abrir YouTube en otra pestaña si quieres.</p>
                 {(["desayuno", "almuerzo", "cena"] as const).map((slot) => {
                   const c = dia.comidas[slot];
                   const tituloSlot =
@@ -293,30 +270,24 @@ export function CronogramaDiaDetalleModal({ open, onClose, dia, perfilId, perfil
             {tab === "registro" && (
               <div className="space-y-5">
                 <p className="text-xs text-slate-600">
-                  Fotos y vídeos por comida o para todo el día (solo en este dispositivo). No sustituyen al video
-                  sugerido de la receta.
+                  Fotos o vídeos por comida. Son tu registro; no sustituyen el video sugerido de la receta.
                 </p>
                 {isConfigured && user && (
-                  <div className="rounded-xl border border-cyan-200/80 bg-gradient-to-r from-cyan-50/90 to-teal-50/50 p-3 text-xs text-slate-700">
-                    <p className="font-medium text-teal-900">Copia en la nube (Supabase)</p>
-                    <p className="mt-1">
-                      Mismo plan gratuito de Supabase: cuenta el espacio total del proyecto. Bucket privado{" "}
-                      <code className="rounded bg-white/80 px-1">tec-nutri-media</code>.
-                    </p>
-                    <button
-                      type="button"
-                      disabled={nubeSubiendo || !(record?.medias?.length)}
-                      onClick={() => void subirEvidenciasNube()}
-                      className="ui-btn-secondary mt-3 px-3 py-2 text-xs disabled:opacity-50"
-                    >
-                      {nubeSubiendo ? "Subiendo…" : "Subir evidencias de este día"}
-                    </button>
-                    {nubeMsg && <p className="mt-2 text-[11px] text-slate-800">{nubeMsg}</p>}
-                  </div>
+                  <p className="text-xs text-teal-800">
+                    También se guardan en tu cuenta de forma automática (además de en este dispositivo).
+                  </p>
                 )}
                 {isConfigured && !user && (
-                  <p className="text-xs text-slate-500">
-                    Inicia sesión para poder subir copias a tu proyecto Supabase (sin coste de API adicional).
+                  <p className="text-xs text-slate-600">
+                    <Link to="/login" className="font-semibold text-teal-900 underline decoration-teal-400/70">
+                      Inicia sesión
+                    </Link>{" "}
+                    para guardar una copia en tu cuenta además de en este dispositivo.
+                  </p>
+                )}
+                {avisoCopiaCuenta && (
+                  <p className="rounded-lg border border-amber-200/90 bg-amber-50/95 px-3 py-2 text-xs text-amber-950">
+                    {avisoCopiaCuenta}
                   </p>
                 )}
                 {SLOTS_ORDEN_MEDIA.map((slot) => {
@@ -388,7 +359,7 @@ export function CronogramaDiaDetalleModal({ open, onClose, dia, perfilId, perfil
                                     type="button"
                                     className="block w-full"
                                     onClick={() => setLightboxUrl(urlFull)}
-                                    title="Ver en grande (calidad completa)"
+                                    title="Ver en grande"
                                   >
                                     <img src={urlGrid} alt="" className="h-24 w-full object-cover" />
                                   </button>
@@ -404,7 +375,7 @@ export function CronogramaDiaDetalleModal({ open, onClose, dia, perfilId, perfil
                                 </button>
                                 {m.remotePath ? (
                                   <span className="absolute bottom-1 left-1 rounded bg-teal-900/85 px-1 py-0.5 text-[9px] font-medium text-white">
-                                    Nube
+                                    En cuenta
                                   </span>
                                 ) : null}
                               </li>
@@ -422,7 +393,9 @@ export function CronogramaDiaDetalleModal({ open, onClose, dia, perfilId, perfil
               <div className="space-y-5">
                 <div className="rounded-xl border border-slate-200/90 bg-slate-50/50 p-3">
                   <p className="text-sm font-semibold text-teal-950">¿Seguiste el plan de comidas?</p>
-                  <p className="mt-1 text-xs text-slate-500">Orientativo; no es consejo médico.</p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Para tu seguimiento personal; no sustituye consejo médico.
+                  </p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {(
                       [
