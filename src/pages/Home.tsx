@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
 import { MARCA_ESLOGAN } from "../lib/brand";
 import { PASOS_RECORRIDO_PRINCIPAL, RUTA_MI_ESPACIO } from "../lib/recorrido";
+import { useAuth } from "../context/AuthContext";
 
 export function Home() {
+  const { user, isConfigured } = useAuth();
   return (
     <div className="space-y-12">
       <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-teal-950 via-emerald-900 to-cyan-950 p-6 shadow-glow ring-1 ring-white/10 sm:p-10 md:p-12">
@@ -70,7 +72,22 @@ export function Home() {
         </div>
 
         <p className="relative z-10 mt-6 max-w-xl text-xs leading-relaxed text-emerald-100/90">
-          Los datos en este dispositivo se guardan en el navegador hasta que los borres.
+          {user && isConfigured ? (
+            <>
+              <span className="font-semibold text-emerald-300">✓ Sesión activa</span>
+              {" — "}perfil sincronizado con Supabase. Mercados, cronogramas y fotos se guardan en este dispositivo; las fotos pueden copiarse a la nube desde el detalle del día.
+            </>
+          ) : isConfigured ? (
+            <>
+              Datos guardados en el navegador de este dispositivo.{" "}
+              <Link to="/login" className="font-semibold text-emerald-300 underline decoration-emerald-400/60 hover:decoration-emerald-200">
+                Inicia sesión
+              </Link>{" "}
+              para sincronizar el perfil con Supabase.
+            </>
+          ) : (
+            "Datos guardados en el navegador de este dispositivo (sin cuenta, 100 % local)."
+          )}
         </p>
       </section>
 
