@@ -15,7 +15,7 @@ import {
   type MediaSlot,
   type SeguimientoPlanDia
 } from "../lib/diaAdjuntosIDB";
-import { subirEvidenciaBlob } from "../lib/mediaRemoteStorage";
+import { eliminarEvidenciaRemota, subirEvidenciaBlob } from "../lib/mediaRemoteStorage";
 import { useAuth } from "../context/AuthContext";
 
 type TabId = "plan" | "registro" | "progreso";
@@ -129,18 +129,28 @@ export function CronogramaDiaDetalleModal({ open, onClose, dia, perfilId, perfil
   };
 
   const onFiles = async (files: FileList | null, soloImagen: boolean, slot: MediaSlot) => {
-    if (!perfilId || !files?.length) return;
+    if (!perfilId || !fechaIso || !files?.length) return;
     for (let i = 0; i < files.length; i++) {
       const f = files[i];
       if (soloImagen && !f.type.startsWith("image/")) continue;
       if (!soloImagen && !f.type.startsWith("video/")) continue;
-      await addDiaMedia(perfilId, fechaIso, f, slot);
+      const newId = await addDiaMedia(perfilId, fechaIso, f, slot);
+      if (newId && user?.id) {
+        const mime = f.type || (f.name.toLowerCase().endsWith(".mp4") ? "video/mp4" : "image/jpeg");
+        const path = await subirEvidenciaBlob(user.id, perfilId, fechaIso, slot, newId, f, mime);
+        if (path) await setDiaMediaRemotePath(perfilId, fechaIso, newId, path);
+      }
     }
     await recargar();
   };
 
   const quitarMedia = async (mediaId: string) => {
-    if (!perfilId) return;
+    if (!perfilId || !fechaIso) return;
+    const recActual = await getDiaAdjuntosRecord(perfilId, fechaIso);
+    const mediaAEliminar = recActual?.medias.find((m) => m.id === mediaId);
+    if (mediaAEliminar?.remotePath && user?.id) {
+      await eliminarEvidenciaRemota(mediaAEliminar.remotePath);
+    }
     await removeDiaMedia(perfilId, fechaIso, mediaId);
     await recargar();
   };

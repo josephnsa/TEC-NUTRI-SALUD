@@ -50,8 +50,19 @@ export async function subirEvidenciaBlob(
     upsert: true
   });
   if (error) {
-    console.warn("[mediaRemoteStorage]", error.message);
+    console.warn("[mediaRemoteStorage] upload:", error.message);
     return null;
   }
   return path;
+}
+
+/** Elimina un objeto del bucket. No lanza error si el archivo no existe. */
+export async function eliminarEvidenciaRemota(path: string): Promise<boolean> {
+  if (!supabase || !path) return false;
+  const { error } = await supabase.storage.from(MEDIA_REMOTE_BUCKET).remove([path]);
+  if (error) {
+    console.warn("[mediaRemoteStorage] remove:", error.message);
+    return false;
+  }
+  return true;
 }

@@ -197,20 +197,25 @@ export async function updateDiaProgress(perfilId: string, fechaIso: string, prog
   return ok;
 }
 
+/**
+ * Agrega un archivo al registro del día.
+ * @returns El ID del nuevo media si se guardó correctamente, `null` en caso de error.
+ */
 export async function addDiaMedia(
   perfilId: string,
   fechaIso: string,
   file: File,
   slot: MediaSlot = "general"
-): Promise<boolean> {
+): Promise<string | null> {
   const rec = await ensureDiaRecord(perfilId, fechaIso);
   const kind: DiaAdjuntosMedia["kind"] = file.type.startsWith("video/") ? "video" : "image";
   let thumbBlob: Blob | undefined;
   if (kind === "image") {
     thumbBlob = (await blobImageThumbnail(file)) ?? undefined;
   }
+  const newId = crypto.randomUUID();
   rec.medias.push({
-    id: crypto.randomUUID(),
+    id: newId,
     kind,
     blob: file,
     thumbBlob,
@@ -219,7 +224,7 @@ export async function addDiaMedia(
   });
   const ok = await putDiaAdjuntosRecord(rec);
   if (ok) emitAdjuntosCambiados();
-  return ok;
+  return ok ? newId : null;
 }
 
 export async function removeDiaMedia(perfilId: string, fechaIso: string, mediaId: string): Promise<boolean> {
