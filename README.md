@@ -62,4 +62,5 @@ La app usa **HashRouter** (`/#/ruta`) para evitar errores 404 en Pages. Rutas pr
 - Flujo unificado (orden datos → mercado → menú): `docs/FLUJO_USUARIO.md` · definición en código: `src/lib/recorrido.ts`
 - Input de negocio: `docs/BUSINESS_INPUT.md`
 - **Roadmap de mejoras (perfil, N mercados, N cronogramas, UX):** `docs/MEJORAS_NEGOCIO_Y_PRODUCTO.md`
-- Skill de entrega para el agente: `.cursor/skills/tec-nutri-salud-delivery/SKILL.md`
+- **Roadmap Fase 3 (nutrición guiada + nube + UX):** `docs/PLAN_MEJORAS_FASE3_NUTRICION_SUPABASE_UI.md`
+- Skill del agente: `.cursor/skills/tec-nutri-salud-delivery/SKILL.md`

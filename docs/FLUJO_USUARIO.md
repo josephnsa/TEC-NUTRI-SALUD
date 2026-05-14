@@ -31,7 +31,7 @@ flowchart LR
   D --> E{¿Fuente de menú?}
   E --> F[Plantillas locales]
   E --> G[Agente IA Gemini]
-  F --> H[Receta + buscar video YouTube]
+  F --> H[Receta + video enlazado o embebido]
   G --> H
   H --> I[Guardar plan en historial]
   I --> J[Detalle del día\nFoto · Vídeo · Progreso]
@@ -53,8 +53,8 @@ flowchart LR
 
 4. **Detalle del día** (modal desde calendario o lista)  
    Tres pestañas:  
-   - **Plan** — recetas sugeridas + enlace a YouTube (solo como acción explícita).  
-   - **Tu registro** — fotos y vídeos propios por comida (IndexedDB + miniaturas); subida opcional a Supabase Storage si hay sesión activa.  
+   - **Plan** — recetas sugeridas; vídeo mediante enlace externo (**hoy**); en **evolutivo Fase 3** también **reproducir dentro de la app** con embed cuando la fuente lo permita.  
+   - **Tu registro** — fotos y vídeos propios por comida (IndexedDB + miniaturas); con sesión, **copia automática en la cuenta** (Storage privado del proyecto).  
    - **Progreso** — seguimiento del plan (sí / parcial / no), checklist del día y nota libre.
 
 5. **Asistente** (opcional)  
@@ -78,17 +78,29 @@ La app es instalable como PWA. Cuando hay una nueva versión del service worker 
 
 ## Qué hace el agente en recetas
 
-- Devuelve JSON con `titulo`, `receta` y `videoQuery`.
-- **Receta**: *Ingredientes (1 porción)* + *Pasos*, con cantidades medibles.
-- **videoQuery**: coherente con el plato para YouTube (solo búsqueda).
+- **Versión actual:** devuelve JSON con `titulo`, `receta` y `videoQuery`; receta orientada a 1 porción; consulta video alineada al plato.
+- **Versión próxima (Fase 3):** mismo contrato más campos opcionales de **macros estimadas** (`kcal`, `proteinG`, `fatG`, `carbG`, etc.) y, si fuera estable, **`youtubeVideoId`** para embed sin salir del sitio. Ver **`docs/PLAN_MEJORAS_FASE3_NUTRICION_SUPABASE_UI.md`**.
+
+---
+
+## Evolución Fase 3 (ejecución inmediata en roadmap)
+
+Sin cambiar el orden **datos → mercado → cronograma**, las siguientes mejoras quedaron documentadas para implementarse en PR pequeños:
+
+| Qué cambia para la usuaria | Documento fuente |
+|----------------------------|------------------|
+| Sincronizar en cuenta (Supabase gratis) snapshots clave de mercados y planes + objetivos nutricionales opcionales | `PLAN_MEJORAS_FASE3_…`, Épica F en `MEJORAS_NEGOCIO_Y_PRODUCTO.md` |
+| **Ítems extra** agregados a mano al mercado guardado | Idem · historias 13–14 en `USER_STORIES.md` |
+| Menú con **toda** la despensa, **macros** y **saldo/resto diario orientativo** (siempre disclaimers) | Idem |
+| Video **dentro de la página** donde aplique | Idem · historia 15–16 |
 
 ---
 
 ## Fuera de este flujo
 
 - **Belleza**: contenido estático de tips por categoría.
-- **Cuenta Supabase**: sincroniza perfil en la nube; los mercados y cronogramas son **locales en esta versión** (roadmap Épica E).
+- **Cuenta Supabase**: hoy sincroniza **perfil familiar** (`family_json`) + **medios** del diario cuando hay sesión; **plan Fase 3** amplía **mercados y planes** en formato compacto (`MEJORAS_NEGOCIO_Y_PRODUCTO.md` Épica F).
 
 ---
 
-*Actualizado: mayo 2026 — refleja fases 2.0–2.5b y épicas A–D del plan de mejoras.*
+*Actualizado: mayo 2026 — fases 2.0–2.5b y épicas A–F; próximo hito técnico: `docs/PLAN_MEJORAS_FASE3_NUTRICION_SUPABASE_UI.md`.*

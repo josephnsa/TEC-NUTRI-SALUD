@@ -129,6 +129,31 @@ Si María usa cuenta, espera que **perfil** suba a la nube; mercados y cronogram
 
 ---
 
+### Épica F — Nutrición guiada + nube esencial + mercado ampliable + experiencia multimedia (roadmap ejecutable)
+
+**Narrativa:**  
+María ya tiene despensa ligada al plan y varios cronogramas. Quiere **no perder** mercados ni planes si cambia de móvil, **añadir ítems** que compró fuera de la lista, ver **cantidades orientativas** y **macros** coherentes con un **presupuesto diario**, y seguir cocinando mirando **el video en la misma pantalla**.
+
+**Valor de negocio:**
+
+| Pilar | Qué cambia para la usuaria |
+|-------|-----------------------------|
+| Nube gratuita bien acotada | Copia en cuenta de snapshots importantes vía Supabase (**JSON compacto**, RLS) sin inflar BD |
+| Mercado extras | Lista manual + generada en un mismo **mercado guardado** consumido por cronograma/IA |
+| Menú más listo para cocinar | Toda la despensa (incl. extras), **macros por plato** y **saldo del día** (siempre texto legal/orientativo) |
+| Multimedia | Embed de video donde aplique + fallback enlace externo |
+| Diseño tech | Nueva tanda visual en Tailwind (**contraste antes que brillo**), animaciones sólo seguras |
+
+**Prioridad sugerida de implementación:** ver **`docs/PLAN_MEJORAS_FASE3_NUTRICION_SUPABASE_UI.md`** (órden F3.1–F3.6).
+
+**Criterios de aceptación (borrador negocio):**
+
+- Sin sesión, el flujo local actual sigue íntegro.
+- Con sesión tras F3.x, recuperar desde otro equipo al menos perfil objetivo nutrition + últimos mercados/planes pactados por diseño técnico.
+- Cualquier cifra sobre peso, kcal o macros muestra disclaimers coherentes con `USER_STORIES.md`.
+
+---
+
 ## 4. Mapa estratégico del flujo (mejorado)
 
 ```
@@ -171,6 +196,7 @@ Si María usa cuenta, espera que **perfil** suba a la nube; mercados y cronogram
 | P3 | C — Guardar N cronogramas | Alto | Media–alta |
 | P4 | B — Enriquecer N mercados (nombre, notas) | Medio–alto | Baja–media |
 | P5 | E — Sync nube mercados/cronogramas | Medio (cuenta) | Alta |
+| **P6 (próximo)** | **F — Nutrición guiada + nube esencial + mercado extras + UX tech** (`docs/PLAN_MEJORAS_FASE3_NUTRICION_SUPABASE_UI.md`) | Alto diferenciación | Alta–media por sub-PR |
 
 ---
 
@@ -187,7 +213,8 @@ Si María usa cuenta, espera que **perfil** suba a la nube; mercados y cronogram
 - `docs/USER_STORIES.md` — historias actuales; las épicas aquí **actualizan** el backlog cuando se conviertan en historias nuevas numeradas.
 - `docs/BUSINESS_INPUT.md` — reglas de priorización mercado/plantillas; siguen válidas dentro de cada mercado activo.
 - `docs/FLUJO_USUARIO.md` — flujo lineal actual; evolucionará a **flujo con nodos** (perfil ↔ mercados ↔ cronogramas) cuando se implemente Mi espacio.
-- **`docs/PLAN_MEJORAS_FASE2_MULTI_PERFIL_CALENDARIO.md`** — plan técnico y de producto para **multiperfil** (varias personas bajo una cuenta), **fecha de inicio de dieta**, **cronograma por fechas**, **historial comidas** y **vista calendario** (detalle en página, sin saltar a YouTube al elegir día).
+- **`docs/PLAN_MEJORAS_FASE2_MULTI_PERFIL_CALENDARIO.md`** — plan técnico y de producto para **multiperfil** (varias personas bajo una cuenta), **fecha de inicio de dieta**, **cronograma por fechas**, **historial comidas** y **vista calendario** (detalle in-page).
+- **`docs/PLAN_MEJORAS_FASE3_NUTRICION_SUPABASE_UI.md`** — evolutivo: **Supabase económico**, **ítems extra en mercado**, **macros y presupuesto diario**, **video embebido**, **UI tech** + estándares de código y documentación.
 
 ---
 
@@ -207,4 +234,4 @@ Si María usa cuenta, espera que **perfil** suba a la nube; mercados y cronogram
 
 ---
 
-*Versión 1.1 — añade Épica D y referencia al plan de fase 2.*
+*Versión 1.2 — añade Épica F, plan Fase 3 enlazado, priorización P6 y recupera encabezado §4.*

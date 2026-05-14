@@ -49,20 +49,61 @@ María quiere comer mejor en estilo keto, organizar el mercado, **guardar lo que
 9. **Recetas por IA para todos los días (nuevo)**  
    *Como* usuaria con `VITE_GEMINI_API_KEY` (clave gratuita en Google AI Studio)  
    *quiero* pulsar **“Generar recetas con agente IA (gratis)”** y obtener **un menú completo** (desayuno, almuerzo, cena) para **cada día** que configuré (3–30 días), usando mi **perfil**, el **modo** (perfil / mercado / mixto) y los **alimentos del mercado guardado**  
-   *para* tener textos de receta distintos y **consultas en YouTube** (internet) por comida, sin depender solo de plantillas fijas.
+   *para* tener textos de receta distintos y vídeo/consultas asociadas al plato, sin depender solo de plantillas fijas.
 
-10. **Cronograma en menú y al guardar mercado (nuevo)**  
-   *Como* usuaria  
-   *quiero* una entrada **Cronograma** en el menú y que, al guardar el mercado, se abra **automáticamente** la pantalla del cronograma con los días alineados al mercado  
-   *para* ver de inmediato el menú y las recetas sin buscar la sección a mano.
+10. **Cronograma en menú y al guardar mercado**  
+    *Como* usuaria  
+    *quiero* una entrada **Cronograma** en el menú y que, al guardar el mercado, se abra **automáticamente** la pantalla del cronograma con los días alineados al mercado  
+    *para* ver de inmediato el menú y las recetas sin buscar la sección a mano.
 
-11. **PWA y móvil**  
-   *Como* usuaria móvil  
-   *quiero* una interfaz responsive e instalable  
-   *para* usar la app con buena experiencia táctil y acceso rápido desde la pantalla de inicio.
+11. **Multiperfil, historiales y diario por día**  
+    *Como* usuaria que organiza familia  
+    *quiero* varios **perfiles**, **historial de mercados y planes nombrados**, **calendario** y **diario fotográfico** por día  
+    *para* no mezclar datos y tener respaldo útil desde Mi espacio (`docs/FLUJO_USUARIO.md`).
+
+12. **PWA y móvil**  
+    *Como* usuaria móvil  
+    *quiero* una interfaz responsive e instalable  
+    *para* usar la app con buena experiencia táctil y acceso rápido desde la pantalla de inicio.
+
+---
+
+## Fase 3 — evolutivo (próxima ejecución)
+
+*Referencia técnica y orden de PRs:* [`docs/PLAN_MEJORAS_FASE3_NUTRICION_SUPABASE_UI.md`](./PLAN_MEJORAS_FASE3_NUTRICION_SUPABASE_UI.md). Épica de negocio **F:** `docs/MEJORAS_NEGOCIO_Y_PRODUCTO.md`.
+
+13. **Sincronizar lo esencial en la cuenta (Supabase gratis)**  
+    *Como* usuaria con sesión iniciada  
+    *quiero* que **mercados guardados**, **planes de menú** y **objetivos nutricionales opcionales** se respalden en la cuenta **dentro de los límites del plan gratuito**  
+    *para* no perder lo importante si cambio de navegador o dispositivo (las fotos pesadas pueden seguir con la estrategia actual de Storage + local).
+
+14. **Alimentos extra en el mercado**  
+    *Como* usuaria que compra cosas fuera de la lista sugerida  
+    *quiero* **añadir ítems manualmente**, marcarlos como comprados y **guardarlos** en el mismo mercado realizado  
+    *para* que el cronograma y las recetas consideren **toda** mi despensa.
+
+15. **Menú con despensa completa y metas orientativas de peso/energía**  
+    *Como* usuaria que marca metas solo como **orientación** (no tratamiento médico)  
+    *quiero* que el sistema use **todo** el mercado activo, proponga cantidades coherentes con **calorías y macros estimadas** respecto a un presupuesto diario aclarado en pantalla  
+    *para* ver qué esperar cada día sin confundir la app con un profesional sanitario.
+
+16. **Video y nutrición en la misma pantalla**  
+    *Como* usuaria  
+    *quiero* **reproducir el video de la receta dentro de la web** cuando la fuente lo permita, con **macros estimados por plato** y un **saldo/resto del día frente al presupuesto**  
+    *para* no tener que saltar a otra app cada vez que cocino.
+
+17. **Código limpio y documentación viviente**  
+    *Como* desarrolladora o agente manteniendo el repo  
+    *quiero* módulos acotados, tipos fuertes y que **historias**, **flujo** y **plan Fase 3** se actualicen al cerrar hitos  
+    *para* poder ejecutar el evolutivo en iteraciones cortas sin perder contexto.
+
+18. **UI más tecnológica y animada (accesible)**  
+    *Como* usuaria  
+    *quiero* una estética más **marcada y moderna** con animaciones **cortas y opcionales** según configuración del sistema  
+    *para* disfrutar la interfaz sin sacrificar claridad ni `prefers-reduced-motion`.
 
 ## Criterios transversales
 
 - Aviso visible: las estimaciones nutricionales, las recetas generadas por IA y el chat del asistente son **orientativas**.
 - Despliegue gratuito en **GitHub Pages** con build reproducible en CI.
-- El mercado guardado vive en **almacenamiento local** del navegador hasta que exista backend específico para listas (Supabase opcional en roadmap).
+- **Hoy:** el mercado y los planes pueden vivir sobre todo en **almacenamiento local** + respaldo JSON; **Fase 3** amplía opcionalmente la **copia esencial en Supabase** según tabla `profiles` / tablas pequeñas con JSONB (ver plan F3).

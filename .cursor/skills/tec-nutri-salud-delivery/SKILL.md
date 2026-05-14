@@ -36,7 +36,7 @@ No dupliques listas de pasos en páginas sueltas sin importar `recorrido.ts`.
 
 ## Fase 1 — Contexto
 
-- Lee `README.md`, `docs/USER_STORIES.md`, `docs/FLUJO_USUARIO.md`, `docs/MEJORAS_NEGOCIO_Y_PRODUCTO.md`, **`docs/PLAN_MEJORAS_FASE2_MULTI_PERFIL_CALENDARIO.md`** (roadmap multiperfil / calendario / historial) y `.env.example`.
+- Lee `README.md`, `docs/USER_STORIES.md`, `docs/FLUJO_USUARIO.md`, `docs/MEJORAS_NEGOCIO_Y_PRODUCTO.md`, **`docs/PLAN_MEJORAS_FASE2_MULTI_PERFIL_CALENDARIO.md`**, **`docs/PLAN_MEJORAS_FASE3_NUTRICION_SUPABASE_UI.md`** (evolutivo siguiente: nube económica, mercado extras, macros, embed video, UX tech) y `.env.example`.
 - No commitees secretos; GitHub Actions secrets para build.
 
 ## Fase 2 — App web (Vite + React)
@@ -72,17 +72,52 @@ No dupliques listas de pasos en páginas sueltas sin importar `recorrido.ts`.
 
 - Tips en `src/data/beautyTips.ts`: campo **`categoria`**, orden de secciones **`ORDEN_CATEGORIAS`**, página **`Belleza.tsx`** agrupa por bloque (rutina diaria, rostro, cabello, ojeras, acné, labios/manos). Ampliar tips en el mismo archivo manteniendo precauciones.
 
-## Fase 3c — Roadmap multiperfil / calendario / historial
+## Fase 3e — Evolutivo Fase 3 (prioridad ejecutable siguiente)
 
-- **No** mezclar con el MVP hasta tener PR dedicado: seguir **`docs/PLAN_MEJORAS_FASE2_MULTI_PERFIL_CALENDARIO.md`** y Épica D en `MEJORAS_NEGOCIO_Y_PRODUCTO.md` (perfiles múltiples, mercado por perfil, fechas reales, snapshots de cronograma, vista calendario con detalle in-page, **fotos/vídeo propios por día**, progreso del día, calidad vía IndexedDB + miniaturas).
+Implementar sólo después de orden en **`docs/PLAN_MEJORAS_FASE3_NUTRICION_SUPABASE_UI.md`**. Épica de negocio **F** en `docs/MEJORAS_NEGOCIO_Y_PRODUCTO.md`; historias **13–18** en `docs/USER_STORIES.md`.
 
-## Fase 4 — IA opcional (Gemini)
+| Bloque | Contenido mínimo |
+|--------|------------------|
+| **Supabase económico** | Tablas o columnas JSONB con **RLS** `auth.uid()`; payloads compactos por mercado/plan/nutrition_goals; evitar explosión de filas |
+| **Mercado extras** | `ListaItem`/equivalente con origen manual vs generador; mismo snapshot guardado |
+| **Nutrición orientativa** | Módulo puro (ej. `nutritionTargets.ts`) con fórmula documentada (**Mifflin-St Jeor** + disclaimers obligatorios en UI); no es diagnóstico |
+| **Gemini macros** | Ampliar parseo JSON en `recipesGemini.ts` con **schema estable** (ver prompt abajo) |
+| **Video in-app** | Componente iframe `youtube-nocookie` + extracción de ID; fallback botón externo |
+| **UI tech** | Nuevos tokens en `tailwind.config.js`; **solo** animaciones `motion-safe:` + `motion-reduce:` cortas |
+
+### Prompt — extensión JSON para recetas (Fase 3, orientativo para el modelo)
+
+Pedir respuesta JSON **válido** donde cada comida pueda incluir (además de campos actuales):
+
+```json
+{
+  "kcal_estimate": number,
+  "protein_g": number,
+  "fat_g": number,
+  "carb_g": number,
+  "portion_notes": string,
+  "youtube_video_id": string | null
+}
+```
+
+Si el modelo no devuelve estos campos, degradar elegante (solo texto + `videoQuery` como hoy).
+
+### Estándares de código al tocar esta fase
+
+- Tipos nuevos exportados desde un solo archivo o carpeta (`src/lib/nutritionTypes.ts` ejemplo); evitar duplicar lógica entre plantillas y IA.
+- Funciones nutricionales **puras** unit-testeables donde sea posible; comentarios breves sólo donde la fuente sea paper/guía (ej. nombre de ecuación).
+- Tras cerrar cada sub-hit F3: **actualizar** `USER_STORIES`, este skill si cambia trabajo del agente, y `FLUJO_USUARIO.md` párrafos afectados.
+
+### Canvas (Cursor)
+
+Prototipos visuales o dashboard de sólo exploración pueden vivir en **`.canvas.tsx`** usando el skill `canvas`; no sustituir páginas reales hasta validar jerarquía con `recorrido.ts`.
+
 
 - `VITE_GEMINI_API_KEY` solo en `.env` local o GitHub Secrets.
 - Sin clave: degradar con mensaje claro (Asistente + botón recetas IA).
 - Recetas multi-día: `src/lib/recipesGemini.ts` + `src/lib/geminiModels.ts` (fallback de modelos).
-- Prompt exige **1 porción**, formato ingredientes + pasos, `videoQuery` alineado al plato.
-- UI usa `youtubeBusquedaPlato` en `nutritionPlan.ts` para la URL de YouTube.
+- Prompt exige **1 porción**, formato ingredientes + pasos, `videoQuery` alineado al plato; en **Fase 3** añadir al prompt el **schema opcional de macros** y límites de tokens razonables.
+- UI puede combinar **`youtubeBusquedaPlato`** con **embed interno** cuando exista `youtube_video_id`; siempre opción fallback explícita.
 
 ## Fase 5 — Despliegue
 
