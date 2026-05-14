@@ -21,6 +21,8 @@ export function ActualizarClave() {
     );
   }
 
+  const client = supabase;
+
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setMsg(null);
@@ -38,7 +40,7 @@ export function ActualizarClave() {
     }
     setSaving(true);
     try {
-      const { error } = await supabase.auth.updateUser({ password: nueva });
+      const { error } = await client.auth.updateUser({ password: nueva });
       if (error) throw error;
       setMsg("Contraseña actualizada. Ya puedes continuar.");
       setTimeout(() => navigate("/mi-plan", { replace: true }), 800);

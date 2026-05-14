@@ -377,9 +377,14 @@ export function MiEspacio() {
                       setMsgClave("Las contraseñas no coinciden.");
                       return;
                     }
+                    const client = supabase;
+                    if (!client) {
+                      setMsgClave("Sesión cloud no disponible en este momento.");
+                      return;
+                    }
                     setGuardandoClave(true);
                     try {
-                      const { error } = await supabase.auth.updateUser({ password: nuevaClave });
+                      const { error } = await client.auth.updateUser({ password: nuevaClave });
                       if (error) throw error;
                       setMsgClave("Contraseña actualizada.");
                       setNuevaClave("");

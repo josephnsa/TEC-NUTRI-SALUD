@@ -1,6 +1,7 @@
 import { FormEvent, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { urlRedireccionRecuperacionClave } from "../lib/authPassword";
+import { supabase, supabaseConfigured } from "../lib/supabase";
 
 export function Login() {
   const navigate = useNavigate();

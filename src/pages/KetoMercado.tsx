@@ -197,7 +197,7 @@ export function KetoMercado() {
       return;
     }
     const id = `manual-${crypto.randomUUID()}`;
-    const cant = Math.max(0.5, Number(extraCant) || 1);
+    const cantidad = Math.max(0.5, Number(extraCant) || 1);
     const nuevo: ListaItem = {
       id,
       nombre: nome,
