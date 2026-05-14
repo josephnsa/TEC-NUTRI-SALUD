@@ -156,7 +156,10 @@ export function Cronograma() {
         savePerfilLocal(remote);
       }
       await fetchAndApplyFamilyRemote(user.id);
-      await pullCloudSnapshots(user.id);
+      const pulled = await pullCloudSnapshots(user.id);
+      if (!pulled.ok) {
+        setStatus(`Aviso: no se pudo sincronizar mercados/planes desde la nube (${pulled.error}).`);
+      }
       setLoadingRemote(false);
     })();
   }, [user?.id, isConfigured]);
@@ -292,30 +295,37 @@ export function Cronograma() {
   }, [diaParam, porFecha, perfilIdActivo, diaModalOpen, diaSeleccionado?.fecha]);
 
   const guardarMenuEnHistorial = () => {
-    const pid = perfilContextoId ?? getActivoPerfilId();
-    if (!pid) {
-      setStatus("No hay perfil activo.");
-      return;
-    }
-    const snap = guardarSnapshotCronograma({
-      perfilId: pid,
-      fechaInicioPlan: fechaIniCron,
-      dias: diasCronograma,
-      modo: modoCronograma,
-      fuente: vistaCronograma === "ia" && cronogramaIa?.length === diasCronograma ? "ia" : "plantillas",
-      mercadoActivoId,
-      claveVariedad,
-      diasPlan: cronogramaMostrado
-    });
-    setStatus(
-      snap ? "Menú guardado en historial (este dispositivo)." : "No se pudo guardar (almacenamiento lleno o privado)."
-    );
-    if (snap) {
+    void (async () => {
+      const pid = perfilContextoId ?? getActivoPerfilId();
+      if (!pid) {
+        setStatus("No hay perfil activo.");
+        return;
+      }
+      const snap = guardarSnapshotCronograma({
+        perfilId: pid,
+        fechaInicioPlan: fechaIniCron,
+        dias: diasCronograma,
+        modo: modoCronograma,
+        fuente: vistaCronograma === "ia" && cronogramaIa?.length === diasCronograma ? "ia" : "plantillas",
+        mercadoActivoId,
+        claveVariedad,
+        diasPlan: cronogramaMostrado
+      });
+      const baseOk = snap ? "Menú guardado en historial (este dispositivo)." : "No se pudo guardar (almacenamiento lleno o privado).";
+      if (!snap) {
+        setStatus(baseOk);
+        return;
+      }
+      let linea = baseOk;
+      if (user?.id && isConfigured) {
+        const pushed = await pushPlanSnapshotRemote(user.id, snap);
+        if (!pushed.ok) linea += ` No copiado a la nube: ${pushed.error}`;
+      }
+      setStatus(linea);
       setHistorialTick((t) => t + 1);
       setSnapshotActivoId(pid, snap.id);
       setSnapActivoId(snap.id);
-      if (user?.id && isConfigured) void pushPlanSnapshotRemote(user.id, snap);
-    }
+    })();
   };
 
   const borrarSnapshot = (s: CronogramaSnapshot) => {
@@ -431,7 +441,7 @@ export function Cronograma() {
       const plan = await generarCronogramaIA(perfil, diasCronograma, itemsMercadoActivo, modoCronograma);
       setCronogramaIa(plan);
       setVistaCronograma("ia");
-      setStatus(`IA: ${plan.length} día(s); ~1 porción y video por comida.`);
+      let estatusIa = `IA: ${plan.length} día(s); ~1 porción y video por comida.`;
       const pid = getActivoPerfilId();
       if (pid) {
         const iaSnap = guardarSnapshotCronograma({
@@ -448,9 +458,13 @@ export function Cronograma() {
         if (iaSnap) {
           setSnapshotActivoId(pid, iaSnap.id);
           setSnapActivoId(iaSnap.id);
-          if (user?.id && isConfigured) void pushPlanSnapshotRemote(user.id, iaSnap);
+          if (user?.id && isConfigured) {
+            const pushed = await pushPlanSnapshotRemote(user.id, iaSnap);
+            if (!pushed.ok) estatusIa += ` No copiado a la nube: ${pushed.error}`;
+          }
         }
       }
+      setStatus(estatusIa);
     } catch (e) {
       setIaError(e instanceof Error ? e.message : "Error IA.");
     } finally {

@@ -76,7 +76,8 @@ export function MiPlan() {
         setFechaInicioPlan(m?.fechaInicioPlan ?? "");
       }
       await fetchAndApplyFamilyRemote(user.id);
-      await pullCloudSnapshots(user.id);
+      const pulled = await pullCloudSnapshots(user.id);
+      if (!pulled.ok) setStatus(`Aviso: no se pudieron fusionar datos de mercado/planes desde la nube (${pulled.error}).`);
       const mAfter = loadPerfilMiembroActivo();
       setFechaInicioPlan(mAfter?.fechaInicioPlan ?? "");
       setLoadingRemote(false);

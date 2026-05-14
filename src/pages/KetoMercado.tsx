@@ -110,16 +110,24 @@ export function KetoMercado() {
   const ningunoComprado = useMemo(() => items.length > 0 && items.every((i) => !i.comprado), [items]);
 
   const guardarMercado = () => {
-    const n = contarComprados(items);
-    const snap = guardarMercadoRealizado(dias, personas, items);
-    refreshHistorial();
-    if (user?.id && isConfigured) void pushMercadoSnapshotRemote(user.id, snap);
-    if (n === 0) {
-      setMsg("Guardado. Abriendo cronograma… (marca comprados para priorizar ingredientes).");
-    } else {
-      setMsg("Guardado. Abriendo cronograma…");
-    }
-    navigate("/cronograma", { state: { desdeMercado: true } });
+    void (async () => {
+      const n = contarComprados(items);
+      const snap = guardarMercadoRealizado(dias, personas, items);
+      refreshHistorial();
+      let nube = "";
+      if (user?.id && isConfigured) {
+        const r = await pushMercadoSnapshotRemote(user.id, snap);
+        if (!r.ok) nube = ` Nube: no copiado (${r.error}).`;
+      }
+      if (n === 0) {
+        setMsg(
+          `Guardado. Abriendo cronograma… (marca comprados para priorizar ingredientes).${nube}`
+        );
+      } else {
+        setMsg(`Guardado. Abriendo cronograma…${nube}`);
+      }
+      navigate("/cronograma", { state: { desdeMercado: true } });
+    })();
   };
 
   const activar = (id: string) => {

@@ -21,8 +21,12 @@ type PlanRow = {
 const ON_CONFLICT_MARKET = "user_id,perfil_local_id,snapshot_local_id";
 const ON_CONFLICT_PLAN = "user_id,perfil_local_id,snapshot_local_id";
 
-export async function pushMercadoSnapshotRemote(userId: string, snap: MercadoSnapshot): Promise<boolean> {
-  if (!supabase) return false;
+export type SnapshotPushResult =
+  | { ok: true }
+  | { ok: false; error: string };
+
+export async function pushMercadoSnapshotRemote(userId: string, snap: MercadoSnapshot): Promise<SnapshotPushResult> {
+  if (!supabase) return { ok: false, error: "Cliente Supabase no disponible." };
   const perfilId = snap.perfilId ?? "_";
   const now = new Date().toISOString();
   const payload = { ...snap, updatedAt: now };
@@ -36,11 +40,11 @@ export async function pushMercadoSnapshotRemote(userId: string, snap: MercadoSna
     },
     { onConflict: ON_CONFLICT_MARKET }
   );
-  return !error;
+  return error ? { ok: false, error: error.message } : { ok: true };
 }
 
-export async function pushPlanSnapshotRemote(userId: string, snap: CronogramaSnapshot): Promise<boolean> {
-  if (!supabase) return false;
+export async function pushPlanSnapshotRemote(userId: string, snap: CronogramaSnapshot): Promise<SnapshotPushResult> {
+  if (!supabase) return { ok: false, error: "Cliente Supabase no disponible." };
   const now = new Date().toISOString();
   const payload = { ...snap, updatedAt: now };
   const { error } = await supabase.from("user_plan_snapshots").upsert(
@@ -53,7 +57,7 @@ export async function pushPlanSnapshotRemote(userId: string, snap: CronogramaSna
     },
     { onConflict: ON_CONFLICT_PLAN }
   );
-  return !error;
+  return error ? { ok: false, error: error.message } : { ok: true };
 }
 
 /** Descarga y fusiona snapshots remotos con localStorage (LWW por `updated_at`). */
