@@ -15,6 +15,8 @@ export type PlatoReceta = {
   fat_g?: number;
   carb_g?: number;
   fiber_g?: number;
+  /** Número de porciones que cubre la receta (orientativo); por defecto 1 en texto de IA. */
+  porciones?: number;
 };
 
 export type PerfilUsuario = {

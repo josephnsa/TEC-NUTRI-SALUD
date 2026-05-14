@@ -446,7 +446,7 @@ export function Cronograma() {
       const plan = await generarCronogramaIA(perfil, diasCronograma, itemsMercadoActivo, modoCronograma);
       setCronogramaIa(plan);
       setVistaCronograma("ia");
-      let estatusIa = `IA: ${plan.length} día(s); ~1 porción y video por comida.`;
+      let estatusIa = `IA: ${plan.length} día(s). Macros y vídeo en el detalle; la lista del mercado (cantidades y comprados según modo) se envía al modelo.`;
       const pid = getActivoPerfilId();
       if (pid) {
         const iaSnap = guardarSnapshotCronograma({
@@ -626,6 +626,10 @@ export function Cronograma() {
             Mixto
           </label>
         </fieldset>
+        <p className="md:col-span-2 rounded-xl border border-emerald-100/90 bg-teal-50/40 px-3 py-2 text-[11px] leading-snug text-teal-950">
+          <strong>Mercado e IA:</strong> si tienes lista guardada, el agente recibe las <strong>cantidades de todos los ítems</strong> (y marca «comprado» donde prioriza). Para forzar sólo despensa marcada usa{" "}
+          <strong>Mercado activo</strong>.
+        </p>
 
         <div className="md:col-span-2 flex flex-wrap items-center gap-3">
           <button type="button" onClick={nuevasCombinaciones} className="ui-btn-secondary">
@@ -839,7 +843,8 @@ export function Cronograma() {
         <p className="text-sm text-slate-600">
           {vistaCronograma === "ia" && cronogramaIa?.length === diasCronograma ? (
             <>
-              Vista <strong>IA</strong> (Gemini): el video se abre solo desde el detalle del día.
+              Vista <strong>IA</strong> (Gemini): desde el detalle del día ves <strong>aportes como tarjetas</strong>, número de porciones y{" "}
+              <strong>YouTube integrado</strong> cuando aparece coincidencia; si no, un acceso destacado para abrir vídeos.
             </>
           ) : (
             <>

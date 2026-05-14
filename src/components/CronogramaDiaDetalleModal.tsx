@@ -4,7 +4,8 @@ import {
   sumarMacrosComidaDia,
   sumarMacrosPlatoSlot,
   youtubeBusquedaPlato,
-  type PerfilUsuario
+  type PerfilUsuario,
+  type PlatoReceta
 } from "../lib/nutritionPlan";
 import { RecipeVideoEmbedSafe } from "./RecipeVideoEmbed";
 import type { DiaPlanConFecha } from "../lib/cronogramaHistorial";
@@ -24,6 +25,81 @@ import {
 } from "../lib/diaAdjuntosIDB";
 import { eliminarEvidenciaRemota, subirEvidenciaBlob } from "../lib/mediaRemoteStorage";
 import { useAuth } from "../context/AuthContext";
+
+type MacrosSlot = ReturnType<typeof sumarMacrosPlatoSlot>;
+
+function MacrosPorComidaDistribuidos({
+  etiquetaPrincipal,
+  totales,
+  textoExtra
+}: {
+  etiquetaPrincipal: string;
+  totales: MacrosSlot;
+  textoExtra?: string | null;
+}) {
+  const { kcal, proteinG, fatG, carbG, fiberG } = totales;
+  const muestra =
+    kcal > 0 || proteinG > 0 || fatG > 0 || carbG > 0 || fiberG > 0;
+  if (!muestra) return null;
+
+  const chip =
+    "motion-safe:transition motion-safe:hover:shadow-md flex min-w-[4.75rem] flex-1 flex-col items-center justify-center rounded-xl border px-2.5 py-2 text-teal-950 shadow-sm backdrop-blur-sm sm:min-w-[5rem]";
+
+  return (
+    <div className="mt-2 space-y-1">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-teal-800">{etiquetaPrincipal}</p>
+        {textoExtra ? <p className="text-[10px] font-medium tabular-nums text-slate-500">{textoExtra}</p> : null}
+      </div>
+      <div className="motion-safe:animate-fade-up flex flex-wrap gap-2">
+        {kcal > 0 ? (
+          <div
+            className={`${chip} border-amber-200/90 bg-gradient-to-br from-amber-50 via-white to-amber-50/40`}
+          >
+            <span className="text-[9px] font-bold uppercase tracking-wider text-amber-900/85">Calorías</span>
+            <span className="font-mono text-[15px] font-bold tabular-nums text-amber-950">~{Math.round(kcal)}</span>
+            <span className="text-[9px] text-amber-800/90">kcal</span>
+          </div>
+        ) : null}
+        {proteinG > 0 ? (
+          <div className={`${chip} border-sky-200/90 bg-gradient-to-br from-sky-50 via-white to-cyan-50/40`}>
+            <span className="text-[9px] font-bold uppercase tracking-wider text-sky-900/85">Proteína</span>
+            <span className="font-mono text-[15px] font-bold tabular-nums text-sky-950">{proteinG.toFixed(1)}</span>
+            <span className="text-[9px] text-sky-800/90">g</span>
+          </div>
+        ) : null}
+        {fatG > 0 ? (
+          <div className={`${chip} border-violet-200/90 bg-gradient-to-br from-violet-50 via-white to-fuchsia-50/30`}>
+            <span className="text-[9px] font-bold uppercase tracking-wider text-violet-900/85">Grasa</span>
+            <span className="font-mono text-[15px] font-bold tabular-nums text-violet-950">{fatG.toFixed(1)}</span>
+            <span className="text-[9px] text-violet-800/90">g</span>
+          </div>
+        ) : null}
+        {carbG > 0 ? (
+          <div className={`${chip} border-emerald-300/85 bg-gradient-to-br from-emerald-50 via-white to-teal-50/35`}>
+            <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-900/85">Carbos</span>
+            <span className="font-mono text-[15px] font-bold tabular-nums text-emerald-950">{carbG.toFixed(1)}</span>
+            <span className="text-[9px] text-emerald-800/90">g</span>
+          </div>
+        ) : null}
+        {fiberG > 0 ? (
+          <div className={`${chip} border-lime-200/90 bg-gradient-to-br from-lime-50/90 via-white to-green-50/25`}>
+            <span className="text-[9px] font-bold uppercase tracking-wider text-lime-900/85">Fibra</span>
+            <span className="font-mono text-[15px] font-bold tabular-nums text-lime-950">{fiberG.toFixed(1)}</span>
+            <span className="text-[9px] text-lime-800/90">g</span>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function EtiquetaPorciones(plato: PlatoReceta): string | null {
+  const p =
+    typeof plato.porciones === "number" && Number.isFinite(plato.porciones) ? Math.round(plato.porciones) : 1;
+  if (p <= 1) return "1 porción (orientativo)";
+  return `${p} porciones (orientativo)`;
+}
 
 type TabId = "plan" | "registro" | "progreso";
 
@@ -273,16 +349,15 @@ export function CronogramaDiaDetalleModal({
                   son aproximados.
                 </p>
                 {hayMacrosIa ? (
-                  <div className="rounded-xl border border-teal-100 bg-white/90 px-3 py-2 text-xs text-teal-950 shadow-sm">
-                    <p className="font-semibold">Día estimado (IA / campos rellenados)</p>
-                    <p className="mt-1 font-mono text-[11px] leading-relaxed text-slate-700">
-                      ~{Math.round(totalDia.kcal)} kcal · P {totalDia.proteinG.toFixed(0)} g · G{" "}
-                      {totalDia.fatG.toFixed(0)} g · C {totalDia.carbG.toFixed(0)} g
-                      {totalDia.fiberG > 0 ? ` · Fi ${totalDia.fiberG.toFixed(0)} g` : ""}
-                    </p>
+                  <div className="rounded-xl border border-teal-200/85 bg-gradient-to-br from-teal-50/90 via-white to-emerald-50/50 p-4 text-xs text-teal-950 shadow-md backdrop-blur-sm">
+                    <p className="font-display font-semibold text-sm text-teal-950">Aportes estimados · día completo</p>
+                    <MacrosPorComidaDistribuidos
+                      etiquetaPrincipal="Macros del día (~suma tres comidas)"
+                      totales={totalDia}
+                    />
                     {presupuestoKcalDiario != null ? (
-                      <p className="mt-1 text-teal-900">
-                        Referencia de presupuesto (~{Math.round(presupuestoKcalDiario)} kcal/día según tu perfil):{" "}
+                      <p className="mt-2 border-t border-teal-100/80 pt-2 text-[11px] text-teal-900">
+                        Referencia por perfil (~{Math.round(presupuestoKcalDiario)} kcal/día):{" "}
                         {deltaPresupuesto != null ? (
                           <>
                             {deltaPresupuesto >= 0 ? (
@@ -301,42 +376,67 @@ export function CronogramaDiaDetalleModal({
                   const tituloSlot =
                     slot === "desayuno" ? "Desayuno" : slot === "almuerzo" ? "Almuerzo" : "Cena";
                   const m = sumarMacrosPlatoSlot(c);
-                  const lineaMacro =
-                    m.kcal > 0 || m.proteinG > 0 || m.fatG > 0 || m.carbG > 0 || m.fiberG > 0 ? (
-                      <p className="mt-1 font-mono text-[11px] text-slate-600">
-                        ~{Math.round(m.kcal)} kcal · P {m.proteinG.toFixed(0)} · G {m.fatG.toFixed(0)} · C{" "}
-                        {m.carbG.toFixed(0)}
-                        {m.fiberG > 0 ? ` · Fi ${m.fiberG.toFixed(0)}` : ""}
-                      </p>
-                    ) : null;
+                  const busquedaHref = youtubeBusquedaPlato(c.titulo, c.videoQuery, perfil.estiloDieta);
+                  const muestraMacros =
+                    m.kcal > 0 || m.proteinG > 0 || m.fatG > 0 || m.carbG > 0 || m.fiberG > 0;
+                  const porTxt = EtiquetaPorciones(c);
                   return (
-                    <div key={slot} className="rounded-xl border border-emerald-100/90 bg-emerald-50/30 p-3">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-teal-800">{tituloSlot}</p>
-                      <p className="mt-1 font-medium text-slate-900">{c.titulo}</p>
-                      <p className="mt-1 whitespace-pre-wrap text-xs text-slate-600">{c.receta}</p>
-                      {lineaMacro}
-                      {c.youtubeVideoId ? (
-                        <div className="motion-safe:animate-fade-up mt-3 space-y-2">
-                          <RecipeVideoEmbedSafe videoId={c.youtubeVideoId} title={c.titulo} />
-                          <a
-                            className="ui-video-link inline-block text-xs"
-                            href={youtubeBusquedaPlato(c.titulo, c.videoQuery, perfil.estiloDieta)}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            Abrir búsqueda en YouTube
-                          </a>
-                        </div>
+                    <div
+                      key={slot}
+                      className="overflow-hidden rounded-2xl border border-emerald-200/85 bg-white/95 p-4 shadow-sm backdrop-blur-sm"
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-2 border-b border-emerald-100/90 pb-2">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-teal-800">{tituloSlot}</p>
+                        <span className="rounded-full bg-emerald-100/90 px-2 py-0.5 text-[10px] font-medium text-teal-900">
+                          {porTxt ?? "1 porción"}
+                        </span>
+                      </div>
+                      <p className="mt-3 font-display text-base font-semibold leading-snug text-slate-900">{c.titulo}</p>
+                      <p className="mt-2 whitespace-pre-wrap text-xs leading-relaxed text-slate-600">{c.receta}</p>
+                      {muestraMacros ? (
+                        <MacrosPorComidaDistribuidos
+                          etiquetaPrincipal="Desglose aproximado (IA)"
+                          totales={m}
+                        />
                       ) : (
-                        <a
-                          className="ui-video-link mt-2 inline-block"
-                          href={youtubeBusquedaPlato(c.titulo, c.videoQuery, perfil.estiloDieta)}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          Buscar video para esta receta
-                        </a>
+                        <p className="mt-2 rounded-lg bg-slate-50/95 px-2 py-1.5 text-[11px] text-slate-500">
+                          Esta receta no trae números de macros; enfócate en las cantidades en el texto.
+                        </p>
                       )}
+                      <div className="mt-4 border-t border-emerald-50 pt-3">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-teal-800">Video cocina</p>
+                        <p className="mt-0.5 text-[10px] text-slate-500">
+                          Preferimos YouTube embebido (privacidad: youtube-nocookie) cuando encontramos coincidencias.
+                        </p>
+                        {c.youtubeVideoId ? (
+                          <div className="motion-safe:animate-fade-up mt-3 space-y-3">
+                            <RecipeVideoEmbedSafe videoId={c.youtubeVideoId} title={c.titulo} />
+                            <a
+                              className="ui-video-link inline-flex items-center gap-2 text-[11px] font-semibold text-teal-900"
+                              href={busquedaHref}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Abrir otros resultados en YouTube
+                            </a>
+                          </div>
+                        ) : (
+                          <>
+                            <a
+                              href={busquedaHref}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="motion-safe:hover:border-teal-400/70 motion-safe:hover:shadow-md mt-3 flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-teal-300/80 bg-gradient-to-br from-teal-50 via-white to-violet-50/35 px-5 text-center text-teal-900 shadow-inner transition motion-safe:duration-150"
+                            >
+            <span className="text-4xl motion-safe:animate-pulse motion-reduce:animate-none">▶</span>
+                              <span className="text-sm font-semibold">Ver vídeos de esta receta en YouTube</span>
+                              <span className="text-[11px] text-teal-800/85">
+                                No encontramos ID confiable para incrustado en la app · abrir resultados relacionados con tu lista
+                              </span>
+                            </a>
+                          </>
+                        )}
+                      </div>
                     </div>
                   );
                 })}
