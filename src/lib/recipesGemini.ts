@@ -69,6 +69,7 @@ function normalizeSlot(x: unknown): PlatoReceta {
   const protein_g = numOrUndef(o.protein_g);
   const fat_g = numOrUndef(o.fat_g);
   const carb_g = numOrUndef(o.carb_g);
+  const fiber_g = numOrUndef(o.fiber_g);
   return {
     titulo,
     receta,
@@ -77,7 +78,8 @@ function normalizeSlot(x: unknown): PlatoReceta {
     ...(kcal_estimate != null ? { kcal_estimate } : {}),
     ...(protein_g != null ? { protein_g } : {}),
     ...(fat_g != null ? { fat_g } : {}),
-    ...(carb_g != null ? { carb_g } : {})
+    ...(carb_g != null ? { carb_g } : {}),
+    ...(fiber_g != null ? { fiber_g } : {})
   };
 }
 
@@ -147,16 +149,16 @@ Reglas obligatorias:
 - "videoQuery": 6-14 palabras en español para buscar en YouTube el MISMO plato que describe titulo+receta (incluye ingrediente principal + técnica + estilo según estiloDieta). Sin URL completa salvo que necesites; prioriza texto de búsqueda. Coherente con el título.
 - Respeta estiloDieta: keto (muy bajo carbohidrato), mediterranea o balanceada.
 - Evita ingredientes en alimentosEvitar; enfermedades solo como precaución breve, sin diagnosticar.
-- Opcionalmente por cada comida (cuando puedas estimar sin inventar valores extremos): "kcal_estimate" (aprox.), "protein_g", "fat_g", "carb_g" (gramos, 1 persona).
+- Opcionalmente por cada comida (cuando puedas estimar sin inventar valores extremos): "kcal_estimate" (aprox.), "protein_g", "fat_g", "carb_g", "fiber_g" (gramos, 1 persona; fibra solo si es razonable).
 - Si conoces un video oficial coherente con el plato: "youtube_video_id" (exactamente 11 caracteres alfanuméricos de YouTube). Si no, null.
 
 Devuelve SOLO un JSON: array de longitud ${diasChunk}. Cada elemento:
 {
   "dia": <número global del día>,
   "comidas": {
-    "desayuno": { "titulo": "", "receta": "", "videoQuery": "", "kcal_estimate": null, "protein_g": null, "fat_g": null, "carb_g": null, "youtube_video_id": null },
-    "almuerzo": { "titulo": "", "receta": "", "videoQuery": "", "kcal_estimate": null, "protein_g": null, "fat_g": null, "carb_g": null, "youtube_video_id": null },
-    "cena": { "titulo": "", "receta": "", "videoQuery": "", "kcal_estimate": null, "protein_g": null, "fat_g": null, "carb_g": null, "youtube_video_id": null }
+    "desayuno": { "titulo": "", "receta": "", "videoQuery": "", "kcal_estimate": null, "protein_g": null, "fat_g": null, "carb_g": null, "fiber_g": null, "youtube_video_id": null },
+    "almuerzo": { "titulo": "", "receta": "", "videoQuery": "", "kcal_estimate": null, "protein_g": null, "fat_g": null, "carb_g": null, "fiber_g": null, "youtube_video_id": null },
+    "cena": { "titulo": "", "receta": "", "videoQuery": "", "kcal_estimate": null, "protein_g": null, "fat_g": null, "carb_g": null, "fiber_g": null, "youtube_video_id": null }
   }
 }`;
 

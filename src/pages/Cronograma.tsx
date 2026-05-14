@@ -22,7 +22,7 @@ import {
 } from "../lib/perfilStorage";
 import { etiquetaFechaDiaPlan, toYmdLocal } from "../lib/planFechas";
 import { fetchAndApplyFamilyRemote, fetchProfileRemote, upsertProfileRemote } from "../lib/profileRemote";
-import { pullCloudSnapshots, pushPlanSnapshotRemote } from "../lib/snapshotsRemote";
+import { deletePlanSnapshotRemote, pullCloudSnapshots, pushPlanSnapshotRemote } from "../lib/snapshotsRemote";
 import {
   CRONOGRAMA_HISTORIAL_EVENT,
   adjuntarFechasADias,
@@ -331,6 +331,11 @@ export function Cronograma() {
   const borrarSnapshot = (s: CronogramaSnapshot) => {
     if (!window.confirm(`¿Eliminar el plan "${s.titulo ?? new Date(s.createdAt).toLocaleDateString("es")}"?`)) return;
     eliminarSnapshot(s.id);
+    if (user?.id && isConfigured) {
+      void deletePlanSnapshotRemote(user.id, s.perfilId, s.id).then((r) => {
+        if (!r.ok) setStatus(`Plan borrado aquí; copia en nube sin eliminar (${r.error}).`);
+      });
+    }
     setHistorialTick((t) => t + 1);
   };
 

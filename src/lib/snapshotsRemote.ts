@@ -60,6 +60,39 @@ export async function pushPlanSnapshotRemote(userId: string, snap: CronogramaSna
   return error ? { ok: false, error: error.message } : { ok: true };
 }
 
+/** Quita copia remota cuando el usuario borró el mercado en el dispositivo. */
+export async function deleteMercadoSnapshotRemote(
+  userId: string,
+  perfilLocalId: string | undefined,
+  snapshotLocalId: string
+): Promise<SnapshotPushResult> {
+  if (!supabase) return { ok: false, error: "Cliente Supabase no disponible." };
+  const pid = perfilLocalId ?? "_";
+  const { error } = await supabase
+    .from("user_market_snapshots")
+    .delete()
+    .eq("user_id", userId)
+    .eq("perfil_local_id", pid)
+    .eq("snapshot_local_id", snapshotLocalId);
+  return error ? { ok: false, error: error.message } : { ok: true };
+}
+
+/** Quita copia remota cuando el usuario borró el plan en el dispositivo. */
+export async function deletePlanSnapshotRemote(
+  userId: string,
+  perfilLocalId: string,
+  snapshotLocalId: string
+): Promise<SnapshotPushResult> {
+  if (!supabase) return { ok: false, error: "Cliente Supabase no disponible." };
+  const { error } = await supabase
+    .from("user_plan_snapshots")
+    .delete()
+    .eq("user_id", userId)
+    .eq("perfil_local_id", perfilLocalId)
+    .eq("snapshot_local_id", snapshotLocalId);
+  return error ? { ok: false, error: error.message } : { ok: true };
+}
+
 /** Descarga y fusiona snapshots remotos con localStorage (LWW por `updated_at`). */
 export async function pullCloudSnapshots(userId: string): Promise<{
   mercados: number;

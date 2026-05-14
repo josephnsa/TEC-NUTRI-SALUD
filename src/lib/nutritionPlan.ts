@@ -14,6 +14,7 @@ export type PlatoReceta = {
   protein_g?: number;
   fat_g?: number;
   carb_g?: number;
+  fiber_g?: number;
 };
 
 export type PerfilUsuario = {
@@ -317,12 +318,14 @@ export function sumarMacrosPlatoSlot(slot: PlatoReceta): {
   proteinG: number;
   fatG: number;
   carbG: number;
+  fiberG: number;
 } {
   return {
     kcal: Math.max(0, Math.round(Number(slot.kcal_estimate) || 0)),
     proteinG: Math.max(0, Number(slot.protein_g) || 0),
     fatG: Math.max(0, Number(slot.fat_g) || 0),
-    carbG: Math.max(0, Number(slot.carb_g) || 0)
+    carbG: Math.max(0, Number(slot.carb_g) || 0),
+    fiberG: Math.max(0, Number(slot.fiber_g) || 0)
   };
 }
 
@@ -331,6 +334,7 @@ export function sumarMacrosComidaDia(c: ComidaDia): {
   proteinG: number;
   fatG: number;
   carbG: number;
+  fiberG: number;
 } {
   return [c.desayuno, c.almuerzo, c.cena].reduce(
     (acc, slot) => {
@@ -339,10 +343,11 @@ export function sumarMacrosComidaDia(c: ComidaDia): {
         kcal: acc.kcal + m.kcal,
         proteinG: acc.proteinG + m.proteinG,
         fatG: acc.fatG + m.fatG,
-        carbG: acc.carbG + m.carbG
+        carbG: acc.carbG + m.carbG,
+        fiberG: acc.fiberG + m.fiberG
       };
     },
-    { kcal: 0, proteinG: 0, fatG: 0, carbG: 0 }
+    { kcal: 0, proteinG: 0, fatG: 0, carbG: 0, fiberG: 0 }
   );
 }
 

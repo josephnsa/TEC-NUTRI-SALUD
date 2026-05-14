@@ -6,7 +6,7 @@ import {
   youtubeBusquedaPlato,
   type PerfilUsuario
 } from "../lib/nutritionPlan";
-import { RecipeVideoEmbed } from "./RecipeVideoEmbed";
+import { RecipeVideoEmbedSafe } from "./RecipeVideoEmbed";
 import type { DiaPlanConFecha } from "../lib/cronogramaHistorial";
 import {
   ETIQUETAS_PROGRESO_DIA,
@@ -134,7 +134,12 @@ export function CronogramaDiaDetalleModal({
   if (!open || !dia || !fechaIso) return null;
 
   const totalDia = sumarMacrosComidaDia(dia.comidas);
-  const hayMacrosIa = totalDia.kcal > 0 || totalDia.proteinG > 0 || totalDia.fatG > 0 || totalDia.carbG > 0;
+  const hayMacrosIa =
+    totalDia.kcal > 0 ||
+    totalDia.proteinG > 0 ||
+    totalDia.fatG > 0 ||
+    totalDia.carbG > 0 ||
+    totalDia.fiberG > 0;
   const deltaPresupuesto =
     presupuestoKcalDiario != null && hayMacrosIa ? presupuestoKcalDiario - totalDia.kcal : null;
 
@@ -273,6 +278,7 @@ export function CronogramaDiaDetalleModal({
                     <p className="mt-1 font-mono text-[11px] leading-relaxed text-slate-700">
                       ~{Math.round(totalDia.kcal)} kcal · P {totalDia.proteinG.toFixed(0)} g · G{" "}
                       {totalDia.fatG.toFixed(0)} g · C {totalDia.carbG.toFixed(0)} g
+                      {totalDia.fiberG > 0 ? ` · Fi ${totalDia.fiberG.toFixed(0)} g` : ""}
                     </p>
                     {presupuestoKcalDiario != null ? (
                       <p className="mt-1 text-teal-900">
@@ -296,10 +302,11 @@ export function CronogramaDiaDetalleModal({
                     slot === "desayuno" ? "Desayuno" : slot === "almuerzo" ? "Almuerzo" : "Cena";
                   const m = sumarMacrosPlatoSlot(c);
                   const lineaMacro =
-                    m.kcal > 0 || m.proteinG > 0 || m.fatG > 0 || m.carbG > 0 ? (
+                    m.kcal > 0 || m.proteinG > 0 || m.fatG > 0 || m.carbG > 0 || m.fiberG > 0 ? (
                       <p className="mt-1 font-mono text-[11px] text-slate-600">
                         ~{Math.round(m.kcal)} kcal · P {m.proteinG.toFixed(0)} · G {m.fatG.toFixed(0)} · C{" "}
                         {m.carbG.toFixed(0)}
+                        {m.fiberG > 0 ? ` · Fi ${m.fiberG.toFixed(0)}` : ""}
                       </p>
                     ) : null;
                   return (
@@ -310,7 +317,7 @@ export function CronogramaDiaDetalleModal({
                       {lineaMacro}
                       {c.youtubeVideoId ? (
                         <div className="motion-safe:animate-fade-up mt-3 space-y-2">
-                          <RecipeVideoEmbed videoId={c.youtubeVideoId} title={c.titulo} />
+                          <RecipeVideoEmbedSafe videoId={c.youtubeVideoId} title={c.titulo} />
                           <a
                             className="ui-video-link inline-block text-xs"
                             href={youtubeBusquedaPlato(c.titulo, c.videoQuery, perfil.estiloDieta)}

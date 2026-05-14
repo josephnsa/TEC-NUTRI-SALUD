@@ -14,6 +14,7 @@ import {
   descargarRespaldoMercadoJson,
   eliminarMercadoRealizado,
   getMercadoActivoParaPlan,
+  getMercadoRealizado,
   guardarMercadoRealizado,
   importarRespaldoMercadoJson,
   listarMercadosRealizados,
@@ -22,7 +23,7 @@ import {
   type MercadoSnapshot
 } from "../lib/mercadoHistorial";
 import { PERFILES_STORAGE_EVENT } from "../lib/perfilStorage";
-import { pushMercadoSnapshotRemote } from "../lib/snapshotsRemote";
+import { deleteMercadoSnapshotRemote, pushMercadoSnapshotRemote } from "../lib/snapshotsRemote";
 
 export function KetoMercado() {
   const navigate = useNavigate();
@@ -138,10 +139,19 @@ export function KetoMercado() {
 
   const borrar = (id: string) => {
     if (!window.confirm("¿Eliminar este mercado del historial?")) return;
+    const prev = getMercadoRealizado(id);
     eliminarMercadoRealizado(id);
     if (editandoId === id) setEditandoId(null);
     refreshHistorial();
     setMsg("Entrada eliminada del historial.");
+    if (user?.id && isConfigured && prev) {
+      void (async () => {
+        const r = await deleteMercadoSnapshotRemote(user.id, prev.perfilId, prev.id);
+        if (!r.ok) {
+          setMsg(`Entrada borrada aquí; la copia en la nube no se pudo quitar (${r.error}).`);
+        }
+      })();
+    }
   };
 
   const abrirEdicion = (h: MercadoSnapshot) => {
