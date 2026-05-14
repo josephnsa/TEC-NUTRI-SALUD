@@ -1,6 +1,6 @@
 import { FormEvent, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { supabase, supabaseConfigured } from "../lib/supabase";
+import { Link, useNavigate } from "react-router-dom";
+import { urlRedireccionRecuperacionClave } from "../lib/authPassword";
 
 export function Login() {
   const navigate = useNavigate();
@@ -8,6 +8,7 @@ export function Login() {
   const [password, setPassword] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [mostrarRecuperacion, setMostrarRecuperacion] = useState(false);
 
   if (!supabaseConfigured || !supabase) {
     return (
@@ -66,6 +67,29 @@ export function Login() {
     }
   };
 
+  const onRecuperarClave = async () => {
+    if (!supabase) return;
+    const mail = email.trim();
+    if (!mail) {
+      setMsg("Escribe tu correo arriba o aquí mismo para enviarte el enlace.");
+      return;
+    }
+    setLoading(true);
+    setMsg(null);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(mail, {
+        redirectTo: urlRedireccionRecuperacionClave()
+      });
+      if (error) throw error;
+      setMsg("Si ese correo está registrado, recibirás un enlace para elegir nueva contraseña.");
+      setMostrarRecuperacion(false);
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : "No se pudo enviar el correo.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
     void onEmail("signin");
@@ -109,6 +133,19 @@ export function Login() {
             onChange={(e) => setPassword(e.target.value)}
           />
         </label>
+        <div className="flex justify-end">
+          <button
+            type="button"
+            disabled={loading}
+            onClick={() => {
+              setMostrarRecuperacion((v) => !v);
+              setMsg(null);
+            }}
+            className="text-xs font-semibold text-teal-800 underline decoration-teal-400/70 hover:text-teal-950"
+          >
+            ¿Olvidaste tu contraseña?
+          </button>
+        </div>
         <button type="submit" disabled={loading} className="ui-btn-primary w-full">
           Entrar
         </button>
@@ -121,6 +158,24 @@ export function Login() {
           Crear cuenta
         </button>
       </form>
+
+      {mostrarRecuperacion && (
+        <div className="rounded-xl border border-violet-200/80 bg-violet-50/70 p-4 text-sm text-slate-800">
+          <p className="font-medium text-violet-950">Recuperar acceso</p>
+          <p className="mt-2 text-xs text-slate-600">
+            Usamos el mismo correo del formulario. En Supabase debes tener permitida la URL de redirección (ver{" "}
+            <code className="rounded bg-white/80 px-1">docs/DEPLOYMENT.md</code>).
+          </p>
+          <button
+            type="button"
+            disabled={loading}
+            onClick={() => void onRecuperarClave()}
+            className="ui-btn-secondary mt-3 w-full text-xs"
+          >
+            Enviar enlace a mi correo
+          </button>
+        </div>
+      )}
 
       {msg && (
         <p className="rounded-xl border border-teal-200/80 bg-teal-50/90 px-3 py-2 text-sm text-teal-900 shadow-sm backdrop-blur-sm">

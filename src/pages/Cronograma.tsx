@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import {
   contarCompradosMercado,
   generarCronograma,
+  presupuestoKcalOrientativoDiario,
   resumenNutricional,
   type DiaPlan,
   type ModoCronograma,
@@ -21,6 +22,7 @@ import {
 } from "../lib/perfilStorage";
 import { etiquetaFechaDiaPlan, toYmdLocal } from "../lib/planFechas";
 import { fetchAndApplyFamilyRemote, fetchProfileRemote, upsertProfileRemote } from "../lib/profileRemote";
+import { pullCloudSnapshots, pushPlanSnapshotRemote } from "../lib/snapshotsRemote";
 import {
   CRONOGRAMA_HISTORIAL_EVENT,
   adjuntarFechasADias,
@@ -154,6 +156,7 @@ export function Cronograma() {
         savePerfilLocal(remote);
       }
       await fetchAndApplyFamilyRemote(user.id);
+      await pullCloudSnapshots(user.id);
       setLoadingRemote(false);
     })();
   }, [user?.id, isConfigured]);
@@ -210,6 +213,7 @@ export function Cronograma() {
     vistaCronograma === "ia" && cronogramaIa?.length === diasCronograma ? cronogramaIa : cronograma;
 
   const resumen = useMemo(() => resumenNutricional(perfil), [perfil]);
+  const presupuestoKcal = useMemo(() => presupuestoKcalOrientativoDiario(perfil), [perfil]);
 
   const fechaIniCron = loadPerfilMiembroActivo()?.fechaInicioPlan ?? null;
 
@@ -310,6 +314,7 @@ export function Cronograma() {
       setHistorialTick((t) => t + 1);
       setSnapshotActivoId(pid, snap.id);
       setSnapActivoId(snap.id);
+      if (user?.id && isConfigured) void pushPlanSnapshotRemote(user.id, snap);
     }
   };
 
@@ -443,6 +448,7 @@ export function Cronograma() {
         if (iaSnap) {
           setSnapshotActivoId(pid, iaSnap.id);
           setSnapActivoId(iaSnap.id);
+          if (user?.id && isConfigured) void pushPlanSnapshotRemote(user.id, iaSnap);
         }
       }
     } catch (e) {
@@ -467,6 +473,7 @@ export function Cronograma() {
         dia={diaSeleccionado}
         perfilId={perfilIdActivo}
         perfil={perfil}
+        presupuestoKcalDiario={presupuestoKcal}
       />
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">

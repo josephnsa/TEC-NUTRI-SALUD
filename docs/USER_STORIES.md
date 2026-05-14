@@ -41,6 +41,8 @@ María quiere comer mejor en estilo keto, organizar el mercado, **guardar lo que
    *quiero* registrarme con email o Google cuando configure el backend  
    *para* guardar mi perfil en la nube además del dispositivo.
 
+   Cuando uso **correo y contraseña**, quiero poder **pedir recuperación si olvidé la contraseña** desde Iniciar sesión (enlace por email a `/#/actualizar-clave`) y **cambiar mi contraseña desde Mi espacio** estando dentro; si solo uso **Google**, el cambio de “contraseña de la app” no aplica (gestión desde Google).
+
 8. **Asistente IA (opcional)**  
    *Como* usuaria con dudas puntuales  
    *quiero* hacer preguntas en lenguaje natural  
@@ -70,7 +72,7 @@ María quiere comer mejor en estilo keto, organizar el mercado, **guardar lo que
 
 ## Fase 3 — evolutivo (próxima ejecución)
 
-*Referencia técnica y orden de PRs:* [`docs/PLAN_MEJORAS_FASE3_NUTRICION_SUPABASE_UI.md`](./PLAN_MEJORAS_FASE3_NUTRICION_SUPABASE_UI.md). Épica de negocio **F:** `docs/MEJORAS_NEGOCIO_Y_PRODUCTO.md`.
+*Referencia técnica y orden de PRs:* [`docs/PLAN_MEJORAS_FASE3_NUTRICION_SUPABASE_UI.md`](./PLAN_MEJORAS_FASE3_NUTRICION_SUPABASE_UI.md) (**F3.0** auth contraseña, luego F3.1+). Épica de negocio **F:** `docs/MEJORAS_NEGOCIO_Y_PRODUCTO.md`.
 
 13. **Sincronizar lo esencial en la cuenta (Supabase gratis)**  
     *Como* usuaria con sesión iniciada  

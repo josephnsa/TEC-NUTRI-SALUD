@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { youtubeBusquedaPlato, type PerfilUsuario } from "../lib/nutritionPlan";
+import {
+  sumarMacrosComidaDia,
+  sumarMacrosPlatoSlot,
+  youtubeBusquedaPlato,
+  type PerfilUsuario
+} from "../lib/nutritionPlan";
+import { RecipeVideoEmbed } from "./RecipeVideoEmbed";
 import type { DiaPlanConFecha } from "../lib/cronogramaHistorial";
 import {
   ETIQUETAS_PROGRESO_DIA,
@@ -27,9 +33,18 @@ type Props = {
   dia: DiaPlanConFecha | null;
   perfilId: string | null;
   perfil: PerfilUsuario;
+  /** Referencia orientativa para comparar suma del día (~kcal IA). */
+  presupuestoKcalDiario?: number | null;
 };
 
-export function CronogramaDiaDetalleModal({ open, onClose, dia, perfilId, perfil }: Props) {
+export function CronogramaDiaDetalleModal({
+  open,
+  onClose,
+  dia,
+  perfilId,
+  perfil,
+  presupuestoKcalDiario = null
+}: Props) {
   const { user, isConfigured } = useAuth();
   const [tab, setTab] = useState<TabId>("plan");
   const [record, setRecord] = useState<DiaAdjuntosRecord | null>(null);
@@ -117,6 +132,11 @@ export function CronogramaDiaDetalleModal({ open, onClose, dia, perfilId, perfil
   }, [open, lightboxUrl, onClose]);
 
   if (!open || !dia || !fechaIso) return null;
+
+  const totalDia = sumarMacrosComidaDia(dia.comidas);
+  const hayMacrosIa = totalDia.kcal > 0 || totalDia.proteinG > 0 || totalDia.fatG > 0 || totalDia.carbG > 0;
+  const deltaPresupuesto =
+    presupuestoKcalDiario != null && hayMacrosIa ? presupuestoKcalDiario - totalDia.kcal : null;
 
   const progress = record?.progress ?? ETIQUETAS_PROGRESO_DIA.map(() => false);
   const seguimiento = record?.seguimientoPlan ?? null;
@@ -243,24 +263,73 @@ export function CronogramaDiaDetalleModal({ open, onClose, dia, perfilId, perfil
           <div className="min-h-0 flex-1 overflow-y-auto p-4">
             {tab === "plan" && (
               <div className="space-y-4">
-                <p className="text-xs text-slate-500">Ideas de receta. Puedes abrir YouTube en otra pestaña si quieres.</p>
+                <p className="text-xs text-slate-500">
+                  Ideas de receta <span className="font-medium text-slate-700">(orientativo, no clínico)</span>. Los números de IA
+                  son aproximados.
+                </p>
+                {hayMacrosIa ? (
+                  <div className="rounded-xl border border-teal-100 bg-white/90 px-3 py-2 text-xs text-teal-950 shadow-sm">
+                    <p className="font-semibold">Día estimado (IA / campos rellenados)</p>
+                    <p className="mt-1 font-mono text-[11px] leading-relaxed text-slate-700">
+                      ~{Math.round(totalDia.kcal)} kcal · P {totalDia.proteinG.toFixed(0)} g · G{" "}
+                      {totalDia.fatG.toFixed(0)} g · C {totalDia.carbG.toFixed(0)} g
+                    </p>
+                    {presupuestoKcalDiario != null ? (
+                      <p className="mt-1 text-teal-900">
+                        Referencia de presupuesto (~{Math.round(presupuestoKcalDiario)} kcal/día según tu perfil):{" "}
+                        {deltaPresupuesto != null ? (
+                          <>
+                            {deltaPresupuesto >= 0 ? (
+                              <span>aprox. {Math.round(deltaPresupuesto)} kcal por debajo.</span>
+                            ) : (
+                              <span>aprox. {Math.round(-deltaPresupuesto)} kcal por encima.</span>
+                            )}
+                          </>
+                        ) : null}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
                 {(["desayuno", "almuerzo", "cena"] as const).map((slot) => {
                   const c = dia.comidas[slot];
                   const tituloSlot =
                     slot === "desayuno" ? "Desayuno" : slot === "almuerzo" ? "Almuerzo" : "Cena";
+                  const m = sumarMacrosPlatoSlot(c);
+                  const lineaMacro =
+                    m.kcal > 0 || m.proteinG > 0 || m.fatG > 0 || m.carbG > 0 ? (
+                      <p className="mt-1 font-mono text-[11px] text-slate-600">
+                        ~{Math.round(m.kcal)} kcal · P {m.proteinG.toFixed(0)} · G {m.fatG.toFixed(0)} · C{" "}
+                        {m.carbG.toFixed(0)}
+                      </p>
+                    ) : null;
                   return (
                     <div key={slot} className="rounded-xl border border-emerald-100/90 bg-emerald-50/30 p-3">
                       <p className="text-xs font-semibold uppercase tracking-wide text-teal-800">{tituloSlot}</p>
                       <p className="mt-1 font-medium text-slate-900">{c.titulo}</p>
                       <p className="mt-1 whitespace-pre-wrap text-xs text-slate-600">{c.receta}</p>
-                      <a
-                        className="ui-video-link mt-2 inline-block"
-                        href={youtubeBusquedaPlato(c.titulo, c.videoQuery, perfil.estiloDieta)}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        Buscar video para esta receta
-                      </a>
+                      {lineaMacro}
+                      {c.youtubeVideoId ? (
+                        <div className="motion-safe:animate-fade-up mt-3 space-y-2">
+                          <RecipeVideoEmbed videoId={c.youtubeVideoId} title={c.titulo} />
+                          <a
+                            className="ui-video-link inline-block text-xs"
+                            href={youtubeBusquedaPlato(c.titulo, c.videoQuery, perfil.estiloDieta)}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            Abrir búsqueda en YouTube
+                          </a>
+                        </div>
+                      ) : (
+                        <a
+                          className="ui-video-link mt-2 inline-block"
+                          href={youtubeBusquedaPlato(c.titulo, c.videoQuery, perfil.estiloDieta)}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Buscar video para esta receta
+                        </a>
+                      )}
                     </div>
                   );
                 })}

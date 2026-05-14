@@ -17,7 +17,14 @@ La implementación expone este orden en:
 
 ## Mi resumen / Tu espacio
 
-Pantalla **`/#/mi-espacio`** (`MiEspacio.tsx`): vista rápida del avance en los tres pasos (perfil guardado, mercado activo con nombre/nota, último plan de menú con título y "hace N días"), **siguiente paso sugerido**, accesos rápidos a todas las secciones y herramientas de respaldo (descargar / restaurar JSON). No sustituye los pasos numerados.
+Pantalla **`/#/mi-espacio`** (`MiEspacio.tsx`): vista rápida del avance en los tres pasos (perfil guardado, mercado activo con nombre/nota, último plan de menú con título y "hace N días"), **siguiente paso sugerido**, accesos rápidos a todas las secciones y herramientas de respaldo (descargar / restaurar JSON). Con Supabase configurado y sesión iniciada por **correo y contraseña**, incluye también **seguridad de la cuenta**: cambiar contraseña desde aquí u orientación si el acceso es solo con Google. Con sesión puede **traer desde la nube** mercados y planes guardados (botón dedicado).
+
+---
+
+## Iniciar sesión y cuenta (Supabase opcional)
+
+- **`/#/login`:** registro o acceso con email/contraseña o Google cuando el proyecto tiene `VITE_SUPABASE_*`; enlace **“¿Olvidaste tu contraseña?”** que envía correo de recuperación.
+- Tras pulsar el enlace del correo, la SPA abre **`/#/actualizar-clave`** para establecer nueva contraseña (Supabase marca la sesión en modo recuperación). Las URLs de redirección deben estar declaradas en el panel Supabase (`docs/DEPLOYMENT.md`).
 
 ---
 
@@ -42,18 +49,17 @@ flowchart LR
    Soporta **varios perfiles** (multiperfil local): selector global en la barra superior, CRUD en Mi plan; cada perfil tiene su propio mercado activo y cronogramas guardados.
 
 2. **Mercado keto**  
-   Días y comensales para la **lista de compra**. Marcas lo comprado (o "todo de una vez"). **Guardar mercado realizado** enlaza la despensa al plan y navega al cronograma.  
+   Días y comensales para la **lista de compra**. Marcas lo comprado (o "todo de una vez"). Puedes **añadir ítems extra** (fuera del generador) para reflejar toda la despensa. **Guardar mercado realizado** enlaza la despensa al plan y navega al cronograma.  
    Cada mercado guardado puede tener **nombre amigable** ("Semana 19 mayo") y **nota** ("Solo verdurería"), editables desde el historial.
 
 3. **Cronograma**  
-   Modo perfil / mercado / mixto; días; **Nuevas combinaciones** (plantillas) o **Agente IA recetas**.  
-   Cada comida: **"Buscar video para esta receta"** (YouTube alineado al plato + estilo de dieta).  
-   Los planes se **guardan en historial** con título editable, se puede marcar uno como **"plan activo de la semana"** y restaurar, renombrar o borrar cualquiera desde el panel "Planes guardados".  
-   Vista **Lista** o **Calendario** mensual; clic en un día abre el detalle **sin salir de la app**.
+   Modo perfil / mercado / mixto; días; **Nuevas combinaciones** (plantillas) o **Agente IA recetas** (con **macros estimadas** y **presupuesto diario** de referencia si definiste meta de peso en Mi plan).  
+   Cada comida: **embed de YouTube** cuando la IA devuelve un `youtube_video_id` válido; si no, enlace **"Buscar video para esta receta"**.  
+   Los planes se **guardan en historial** con título editable, plan **activo de la semana**, restauración y borrado en “Planes guardados”. Vista **lista** o **calendario** mensual; un clic abre el detalle sin salir de la app.
 
 4. **Detalle del día** (modal desde calendario o lista)  
    Tres pestañas:  
-   - **Plan** — recetas sugeridas; vídeo mediante enlace externo (**hoy**); en **evolutivo Fase 3** también **reproducir dentro de la app** con embed cuando la fuente lo permita.  
+   - **Plan** — recetas; **video embebido** (YouTube nocookie) o búsqueda externa; resumen orientativo **kcal / macros** cuando existan datos.  
    - **Tu registro** — fotos y vídeos propios por comida (IndexedDB + miniaturas); con sesión, **copia automática en la cuenta** (Storage privado del proyecto).  
    - **Progreso** — seguimiento del plan (sí / parcial / no), checklist del día y nota libre.
 
@@ -67,6 +73,7 @@ flowchart LR
 - `MiEspacio.tsx` ofrece **descargar / restaurar** un JSON de respaldo que incluye todas las claves `tec_nutri_salud_*` (perfiles, mercados, cronogramas, listas, claves activas).
 - `KetoMercado.tsx` ofrece export/import específico del historial de mercados (fusión por id).
 - Las **fotos y vídeos** del cronograma se guardan en **IndexedDB** del navegador y **no** se incluyen en el respaldo JSON (solo sus metadatos si ya se subieron a Supabase Storage).
+- Con sesión Supabase, los **mercados y planes guardados** pueden **subirse y fusionarse** desde la nube (tablas `user_market_snapshots` / `user_plan_snapshots`); al iniciar sesión la app intenta **traer** copias recientes (por fecha `updated_at`).
 
 ---
 
@@ -78,8 +85,8 @@ La app es instalable como PWA. Cuando hay una nueva versión del service worker 
 
 ## Qué hace el agente en recetas
 
-- **Versión actual:** devuelve JSON con `titulo`, `receta` y `videoQuery`; receta orientada a 1 porción; consulta video alineada al plato.
-- **Versión próxima (Fase 3):** mismo contrato más campos opcionales de **macros estimadas** (`kcal`, `proteinG`, `fatG`, `carbG`, etc.) y, si fuera estable, **`youtubeVideoId`** para embed sin salir del sitio. Ver **`docs/PLAN_MEJORAS_FASE3_NUTRICION_SUPABASE_UI.md`**.
+- Devuelve JSON con `titulo`, `receta`, `videoQuery` y campos opcionales **`kcal_estimate`**, **`protein_g`**, **`fat_g`**, **`carb_g`**, **`youtube_video_id`** (11 caracteres) cuando el modelo puede estimarlos; receta orientada a **una porción**.
+- Ver contrato en `src/lib/recipesGemini.ts` y plan **`docs/PLAN_MEJORAS_FASE3_NUTRICION_SUPABASE_UI.md`**.
 
 ---
 

@@ -75,7 +75,7 @@ npm run preview    # sirve dist/ en local
 
 ### 5.2 Esquema SQL
 
-En **SQL Editor**, ejecutar el contenido de `supabase/schema.sql` del repositorio. Crea la tabla `public.profiles` y políticas RLS (cada usuario solo lee/escribe su fila).
+En **SQL Editor**, ejecutar el contenido de `supabase/schema.sql` del repositorio. Crea la tabla `public.profiles`, las tablas **`user_market_snapshots`** y **`user_plan_snapshots`** (historial Mercado/Cronograma en JSON con RLS) y políticas RLS para `profiles` y Storage (`tec-nutri-media`).
 
 ### 5.3 Proveedor Google (opcional)
 
@@ -88,7 +88,18 @@ Para GitHub Pages la URL suele ser:
 
 (Con hash antes de `/login`, según cómo Supabase redirija; si hay problemas, revisar la documentación de redirect de Supabase Auth con SPAs.)
 
-### 5.4 Sin Supabase
+### 5.4 Recuperación y cambio de contraseña (email)
+
+Para **olvido de contraseña** (`resetPasswordForEmail`) la app envía como `redirectTo` la **URL actual sustituyendo solo el hash** por `#/actualizar-clave`.
+
+Añade en **Authentication → URL configuration → Redirect URLs** todas las URLs base que puedan abrir el usuario más ese hash:
+
+- Local: `http://localhost:5173/#/actualizar-clave` (y también `http://127.0.0.1:5173/#/actualizar-clave` si lo usáis).
+- Producción GitHub Pages: `https://<usuario>.github.io/<repositorio>/#/actualizar-clave` (misma base que `#/login`).
+
+Sin incluir estas entradas, el enlace del correo puede llevar al usuario fuera del flujo o fallar según configuración del proyecto.
+
+### 5.5 Sin Supabase
 
 La aplicación funciona: perfil y mercado se guardan en **localStorage**. El login en nube no estará operativo hasta configurar URL y claves.
 
@@ -192,6 +203,7 @@ Para cambiar ramas o añadir PR preview, habría que extender el workflow (no in
 |---------|----------------|--------|
 | Pantalla en blanco o assets 404 en Pages | `base` incorrecto o ruta sin hash | Usar URLs con `/#/`; mantener `base: "./"` |
 | Login Google no vuelve a la app | Redirect URL mal configurada en Supabase | Añadir URL exacta de Pages + `/#/login` |
+| Tras «olvidé contraseña» no abre el formulario de nueva clave | Falta `#/actualizar-clave` en Redirect URLs | Añadir las URLs indicadas en **§5.4** |
 | “Sin clave” en IA tras deploy | Secret no creado o build anterior | Añadir secret y **volver a ejecutar** el workflow (push vacío o re-run) |
 | JSON inválido en recetas | Modelo o cuota | Reintentar; revisar consola de red/errores |
 | `npm ci` falla en Actions | `package-lock.json` desincronizado | Ejecutar `npm install` local y commitear lockfile |

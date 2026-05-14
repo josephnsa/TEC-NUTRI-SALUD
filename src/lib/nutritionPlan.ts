@@ -5,6 +5,17 @@ import {
 } from "../data/mealTemplates";
 import type { ListaItem } from "./ketoMercado";
 
+export type PlatoReceta = {
+  titulo: string;
+  receta: string;
+  videoQuery: string;
+  youtubeVideoId?: string | null;
+  kcal_estimate?: number;
+  protein_g?: number;
+  fat_g?: number;
+  carb_g?: number;
+};
+
 export type PerfilUsuario = {
   /** Nombre o apodo (visible en resumen y opcional en IA). */
   nombre: string;
@@ -15,12 +26,19 @@ export type PerfilUsuario = {
   enfermedades: string;
   alimentosEvitar: string;
   estiloDieta: "keto" | "mediterranea" | "balanceada";
+  /** Multiplicador de gasto sobre TMB (Mifflin-St Jeor). */
+  nivelActividad?: "sedentario" | "ligero" | "moderado" | "activo";
+  /** Metas de peso / ritmo — solo orientación. */
+  objetivosNutricion?: {
+    pesoObjetivoKg?: number;
+    ritmo?: "relajado" | "moderado";
+  };
 };
 
 export type ComidaDia = {
-  desayuno: { titulo: string; receta: string; videoQuery: string };
-  almuerzo: { titulo: string; receta: string; videoQuery: string };
-  cena: { titulo: string; receta: string; videoQuery: string };
+  desayuno: PlatoReceta;
+  almuerzo: PlatoReceta;
+  cena: PlatoReceta;
 };
 
 export type DiaPlan = { dia: number; comidas: ComidaDia };
@@ -79,19 +97,27 @@ function normText(s: string): string {
     .toLowerCase();
 }
 
-function scoreComida(
-  comida: { titulo: string; receta: string },
-  compradosIds: Set<string>
-): number {
-  if (compradosIds.size === 0) return 0;
+function scoreComida(comida: { titulo: string; receta: string }, compradosItems: ListaItem[]): number {
+  const comprados = compradosItems.filter((i) => i.comprado);
+  if (!comprados.length) return 0;
   const t = normText(`${comida.titulo} ${comida.receta}`);
   let s = 0;
-  for (const id of compradosIds) {
-    const kws = MERCADO_ID_KEYWORDS[id];
-    if (!kws) continue;
-    for (const kw of kws) {
-      if (t.includes(normText(kw))) {
-        s += 2;
+  for (const item of comprados) {
+    const kws = MERCADO_ID_KEYWORDS[item.id];
+    if (kws) {
+      for (const kw of kws) {
+        if (t.includes(normText(kw))) {
+          s += 2;
+          break;
+        }
+      }
+      continue;
+    }
+    const label = normText(item.nombreCustom?.trim() ? item.nombreCustom : item.nombre);
+    const tokens = label.split(/\s+/).filter((x) => x.length > 2);
+    for (const tok of tokens) {
+      if (t.includes(tok)) {
+        s += 1;
         break;
       }
     }
@@ -99,11 +125,11 @@ function scoreComida(
   return s;
 }
 
-function scoreDia(tpl: ComidaDia, compradosIds: Set<string>): number {
+function scoreDia(tpl: ComidaDia, compradosItems: ListaItem[]): number {
   return (
-    scoreComida(tpl.desayuno, compradosIds) +
-    scoreComida(tpl.almuerzo, compradosIds) +
-    scoreComida(tpl.cena, compradosIds)
+    scoreComida(tpl.desayuno, compradosItems) +
+    scoreComida(tpl.almuerzo, compradosItems) +
+    scoreComida(tpl.cena, compradosItems)
   );
 }
 
@@ -172,7 +198,6 @@ function construirPoolCronograma(p: PerfilUsuario, opts?: OpcionesCronograma): C
   const modo = opts?.modo ?? "mixto";
   const seed = opts?.claveVariedad ?? "defecto";
   const items = opts?.mercadoItems ?? [];
-  const compradosIds = new Set(items.filter((i) => i.comprado).map((i) => i.id));
 
   if (modo === "perfil") {
     return shuffleDeterministic(base, `${seed}|perfil`);
@@ -180,11 +205,12 @@ function construirPoolCronograma(p: PerfilUsuario, opts?: OpcionesCronograma): C
 
   const scored = base.map((tpl) => ({
     tpl,
-    score: scoreDia(tpl, compradosIds)
+    score: scoreDia(tpl, items)
   }));
 
   if (modo === "mercado") {
-    if (compradosIds.size === 0) {
+    const compradosCnt = items.filter((i) => i.comprado).length;
+    if (compradosCnt === 0) {
       return shuffleDeterministic(base, `${seed}|mercado-sin-comprados`);
     }
     const conMatch = scored.filter((x) => x.score > 0);
@@ -260,17 +286,82 @@ export function calcularTdeeSedentario(bmr: number): number {
   return Math.round(bmr * 1.35);
 }
 
+/** Gasto energético diario estimado (orientativo) según actividad autodeclarada. */
+export function calcularTdeePerfil(p: PerfilUsuario): number {
+  const mult =
+    p.nivelActividad === "ligero"
+      ? 1.45
+      : p.nivelActividad === "moderado"
+        ? 1.55
+        : p.nivelActividad === "activo"
+          ? 1.65
+          : 1.35;
+  return Math.round(calcularBmr(p) * mult);
+}
+
+/** Presupuesto orientativo cuando hay peso objetivo; déficit/superávit aprox., no dietoterapia. */
+export function presupuestoKcalOrientativoDiario(p: PerfilUsuario): number | null {
+  const target = p.objetivosNutricion?.pesoObjetivoKg;
+  if (target == null || Number.isNaN(Number(target))) return null;
+  const tdee = calcularTdeePerfil(p);
+  if (Math.abs(p.pesoKg - target) < 0.5) return tdee;
+  const ritmo = p.objetivosNutricion?.ritmo ?? "relajado";
+  const deficit = ritmo === "moderado" ? 500 : 350;
+  if (p.pesoKg > target) return Math.max(950, Math.round(tdee - deficit));
+  const sup = ritmo === "moderado" ? 350 : 200;
+  return Math.round(tdee + sup);
+}
+
+export function sumarMacrosPlatoSlot(slot: PlatoReceta): {
+  kcal: number;
+  proteinG: number;
+  fatG: number;
+  carbG: number;
+} {
+  return {
+    kcal: Math.max(0, Math.round(Number(slot.kcal_estimate) || 0)),
+    proteinG: Math.max(0, Number(slot.protein_g) || 0),
+    fatG: Math.max(0, Number(slot.fat_g) || 0),
+    carbG: Math.max(0, Number(slot.carb_g) || 0)
+  };
+}
+
+export function sumarMacrosComidaDia(c: ComidaDia): {
+  kcal: number;
+  proteinG: number;
+  fatG: number;
+  carbG: number;
+} {
+  return [c.desayuno, c.almuerzo, c.cena].reduce(
+    (acc, slot) => {
+      const m = sumarMacrosPlatoSlot(slot);
+      return {
+        kcal: acc.kcal + m.kcal,
+        proteinG: acc.proteinG + m.proteinG,
+        fatG: acc.fatG + m.fatG,
+        carbG: acc.carbG + m.carbG
+      };
+    },
+    { kcal: 0, proteinG: 0, fatG: 0, carbG: 0 }
+  );
+}
+
 export function resumenNutricional(p: PerfilUsuario): string[] {
-  const bmr = calcularBmr(p);
-  const tdee = calcularTdeeSedentario(bmr);
+  const tdee = calcularTdeePerfil(p);
   const lineas: string[] = [];
   if (p.nombre.trim()) {
     lineas.push(`Perfil: ${p.nombre.trim()}.`);
   }
   lineas.push(
-    `Estimación energética (orientativa, no diagnóstico): gasto aproximado sedentario ~${tdee} kcal/día.`,
+    `Estimación energética (orientativa, no diagnóstico): gasto aproximado ~${tdee} kcal/día (actividad autodeclarada).`,
     `Tu IMC aproximado: ${(p.pesoKg / Math.pow(p.tallaCm / 100, 2)).toFixed(1)}.`
   );
+  const pres = presupuestoKcalOrientativoDiario(p);
+  if (pres != null && p.objetivosNutricion?.pesoObjetivoKg != null) {
+    lineas.push(
+      `Referencia opcional si tu peso objetivo (${p.objetivosNutricion.pesoObjetivoKg} kg) es sólo orientación: presupuesto aproximado ~${pres} kcal/día (${p.objetivosNutricion.ritmo === "moderado" ? "ritmo más marcado" : "ritmo relajado"}, no prescripción médica).`
+    );
+  }
   const enf = p.enfermedades.toLowerCase();
   if (enf.includes("diabetes") || enf.includes("dm")) {
     lineas.push(

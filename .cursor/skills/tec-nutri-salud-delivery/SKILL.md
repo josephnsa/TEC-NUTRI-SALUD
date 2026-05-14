@@ -59,7 +59,7 @@ No dupliques listas de pasos en páginas sueltas sin importar `recorrido.ts`.
 - Sin Supabase: perfil, lista keto actual e historial de mercados en `localStorage`.
 - **Perfil:** tipo `PerfilUsuario` incluye **`nombre`** (texto); sincroniza con Supabase `profiles.display_name` vía `profileRemote.ts`. Carga/guardado saneado en `perfilStorage.normalizePerfilParsed` (migra JSON antiguo sin `nombre`).
 - **Números en formularios:** usar `IntField` / `DecimalField` de `src/components/NumericInputs.tsx` para edad, peso, talla y “días” (evita ceros a la izquierda y spinners incómodos).
-- Con Supabase: `supabase/schema.sql`, Google OAuth, redirect URLs con `/#/login` y `/#/mi-plan` según panel.
+- Con Supabase: `supabase/schema.sql`, Google OAuth, redirect URLs con `/#/login`, `/#/mi-plan` y **`/#/actualizar-clave`** (recuperación de contraseña) según panel; detalle en `docs/DEPLOYMENT.md` §5.4.
 
 ## Fase 3b — Mercado → cronograma
 
@@ -74,10 +74,11 @@ No dupliques listas de pasos en páginas sueltas sin importar `recorrido.ts`.
 
 ## Fase 3e — Evolutivo Fase 3 (prioridad ejecutable siguiente)
 
-Implementar sólo después de orden en **`docs/PLAN_MEJORAS_FASE3_NUTRICION_SUPABASE_UI.md`**. Épica de negocio **F** en `docs/MEJORAS_NEGOCIO_Y_PRODUCTO.md`; historias **13–18** en `docs/USER_STORIES.md`.
+Seguir el orden de **`docs/PLAN_MEJORAS_FASE3_NUTRICION_SUPABASE_UI.md`**: primer hit **F3.0** (cambiar / olvidar contraseña con Supabase Auth), después **F3.1–F3.6**. Épica **F** en `docs/MEJORAS_NEGOCIO_Y_PRODUCTO.md`; historias **13–18** en `docs/USER_STORIES.md`.
 
 | Bloque | Contenido mínimo |
 |--------|------------------|
+| **Auth (email)** | **F3.0:** olvidé contraseña desde login, recuperación → `/#/actualizar-clave`, cambiar contraseña logada desde Mi espacio (no OAuth-only); Redirect URLs en Supabase |
 | **Supabase económico** | Tablas o columnas JSONB con **RLS** `auth.uid()`; payloads compactos por mercado/plan/nutrition_goals; evitar explosión de filas |
 | **Mercado extras** | `ListaItem`/equivalente con origen manual vs generador; mismo snapshot guardado |
 | **Nutrición orientativa** | Módulo puro (ej. `nutritionTargets.ts`) con fórmula documentada (**Mifflin-St Jeor** + disclaimers obligatorios en UI); no es diagnóstico |

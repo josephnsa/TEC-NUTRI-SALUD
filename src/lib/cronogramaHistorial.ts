@@ -18,6 +18,8 @@ export type CronogramaSnapshot = {
   id: string;
   perfilId: string;
   createdAt: string;
+  /** Última modificación (ISO); sync nube. */
+  updatedAt?: string;
   fechaInicio: string | null;
   dias: number;
   modo: ModoCronograma;
@@ -54,6 +56,7 @@ function isSnapshotValid(x: unknown): x is CronogramaSnapshot {
   const o = x as Partial<CronogramaSnapshot>;
   if (typeof o.id !== "string" || typeof o.perfilId !== "string") return false;
   if (typeof o.createdAt !== "string" || typeof o.dias !== "number") return false;
+  if (o.updatedAt !== undefined && typeof o.updatedAt !== "string") return false;
   if (o.modo !== "perfil" && o.modo !== "mercado" && o.modo !== "mixto") return false;
   if (o.fuente !== "plantillas" && o.fuente !== "ia") return false;
   if (!Array.isArray(o.diasPlan)) return false;
@@ -101,6 +104,33 @@ export function snapshotMasReciente(perfilId: string | null): CronogramaSnapshot
   return list[0] ?? null;
 }
 
+/** Cruza planes con nube por `updated_at`. */
+export function fusionarPlanesRemotos(rows: Array<{ payload: unknown; updated_at: string }>): number {
+  let n = 0;
+  const byId = new Map(readRaw().map((s) => [s.id, s]));
+  for (const row of rows) {
+    if (!row.payload || typeof row.payload !== "object") continue;
+    const incoming = row.payload as CronogramaSnapshot;
+    if (!isSnapshotValid(incoming)) continue;
+    const copy: CronogramaSnapshot = {
+      ...incoming,
+      diasPlan: incoming.diasPlan.map((d) => ({ ...d, comidas: { ...d.comidas } })),
+      updatedAt: row.updated_at
+    };
+    const local = byId.get(copy.id);
+    const localTs = local?.updatedAt ?? local?.createdAt ?? "";
+    if (!localTs || row.updated_at.localeCompare(localTs) > 0) {
+      byId.set(copy.id, copy);
+      n++;
+    }
+  }
+  const all = [...byId.values()];
+  all.sort((a, b) => (a.createdAt < b.createdAt ? -1 : 1));
+  const trimmed = all.slice(-MAX_SNAPSHOTS);
+  writeAll(trimmed);
+  return n;
+}
+
 export type GuardarSnapshotInput = {
   perfilId: string;
   fechaInicioPlan: string | null | undefined;
@@ -120,6 +150,7 @@ export function guardarSnapshotCronograma(input: GuardarSnapshotInput): Cronogra
     id: crypto.randomUUID(),
     perfilId: input.perfilId,
     createdAt,
+    updatedAt: createdAt,
     fechaInicio: input.fechaInicioPlan && /^\d{4}-\d{2}-\d{2}$/.test(input.fechaInicioPlan) ? input.fechaInicioPlan : null,
     dias: input.dias,
     modo: input.modo,
@@ -156,7 +187,8 @@ export function renombrarSnapshot(id: string, titulo: string): boolean {
   const all = readRaw();
   const idx = all.findIndex((s) => s.id === id);
   if (idx === -1) return false;
-  all[idx] = { ...all[idx], titulo: titulo.trim() || undefined };
+  const now = new Date().toISOString();
+  all[idx] = { ...all[idx], titulo: titulo.trim() || undefined, updatedAt: now };
   writeAll(all);
   return true;
 }

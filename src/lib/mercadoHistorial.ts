@@ -9,6 +9,8 @@ const MAX_SNAPSHOTS = 15;
 export type MercadoSnapshot = {
   id: string;
   createdAt: string;
+  /** Para sync y conflictos: última modificación local o en nube (ISO). */
+  updatedAt?: string;
   dias: number;
   personas: number;
   items: ListaItem[];
@@ -69,9 +71,11 @@ export function listarTodosMercadosInternos(): MercadoSnapshot[] {
 export function guardarMercadoRealizado(dias: number, personas: number, items: ListaItem[]): MercadoSnapshot {
   const id = crypto.randomUUID();
   const pid = getActivoPerfilId() ?? undefined;
+  const now = new Date().toISOString();
   const snap: MercadoSnapshot = {
     id,
-    createdAt: new Date().toISOString(),
+    createdAt: now,
+    updatedAt: now,
     dias,
     personas,
     items: items.map((i) => ({ ...i })),
@@ -131,7 +135,8 @@ export function renombrarMercado(id: string, nombre: string): boolean {
   const list = parseHistorial();
   const idx = list.findIndex((s) => s.id === id);
   if (idx === -1) return false;
-  list[idx] = { ...list[idx], nombre: nombre.trim() || undefined };
+  const now = new Date().toISOString();
+  list[idx] = { ...list[idx], nombre: nombre.trim() || undefined, updatedAt: now };
   writeHistorial(list);
   return true;
 }
@@ -141,7 +146,8 @@ export function anotarMercado(id: string, nota: string): boolean {
   const list = parseHistorial();
   const idx = list.findIndex((s) => s.id === id);
   if (idx === -1) return false;
-  list[idx] = { ...list[idx], nota: nota.trim() || undefined };
+  const now = new Date().toISOString();
+  list[idx] = { ...list[idx], nota: nota.trim() || undefined, updatedAt: now };
   writeHistorial(list);
   return true;
 }
@@ -155,6 +161,35 @@ export function purgeMercadoDePerfil(perfilId: string) {
 
 export function contarComprados(items: ListaItem[]): number {
   return items.filter((i) => i.comprado).length;
+}
+
+/** Cruza con nube: conserva la versión más reciente por `updated_at` vs `updatedAt ?? createdAt`. */
+export function fusionarMercadosRemotos(
+  rows: Array<{ payload: unknown; updated_at: string }>
+): number {
+  let n = 0;
+  const mapa = new Map<string, MercadoSnapshot>();
+  for (const s of parseHistorial()) mapa.set(s.id, s);
+  for (const row of rows) {
+    if (!esSnapshotValido(row.payload)) continue;
+    const incoming = row.payload as MercadoSnapshot;
+    const copy: MercadoSnapshot = {
+      ...incoming,
+      items: incoming.items.map((i) => ({ ...i })),
+      updatedAt: row.updated_at
+    };
+    const local = mapa.get(copy.id);
+    const localTs = local?.updatedAt ?? local?.createdAt ?? "";
+    if (!localTs || row.updated_at.localeCompare(localTs) > 0) {
+      mapa.set(copy.id, copy);
+      n++;
+    }
+  }
+  const fusionados = [...mapa.values()]
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .slice(0, MAX_SNAPSHOTS);
+  writeHistorial(fusionados);
+  return n;
 }
 
 export type MercadoExportV1 = {

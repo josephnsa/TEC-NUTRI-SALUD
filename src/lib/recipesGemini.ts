@@ -1,8 +1,9 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { ListaItem } from "./ketoMercado";
-import type { DiaPlan, ModoCronograma, PerfilUsuario } from "./nutritionPlan";
+import type { DiaPlan, ModoCronograma, PerfilUsuario, PlatoReceta } from "./nutritionPlan";
 import { GEMINI_MODEL_IDS } from "./geminiModels";
 import { URL_GOOGLE_AI_STUDIO_API_KEY } from "./googleAiStudio";
+import { youtubeVideoIdFromInput } from "./youtubeEmbed";
 
 export { URL_GOOGLE_AI_STUDIO_API_KEY } from "./googleAiStudio";
 
@@ -20,9 +21,12 @@ export function agenteRecetasGratisDisponible(): boolean {
 
 function compradosResumen(items: ListaItem[] | undefined): string {
   if (!items?.length) return "(sin lista de mercado o nada marcado como comprado)";
-  const nombres = items.filter((i) => i.comprado).map((i) => `${i.nombre} (${i.cantidad} ${i.unidad})`);
-  if (!nombres.length) return "(lista de mercado sin ítems marcados como comprados)";
-  return nombres.join("; ");
+  const lines = items.filter((i) => i.comprado).map((i) => {
+    const nm = (i.nombreCustom?.trim() || i.nombre).trim();
+    return `${nm} (${i.cantidad} ${i.unidad})${i.origen === "manual" ? " [extra despensa]" : ""}`;
+  });
+  if (!lines.length) return "(lista de mercado sin ítems marcados como comprados)";
+  return lines.join("; ");
 }
 
 /** Refuerza la consulta de YouTube para que incluya el nombre del plato si la IA omitió parte del título. */
@@ -35,7 +39,12 @@ function alinearVideoQuery(titulo: string, videoQuery: string): string {
   return `${t} ${v}`.replace(/\s+/g, " ").trim();
 }
 
-function normalizeSlot(x: unknown): { titulo: string; receta: string; videoQuery: string } {
+function numOrUndef(v: unknown): number | undefined {
+  const n = typeof v === "number" ? v : Number(v);
+  return Number.isFinite(n) && n >= 0 ? Math.round(n * 10) / 10 : undefined;
+}
+
+function normalizeSlot(x: unknown): PlatoReceta {
   if (!x || typeof x !== "object") {
     return {
       titulo: "Comida sugerida",
@@ -50,7 +59,26 @@ function normalizeSlot(x: unknown): { titulo: string; receta: string; videoQuery
     "Ingredientes (1 porción): ver despensa. · Pasos: preparar al gusto respetando tu estilo de dieta.";
   const videoRaw = String(o.videoQuery ?? "").trim();
   const videoQuery = alinearVideoQuery(titulo, videoRaw || titulo);
-  return { titulo, receta, videoQuery };
+  const ytField = o.youtube_video_id != null ? String(o.youtube_video_id).trim() : "";
+  const fromField = ytField.length === 11 && /^[a-zA-Z0-9_-]+$/.test(ytField) ? ytField : null;
+  const youtubeVideoId =
+    fromField ??
+    youtubeVideoIdFromInput(videoRaw) ??
+    youtubeVideoIdFromInput(String(o.embedUrl ?? ""));
+  const kcal_estimate = numOrUndef(o.kcal_estimate);
+  const protein_g = numOrUndef(o.protein_g);
+  const fat_g = numOrUndef(o.fat_g);
+  const carb_g = numOrUndef(o.carb_g);
+  return {
+    titulo,
+    receta,
+    videoQuery,
+    ...(youtubeVideoId ? { youtubeVideoId } : {}),
+    ...(kcal_estimate != null ? { kcal_estimate } : {}),
+    ...(protein_g != null ? { protein_g } : {}),
+    ...(fat_g != null ? { fat_g } : {}),
+    ...(carb_g != null ? { carb_g } : {})
+  };
 }
 
 function parseCronogramaJson(raw: unknown, diasEsperados: number, offsetDia: number): DiaPlan[] {
@@ -115,18 +143,20 @@ Reglas obligatorias:
 - Porciones: TODAS las recetas son para EXACTAMENTE UNA (1) persona. Indica cantidades concretas (g, ml, cucharadas, unidades). El usuario escalará mentalmente si cocina para más gente.
 - Formato de "receta" en un solo texto, sin saltos de línea JSON:
   "Ingredientes (1 porción): … · Pasos: …" — ingredientes con cantidades medibles; pasos numerados breves (máx. ~520 caracteres por campo receta).
-- "titulo": nombre corto y claro del plato (será visible junto al video).
-- "videoQuery": 6-14 palabras en español para buscar en YouTube el MISMO plato que describe titulo+receta (incluye ingrediente principal + técnica + estilo de dieta según estiloDieta: keto / mediterránea / saludable). Sin URL. Debe ser coherente con el título (ej. si el título dice "pollo", la query debe mencionar pollo o sinónimo).
+- "titulo": nombre corto y claro del plato (visible en la app).
+- "videoQuery": 6-14 palabras en español para buscar en YouTube el MISMO plato que describe titulo+receta (incluye ingrediente principal + técnica + estilo según estiloDieta). Sin URL completa salvo que necesites; prioriza texto de búsqueda. Coherente con el título.
 - Respeta estiloDieta: keto (muy bajo carbohidrato), mediterranea o balanceada.
 - Evita ingredientes en alimentosEvitar; enfermedades solo como precaución breve, sin diagnosticar.
+- Opcionalmente por cada comida (cuando puedas estimar sin inventar valores extremos): "kcal_estimate" (aprox.), "protein_g", "fat_g", "carb_g" (gramos, 1 persona).
+- Si conoces un video oficial coherente con el plato: "youtube_video_id" (exactamente 11 caracteres alfanuméricos de YouTube). Si no, null.
 
 Devuelve SOLO un JSON: array de longitud ${diasChunk}. Cada elemento:
 {
   "dia": <número global del día>,
   "comidas": {
-    "desayuno": { "titulo": "", "receta": "", "videoQuery": "" },
-    "almuerzo": { "titulo": "", "receta": "", "videoQuery": "" },
-    "cena": { "titulo": "", "receta": "", "videoQuery": "" }
+    "desayuno": { "titulo": "", "receta": "", "videoQuery": "", "kcal_estimate": null, "protein_g": null, "fat_g": null, "carb_g": null, "youtube_video_id": null },
+    "almuerzo": { "titulo": "", "receta": "", "videoQuery": "", "kcal_estimate": null, "protein_g": null, "fat_g": null, "carb_g": null, "youtube_video_id": null },
+    "cena": { "titulo": "", "receta": "", "videoQuery": "", "kcal_estimate": null, "protein_g": null, "fat_g": null, "carb_g": null, "youtube_video_id": null }
   }
 }`;
 

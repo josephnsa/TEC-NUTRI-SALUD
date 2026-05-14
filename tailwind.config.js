@@ -20,6 +20,12 @@ export default {
           800: "#115e59",
           900: "#134e4a",
           950: "#042f2e"
+        },
+        ion: {
+          300: "#67e8f9",
+          400: "#22d3ee",
+          500: "#06b6d4",
+          600: "#0891b2"
         }
       },
       backgroundImage: {
@@ -29,6 +35,7 @@ export default {
       boxShadow: {
         glow: "0 0 42px -12px rgba(13, 148, 136, 0.35)",
         "glow-sm": "0 0 24px -8px rgba(13, 148, 136, 0.25)",
+        "glow-cyan": "0 0 40px -12px rgba(6, 182, 212, 0.4)",
         dock: "0 -12px 40px -12px rgba(15, 118, 110, 0.14)"
       },
       keyframes: {

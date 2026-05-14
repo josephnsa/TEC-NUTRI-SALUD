@@ -116,12 +116,15 @@ Alineado a **fase §8** ya existente y al skill:
 
 | Orden | Entrega | Notas |
 |------|---------|--------|
+| F3.0 | **Auth accesible:** olvidé mi contraseña desde `/#/login` (`resetPasswordForEmail`), pantalla `/#/actualizar-clave` (evento `PASSWORD_RECOVERY` + `updateUser`), cambio de contraseña logada en Mi espacio **solo cuenta email** | Redirect URLs Supabase incluyendo `#/actualizar-clave`; ver `docs/DEPLOYMENT.md` |
 | F3.1 | Esquema Supabase nuevo + tipos TS + cliente sync pull/push opcional mercados/planes como JSON | Medir tamaño payloads |
 | F3.2 | Mercado: UI “Ítems extra” + migración ListaItem | Tests manuales import backup |
 | F3.3 | Objetivos nutricionales en perfil + cálculos documentados (`src/lib/` nuevo módulo) | Sin Gemini primero OK |
 | F3.4 | Prompt Gemini + tipos nutr + UI tabla macros + presupuesto diario | Fallback sin clave |
 | F3.5 | Embed de video en modal/detalle | Error boundary iframe |
 | F3.6 | Refresh visual Tailwind tokens + revisión Lighthouse contraste | Checklist |
+
+**Estado mayo 2026:** F3.1–F3.6 implementados en el repo (`snapshotsRemote`, tablas SQL, ítems extra mercado, presupuesto kcal/Gemini/embed, tokens `ion` / `glow-cyan`). Falta ejecutar **`supabase/schema.sql`** en tu proyecto Supabase si aún no existen las tablas nuevas.
 
 ---
 

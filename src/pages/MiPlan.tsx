@@ -25,6 +25,7 @@ import {
   stripToUsuario
 } from "../lib/perfilStorage";
 import { fetchAndApplyFamilyRemote, fetchProfileRemote, upsertProfileRemote } from "../lib/profileRemote";
+import { pullCloudSnapshots } from "../lib/snapshotsRemote";
 import { getMercadoActivoParaPlan, getMercadoRealizado, purgeMercadoDePerfil } from "../lib/mercadoHistorial";
 import { purgeSnapshotsDePerfil } from "../lib/cronogramaHistorial";
 import { RUTA_MI_ESPACIO } from "../lib/recorrido";
@@ -75,6 +76,7 @@ export function MiPlan() {
         setFechaInicioPlan(m?.fechaInicioPlan ?? "");
       }
       await fetchAndApplyFamilyRemote(user.id);
+      await pullCloudSnapshots(user.id);
       const mAfter = loadPerfilMiembroActivo();
       setFechaInicioPlan(mAfter?.fechaInicioPlan ?? "");
       setLoadingRemote(false);
@@ -307,6 +309,82 @@ export function MiPlan() {
             <option value="balanceada">Balanceada</option>
           </select>
         </label>
+
+        <div className="md:col-span-2 rounded-2xl border border-cyan-200/70 bg-gradient-to-br from-white/95 via-cyan-50/40 to-teal-50/30 p-4 motion-safe:shadow-[0_0_32px_-14px_rgba(6,182,212,0.35)]">
+          <p className="font-medium text-teal-950">Actividad y meta de peso (orientativo)</p>
+          <p className="mt-1 text-xs text-slate-600">
+            No sustituye valoración médica. Los números sirven sólo como guía educativa en la app.
+          </p>
+          <label className="mt-3 block text-sm">
+            <span className="font-medium">Nivel de actividad (gasto estimado)</span>
+            <select
+              className="mt-1 w-full rounded-xl border border-emerald-200/80 bg-white/90 px-3 py-2 shadow-sm backdrop-blur-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+              value={perfil.nivelActividad ?? "sedentario"}
+              onChange={(e) =>
+                setPerfil({
+                  ...perfil,
+                  nivelActividad: e.target.value as NonNullable<PerfilUsuario["nivelActividad"]>
+                })
+              }
+            >
+              <option value="sedentario">Mayormente sedentario · ~×1.35</option>
+              <option value="ligero">Actividad ligera · ~×1.45</option>
+              <option value="moderado">Actividad moderada · ~×1.55</option>
+              <option value="activo">Activo · ~×1.65</option>
+            </select>
+          </label>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <label className="text-sm">
+              <span className="font-medium">Peso objetivo (kg, opcional)</span>
+              <input
+                type="number"
+                min={35}
+                max={300}
+                step="0.1"
+                placeholder="Ej. 68"
+                className="mt-1 w-full rounded-xl border border-emerald-200/80 bg-white/90 px-3 py-2 shadow-sm backdrop-blur-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                value={perfil.objetivosNutricion?.pesoObjetivoKg ?? ""}
+                onChange={(e) => {
+                  const raw = e.target.value;
+                  const o = perfil.objetivosNutricion ?? {};
+                  if (raw === "") {
+                    const { pesoObjetivoKg: _p, ...rest } = o;
+                    setPerfil({
+                      ...perfil,
+                      objetivosNutricion: Object.keys(rest).length ? rest : undefined
+                    });
+                    return;
+                  }
+                  const n = Number(raw);
+                  if (!Number.isFinite(n)) return;
+                  setPerfil({
+                    ...perfil,
+                    objetivosNutricion: { ...o, pesoObjetivoKg: n }
+                  });
+                }}
+              />
+            </label>
+            <label className="text-sm">
+              <span className="font-medium">Ritmo (si definiste objetivo)</span>
+              <select
+                className="mt-1 w-full rounded-xl border border-emerald-200/80 bg-white/90 px-3 py-2 shadow-sm backdrop-blur-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                value={perfil.objetivosNutricion?.ritmo ?? "relajado"}
+                onChange={(e) =>
+                  setPerfil({
+                    ...perfil,
+                    objetivosNutricion: {
+                      ...(perfil.objetivosNutricion ?? {}),
+                      ritmo: e.target.value as "relajado" | "moderado"
+                    }
+                  })
+                }
+              >
+                <option value="relajado">Relajado (cambios más graduales — referencia)</option>
+                <option value="moderado">Moderado (mayor déficit/superávit de referencia)</option>
+              </select>
+            </label>
+          </div>
+        </div>
 
         <div className="md:col-span-2 flex flex-wrap items-center gap-3">
           <button

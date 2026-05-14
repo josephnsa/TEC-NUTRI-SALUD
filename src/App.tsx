@@ -6,6 +6,7 @@ import { Belleza } from "./pages/Belleza";
 import { MiPlan } from "./pages/MiPlan";
 import { Cronograma } from "./pages/Cronograma";
 import { Login } from "./pages/Login";
+import { ActualizarClave } from "./pages/ActualizarClave";
 import { Agente } from "./pages/Agente";
 import { MiEspacio } from "./pages/MiEspacio";
 
@@ -21,6 +22,7 @@ export default function App() {
         <Route path="/cronograma" element={<Cronograma />} />
         <Route path="/agente" element={<Agente />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/actualizar-clave" element={<ActualizarClave />} />
       </Routes>
     </Layout>
   );

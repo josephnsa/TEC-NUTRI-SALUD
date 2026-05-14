@@ -34,6 +34,25 @@ export function normalizePerfilParsed(raw: unknown): PerfilUsuario | null {
   const estilo = o.estiloDieta;
   const estiloOk =
     estilo === "mediterranea" || estilo === "balanceada" || estilo === "keto" ? estilo : "keto";
+  const nivel = o.nivelActividad;
+  const nivelActividadOk =
+    nivel === "sedentario" || nivel === "ligero" || nivel === "moderado" || nivel === "activo"
+      ? nivel
+      : undefined;
+  let objetivosNutricion: PerfilUsuario["objetivosNutricion"];
+  const rawObj = (o as { objetivosNutricion?: unknown }).objetivosNutricion;
+  if (rawObj && typeof rawObj === "object") {
+    const ob = rawObj as Record<string, unknown>;
+    const pw = Number(ob.pesoObjetivoKg);
+    const ritmo = ob.ritmo === "moderado" || ob.ritmo === "relajado" ? ob.ritmo : undefined;
+    const okPeso = Number.isFinite(pw) && pw >= 35 && pw <= 300;
+    if (okPeso || ritmo) {
+      objetivosNutricion = {
+        ...(okPeso ? { pesoObjetivoKg: Math.round(pw * 10) / 10 } : {}),
+        ...(ritmo ? { ritmo } : {})
+      };
+    }
+  }
   const sex = o.sexo;
   const sexoOk = sex === "m" || sex === "f" ? sex : "o";
   const edad = Math.min(120, Math.max(12, Math.round(Number(o.edad) || 32)));
@@ -49,7 +68,9 @@ export function normalizePerfilParsed(raw: unknown): PerfilUsuario | null {
     sexo: sexoOk,
     enfermedades: typeof o.enfermedades === "string" ? o.enfermedades : "",
     alimentosEvitar: typeof o.alimentosEvitar === "string" ? o.alimentosEvitar : "",
-    estiloDieta: estiloOk
+    estiloDieta: estiloOk,
+    ...(nivelActividadOk ? { nivelActividad: nivelActividadOk } : {}),
+    ...(objetivosNutricion ? { objetivosNutricion } : {})
   };
 }
 

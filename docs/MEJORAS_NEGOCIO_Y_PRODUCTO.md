@@ -124,6 +124,7 @@ Si María usa cuenta, espera que **perfil** suba a la nube; mercados y cronogram
 
 **Mejoras de negocio (fases):**
 
+- **Recuperación y contraseña (email):** flujo estándar “olvidé contraseña” + pantalla tras el magic link (`/#/actualizar-clave`), y opción **cambiar contraseña** donde tenga sentido (cuenta no solo OAuth). Configuración de Redirect URLs documentada para GitHub Pages y local.
 - **Fase 1 (local enriquecido):** arrays versionados en `localStorage` con límites razonables (ej. últimos 20 mercados, últimos 15 cronogramas) para no llenar el dispositivo.
 - **Fase 2 (nube opcional):** tablas `saved_markets`, `saved_schedules` con `user_id`, políticas RLS; backup automático al iniciar sesión.
 
@@ -144,7 +145,7 @@ María ya tiene despensa ligada al plan y varios cronogramas. Quiere **no perder
 | Multimedia | Embed de video donde aplique + fallback enlace externo |
 | Diseño tech | Nueva tanda visual en Tailwind (**contraste antes que brillo**), animaciones sólo seguras |
 
-**Prioridad sugerida de implementación:** ver **`docs/PLAN_MEJORAS_FASE3_NUTRICION_SUPABASE_UI.md`** (órden F3.1–F3.6).
+**Prioridad sugerida de implementación:** ver **`docs/PLAN_MEJORAS_FASE3_NUTRICION_SUPABASE_UI.md`** (órden **F3.0** auth contraseña, luego **F3.1–F3.6**).
 
 **Criterios de aceptación (borrador negocio):**
 

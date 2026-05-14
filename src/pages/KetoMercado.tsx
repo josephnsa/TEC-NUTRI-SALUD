@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { StepHeader } from "../components/StepHeader";
+import { useAuth } from "../context/AuthContext";
 import {
   generarListaKeto,
   loadListaLocal,
@@ -21,9 +22,11 @@ import {
   type MercadoSnapshot
 } from "../lib/mercadoHistorial";
 import { PERFILES_STORAGE_EVENT } from "../lib/perfilStorage";
+import { pushMercadoSnapshotRemote } from "../lib/snapshotsRemote";
 
 export function KetoMercado() {
   const navigate = useNavigate();
+  const { user, isConfigured } = useAuth();
   const [dias, setDias] = useState(7);
   const [personas, setPersonas] = useState(2);
   const [items, setItems] = useState<ListaItem[]>(() => generarListaKeto(7, 2));
@@ -35,6 +38,9 @@ export function KetoMercado() {
   const [editandoId, setEditandoId] = useState<string | null>(null);
   const [editNombre, setEditNombre] = useState("");
   const [editNota, setEditNota] = useState("");
+  const [extraNombre, setExtraNombre] = useState("");
+  const [extraCant, setExtraCant] = useState(1);
+  const [extraUni, setExtraUni] = useState("g");
 
   const refreshHistorial = useCallback(() => {
     setHistorial(listarMercadosRealizados());
@@ -105,8 +111,9 @@ export function KetoMercado() {
 
   const guardarMercado = () => {
     const n = contarComprados(items);
-    guardarMercadoRealizado(dias, personas, items);
+    const snap = guardarMercadoRealizado(dias, personas, items);
     refreshHistorial();
+    if (user?.id && isConfigured) void pushMercadoSnapshotRemote(user.id, snap);
     if (n === 0) {
       setMsg("Guardado. Abriendo cronograma… (marca comprados para priorizar ingredientes).");
     } else {
@@ -163,6 +170,30 @@ export function KetoMercado() {
     };
     reader.readAsText(file, "UTF-8");
     e.target.value = "";
+  };
+
+  const agregarItemManual = () => {
+    const nome = extraNombre.trim();
+    if (nome.length < 2) {
+      setMsg("Escribe al menos 2 caracteres para el ítem extra.");
+      return;
+    }
+    const id = `manual-${crypto.randomUUID()}`;
+    const cant = Math.max(0.5, Number(extraCant) || 1);
+    const nuevo: ListaItem = {
+      id,
+      nombre: nome,
+      nombreCustom: nome,
+      unidad: extraUni,
+      basePorPersonaDia: 0,
+      categoria: "extras",
+      cantidad,
+      comprado: false,
+      origen: "manual"
+    };
+    persist([...items, nuevo], dias, personas);
+    setExtraNombre("");
+    setMsg("Ítem extra añadido a la lista.");
   };
 
   const grupos = useMemo(() => {
@@ -260,6 +291,52 @@ export function KetoMercado() {
         >
           Desmarcar todo
         </button>
+      </div>
+
+      <div className="ui-card space-y-3">
+        <p className="text-sm font-semibold text-teal-950">Ítems extra en la despensa</p>
+        <p className="text-xs text-slate-600">
+          Añade alimentos fuera de la lista generada para que el cronograma y las recetas IA los tengan en cuenta.
+        </p>
+        <div className="flex flex-wrap items-end gap-2">
+          <label className="min-w-[8rem] flex-1 text-xs">
+            <span className="font-medium text-teal-950">Nombre</span>
+            <input
+              type="text"
+              className="mt-1 w-full rounded-xl border border-emerald-200/80 bg-white/90 px-3 py-2 text-sm shadow-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+              value={extraNombre}
+              onChange={(e) => setExtraNombre(e.target.value)}
+              placeholder='Ej. Yogurt griego, pesto…'
+              maxLength={80}
+            />
+          </label>
+          <label className="w-24 text-xs">
+            <span className="font-medium text-teal-950">Cant.</span>
+            <input
+              type="number"
+              min={0.5}
+              step={0.5}
+              className="mt-1 w-full rounded-xl border border-emerald-200/80 bg-white/90 px-2 py-2 text-sm shadow-sm"
+              value={extraCant}
+              onChange={(e) => setExtraCant(Number(e.target.value))}
+            />
+          </label>
+          <label className="min-w-[7rem] text-xs">
+            <span className="font-medium text-teal-950">Unidad</span>
+            <select
+              className="mt-1 w-full rounded-xl border border-emerald-200/80 bg-white/90 px-2 py-2 text-sm shadow-sm"
+              value={extraUni}
+              onChange={(e) => setExtraUni(e.target.value)}
+            >
+              <option value="g">g</option>
+              <option value="ml">ml</option>
+              <option value="unidades">unidades</option>
+            </select>
+          </label>
+          <button type="button" className="ui-btn-secondary px-4 py-2 text-sm whitespace-nowrap" onClick={agregarItemManual}>
+            Agregar ítem
+          </button>
+        </div>
       </div>
 
       <div className="rounded-2xl border border-dashed border-emerald-300/70 bg-white/90 px-4 py-3 text-sm text-slate-700 shadow-sm backdrop-blur-sm">
@@ -416,9 +493,18 @@ export function KetoMercado() {
                     aria-label={`Marcar ${it.nombre}`}
                   />
                   <div className="flex-1">
-                    <p className={`font-medium ${it.comprado ? "text-slate-500 line-through" : "text-slate-900"}`}>
-                      {it.nombre}
-                    </p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p
+                        className={`font-medium ${it.comprado ? "text-slate-500 line-through" : "text-slate-900"}`}
+                      >
+                        {it.nombreCustom?.trim() ? it.nombreCustom : it.nombre}
+                      </p>
+                      {it.origen === "manual" ? (
+                        <span className="rounded-full bg-cyan-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-cyan-900">
+                          Extra
+                        </span>
+                      ) : null}
+                    </div>
                     <p className="text-sm text-slate-600">
                       {it.cantidad} {it.unidad}
                     </p>

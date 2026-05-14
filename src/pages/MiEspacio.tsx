@@ -5,6 +5,8 @@ import {
   PASOS_RECORRIDO_PRINCIPAL,
   PASO_ASISTENTE
 } from "../lib/recorrido";
+import { usuarioTieneProveedorEmail } from "../lib/authPassword";
+import { supabase } from "../lib/supabase";
 import { contarCompradosMercado } from "../lib/nutritionPlan";
 import {
   getMercadoActivoParaPlan,
@@ -28,12 +30,19 @@ import {
   listarSnapshots,
   snapshotMasReciente
 } from "../lib/cronogramaHistorial";
+import { pullCloudSnapshots } from "../lib/snapshotsRemote";
 
 export function MiEspacio() {
-  const { user } = useAuth();
+  const { user, isConfigured } = useAuth();
   const [tick, setTick] = useState(0);
   const [estadoImport, setEstadoImport] = useState<string | null>(null);
   const inputRespaldoRef = useRef<HTMLInputElement>(null);
+  const [msgClave, setMsgClave] = useState<string | null>(null);
+  const [nuevaClave, setNuevaClave] = useState("");
+  const [confirmarClave, setConfirmarClave] = useState("");
+  const [guardandoClave, setGuardandoClave] = useState(false);
+  const [msgSyncNube, setMsgSyncNube] = useState<string | null>(null);
+  const [syncNubeCargando, setSyncNubeCargando] = useState(false);
 
   useEffect(() => {
     const sync = () => setTick((t) => t + 1);
@@ -90,6 +99,50 @@ export function MiEspacio() {
         <p className="rounded-xl border border-teal-200/80 bg-teal-50/90 px-4 py-2 text-sm text-teal-900 shadow-sm backdrop-blur-sm">
           Sesión: <strong>{user.email ?? user.id}</strong>
         </p>
+      )}
+
+      {user && isConfigured && supabase && (
+        <section className="ui-card-muted">
+          <p className="text-sm font-semibold text-teal-950">Sincronización con la nube</p>
+          <p className="mt-1 text-xs text-slate-600">
+            Trae a este dispositivo los <strong>mercados</strong> y <strong>planes de menú</strong> guardados en tu cuenta (se
+            fusionan por fecha de actualización).
+          </p>
+          <button
+            type="button"
+            disabled={syncNubeCargando}
+            className="ui-btn-secondary mt-3 px-4 py-2 text-sm"
+            onClick={() =>
+              void (async () => {
+                if (!user?.id) return;
+                setMsgSyncNube(null);
+                setSyncNubeCargando(true);
+                try {
+                  const r = await pullCloudSnapshots(user.id);
+                  if (!r.ok) {
+                    setMsgSyncNube(r.error ?? "No se pudo sincronizar.");
+                  } else {
+                    setMsgSyncNube(
+                      r.mercados + r.planes === 0
+                        ? "Nada nuevo en la nube o ya estaba al día."
+                        : `Listo: fusionados ${r.mercados} mercado(s) y ${r.planes} plan(es) desde la nube.`
+                    );
+                    setTick((t) => t + 1);
+                  }
+                } finally {
+                  setSyncNubeCargando(false);
+                }
+              })()
+            }
+          >
+            {syncNubeCargando ? "Sincronizando…" : "Traer mercados y planes de la nube"}
+          </button>
+          {msgSyncNube && (
+            <p className="mt-3 rounded-lg border border-teal-200/80 bg-white/90 px-3 py-2 text-xs text-teal-950">
+              {msgSyncNube}
+            </p>
+          )}
+        </section>
       )}
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -278,6 +331,89 @@ export function MiEspacio() {
           </p>
         )}
       </section>
+
+      {user && isConfigured && supabase && (
+        <section className="ui-card-muted">
+          <p className="text-sm font-semibold text-teal-950">Seguridad de la cuenta</p>
+          {usuarioTieneProveedorEmail(user) ? (
+            <>
+              <p className="mt-2 text-xs text-slate-600">
+                Cambia tu contraseña de acceso con correo y contraseña. Mínimo 6 caracteres.
+              </p>
+              <div className="mt-3 flex max-w-md flex-col gap-2 sm:flex-row sm:items-end">
+                <label className="block flex-1 text-xs">
+                  <span className="font-medium text-teal-950">Nueva contraseña</span>
+                  <input
+                    type="password"
+                    autoComplete="new-password"
+                    minLength={6}
+                    className="mt-1 w-full rounded-xl border border-emerald-200/80 bg-white/90 px-3 py-2 shadow-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                    value={nuevaClave}
+                    onChange={(e) => setNuevaClave(e.target.value)}
+                  />
+                </label>
+                <label className="block flex-1 text-xs">
+                  <span className="font-medium text-teal-950">Confirmar</span>
+                  <input
+                    type="password"
+                    autoComplete="new-password"
+                    minLength={6}
+                    className="mt-1 w-full rounded-xl border border-emerald-200/80 bg-white/90 px-3 py-2 shadow-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                    value={confirmarClave}
+                    onChange={(e) => setConfirmarClave(e.target.value)}
+                  />
+                </label>
+                <button
+                  type="button"
+                  disabled={guardandoClave}
+                  className="ui-btn-secondary shrink-0 px-4 py-2 text-xs whitespace-nowrap sm:mb-px"
+                  onClick={() => void (async () => {
+                    setMsgClave(null);
+                    if (nuevaClave.length < 6 || confirmarClave.length < 6) {
+                      setMsgClave("Escribe al menos 6 caracteres en ambos campos.");
+                      return;
+                    }
+                    if (nuevaClave !== confirmarClave) {
+                      setMsgClave("Las contraseñas no coinciden.");
+                      return;
+                    }
+                    setGuardandoClave(true);
+                    try {
+                      const { error } = await supabase.auth.updateUser({ password: nuevaClave });
+                      if (error) throw error;
+                      setMsgClave("Contraseña actualizada.");
+                      setNuevaClave("");
+                      setConfirmarClave("");
+                    } catch (e) {
+                      setMsgClave(e instanceof Error ? e.message : "No se pudo actualizar.");
+                    } finally {
+                      setGuardandoClave(false);
+                    }
+                  })()}
+                >
+                  {guardandoClave ? "Guardando…" : "Cambiar contraseña"}
+                </button>
+              </div>
+              <p className="mt-2 text-[11px] text-slate-500">
+                ¿Olvidaste la actual? Desde{" "}
+                <Link to="/login" className="font-semibold text-teal-800 underline">
+                  Iniciar sesión
+                </Link>{" "}
+                usa &quot;¿Olvidaste tu contraseña?&quot;.
+              </p>
+            </>
+          ) : (
+            <p className="mt-2 text-xs text-slate-600">
+              Entraste con <strong>Google</strong>. Para gestionar el acceso usa la configuración de tu cuenta de Google; aquí no hay contraseña de la app.
+            </p>
+          )}
+          {msgClave && (
+            <p className="mt-3 rounded-lg border border-teal-200/80 bg-white/90 px-3 py-2 text-xs text-teal-950">
+              {msgClave}
+            </p>
+          )}
+        </section>
+      )}
 
       <section className="rounded-2xl border border-dashed border-emerald-300/70 bg-white/90 p-5 shadow-sm backdrop-blur-sm">
         <p className="text-sm font-semibold text-teal-950">Siguiente paso sugerido</p>

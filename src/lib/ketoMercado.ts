@@ -2,7 +2,13 @@ import { ketoCatalog, type KetoItem } from "../data/ketoCatalog";
 
 import { getActivoPerfilId } from "./perfilStorage";
 
-export type ListaItem = KetoItem & { cantidad: number; comprado: boolean };
+export type ListaItem = KetoItem & {
+  cantidad: number;
+  comprado: boolean;
+  origen?: "generador" | "manual";
+  /** Si el usuario editó la etiqueta (ítems manuales). */
+  nombreCustom?: string;
+};
 
 function listaStorageKey(): string {
   const pid = getActivoPerfilId();
@@ -28,7 +34,8 @@ export function generarListaKeto(dias: number, personas: number): ListaItem[] {
   return ketoCatalog.map((item) => ({
     ...item,
     cantidad: roundCantidad(item.basePorPersonaDia * d * p, item.unidad),
-    comprado: false
+    comprado: false,
+    origen: "generador" as const
   }));
 }
 
