@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -11,20 +11,40 @@ import {
   getMercadoRealizado,
   listarMercadosRealizados
 } from "../lib/mercadoHistorial";
-import { loadPerfilLocal, perfilGuardadoEnDispositivo, PERFILES_STORAGE_EVENT } from "../lib/perfilStorage";
+import {
+  contarClavesRespaldo,
+  descargarRespaldoCompletoJson,
+  importarRespaldoReemplazandoTodo
+} from "../lib/backupLocal";
+import {
+  loadPerfilLocal,
+  perfilGuardadoEnDispositivo,
+  getActivoPerfilId,
+  PERFILES_STORAGE_EVENT
+} from "../lib/perfilStorage";
+import {
+  CRONOGRAMA_HISTORIAL_EVENT,
+  getSnapshotActivoId,
+  listarSnapshots,
+  snapshotMasReciente
+} from "../lib/cronogramaHistorial";
 
 export function MiEspacio() {
   const { user } = useAuth();
   const [tick, setTick] = useState(0);
+  const [estadoImport, setEstadoImport] = useState<string | null>(null);
+  const inputRespaldoRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const sync = () => setTick((t) => t + 1);
     window.addEventListener("storage", sync);
     window.addEventListener(PERFILES_STORAGE_EVENT, sync);
+    window.addEventListener(CRONOGRAMA_HISTORIAL_EVENT, sync);
     const id = window.setInterval(sync, 2500);
     return () => {
       window.removeEventListener("storage", sync);
       window.removeEventListener(PERFILES_STORAGE_EVENT, sync);
+      window.removeEventListener(CRONOGRAMA_HISTORIAL_EVENT, sync);
       window.clearInterval(id);
     };
   }, []);
@@ -35,6 +55,14 @@ export function MiEspacio() {
   const snapshotMercado = mercadoActivoId ? getMercadoRealizado(mercadoActivoId) : null;
   const nHistorial = listarMercadosRealizados().length;
   const nComprados = contarCompradosMercado(snapshotMercado?.items);
+
+  const perfilId = getActivoPerfilId();
+  const snapActivoCronId = getSnapshotActivoId(perfilId);
+  const snapCron = snapActivoCronId
+    ? (listarSnapshots(perfilId).find((s) => s.id === snapActivoCronId) ?? null)
+    : snapshotMasReciente(perfilId);
+
+  void tick;
 
   const siguiente = useMemo(() => {
     if (!tienePerfilLocal || !perfil) {
@@ -114,10 +142,13 @@ export function MiEspacio() {
             </>
           ) : (
             <>
-              <ul className="mt-3 space-y-1 text-sm text-slate-800">
+              {snapshotMercado.nombre && (
+                <p className="mt-2 font-semibold text-teal-950">{snapshotMercado.nombre}</p>
+              )}
+              <ul className={`${snapshotMercado.nombre ? "mt-1" : "mt-3"} space-y-1 text-sm text-slate-800`}>
                 <li>
                   <span className="text-slate-500">Guardado:</span>{" "}
-                  {new Date(snapshotMercado.createdAt).toLocaleString("es")}
+                  {new Date(snapshotMercado.createdAt).toLocaleString("es", { dateStyle: "short", timeStyle: "short" })}
                 </li>
                 <li>
                   <span className="text-slate-500">Periodo:</span> {snapshotMercado.dias} días · {snapshotMercado.personas}{" "}
@@ -126,6 +157,9 @@ export function MiEspacio() {
                 <li>
                   <span className="text-slate-500">Comprados:</span> {nComprados} ítems
                 </li>
+                {snapshotMercado.nota && (
+                  <li className="text-xs text-amber-800">{snapshotMercado.nota}</li>
+                )}
               </ul>
               <Link
                 to="/keto-mercado"
@@ -139,9 +173,39 @@ export function MiEspacio() {
 
         <section className="rounded-2xl border border-violet-200/80 bg-gradient-to-b from-violet-50/85 to-white/95 p-5 shadow-md shadow-violet-900/5 backdrop-blur-sm">
           <p className="text-xs font-bold uppercase tracking-wide text-violet-900">Paso 3 · Menú</p>
-          <p className="mt-2 text-sm text-slate-700">Plantillas o IA; video por plato.</p>
+          {snapCron ? (
+            <>
+              {snapCron.titulo && (
+                <p className="mt-2 font-semibold text-teal-950">{snapCron.titulo}</p>
+              )}
+              <ul className="mt-2 space-y-1 text-sm text-slate-800">
+                <li>
+                  <span className="text-slate-500">Guardado:</span>{" "}
+                  {new Date(snapCron.createdAt).toLocaleString("es", { dateStyle: "short", timeStyle: "short" })}
+                  {" · "}
+                  <span className="text-slate-500">
+                    hace {Math.max(0, Math.round((Date.now() - new Date(snapCron.createdAt).getTime()) / 86400000))} día(s)
+                  </span>
+                </li>
+                <li>
+                  <span className="text-slate-500">Fuente:</span>{" "}
+                  {snapCron.fuente === "ia" ? "IA (Gemini)" : "Plantillas"} · {snapCron.dias} días ·{" "}
+                  {snapCron.modo === "mixto" ? "mixto" : snapCron.modo === "mercado" ? "mercado" : "perfil"}
+                </li>
+                {snapActivoCronId === snapCron.id && (
+                  <li>
+                    <span className="inline-block rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold text-violet-800">
+                      ✓ Plan activo de la semana
+                    </span>
+                  </li>
+                )}
+              </ul>
+            </>
+          ) : (
+            <p className="mt-2 text-sm text-slate-600">Sin menú guardado aún.</p>
+          )}
           <Link to="/cronograma" className="ui-btn-violet mt-4 inline-flex">
-            Abrir cronograma
+            {snapCron ? "Abrir / editar cronograma" : "Generar cronograma"}
           </Link>
           <Link
             to={PASO_ASISTENTE.to}
@@ -151,6 +215,69 @@ export function MiEspacio() {
           </Link>
         </section>
       </div>
+
+      <section className="ui-card-muted text-sm text-slate-800">
+        <p className="font-semibold text-teal-900">Respaldo en este dispositivo</p>
+        <p className="mt-2 text-slate-600">
+          Descarga un JSON con las claves <code className="rounded bg-white/80 px-1 text-xs">tec_nutri_salud_*</code>{" "}
+          (perfiles, mercado, historial de menús, listas). Las fotos y vídeos del cronograma siguen solo en el
+          navegador (IndexedDB).
+        </p>
+        <p className="mt-1 text-xs text-slate-500">Claves detectadas: {contarClavesRespaldo()}</p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button
+            type="button"
+            className="ui-btn-secondary px-4 py-2 text-sm"
+            onClick={() => descargarRespaldoCompletoJson()}
+          >
+            Descargar respaldo JSON
+          </button>
+          <input
+            ref={inputRespaldoRef}
+            type="file"
+            accept="application/json,.json"
+            className="sr-only"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              e.target.value = "";
+              if (!f) return;
+              void (async () => {
+                if (
+                  !window.confirm(
+                    "Se borrarán en este navegador todos los datos NutriSalud guardados localmente (prefijo tec_nutri_salud_) y se sustituirán por el contenido del archivo. Las fotos del cronograma en IndexedDB no se tocan. ¿Continuar?"
+                  )
+                ) {
+                  setEstadoImport("Importación cancelada.");
+                  return;
+                }
+                setEstadoImport("Leyendo archivo…");
+                try {
+                  const text = await f.text();
+                  const r = importarRespaldoReemplazandoTodo(text);
+                  if (r.ok) {
+                    setEstadoImport(`Listo: se aplicaron ${r.claves} clave(s). Recarga la página si algo no se actualiza.`);
+                    setTick((t) => t + 1);
+                  } else setEstadoImport(r.error);
+                } catch {
+                  setEstadoImport("Error al leer el archivo.");
+                }
+              })();
+            }}
+          />
+          <button
+            type="button"
+            className="ui-btn-secondary px-4 py-2 text-sm"
+            onClick={() => inputRespaldoRef.current?.click()}
+          >
+            Restaurar desde JSON…
+          </button>
+        </div>
+        {estadoImport && (
+          <p className="mt-3 rounded-lg border border-emerald-200/80 bg-white/90 px-3 py-2 text-xs text-slate-800">
+            {estadoImport}
+          </p>
+        )}
+      </section>
 
       <section className="rounded-2xl border border-dashed border-emerald-300/70 bg-white/90 p-5 shadow-sm backdrop-blur-sm">
         <p className="text-sm font-semibold text-teal-950">Siguiente paso sugerido</p>

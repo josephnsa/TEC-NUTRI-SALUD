@@ -1,4 +1,6 @@
 import { supabase } from "./supabase";
+import type { EstadoPerfiles } from "./perfilStorage";
+import { aplicarEstadoPerfilesRemoto, parseEstadoPerfilesFromUnknown } from "./perfilStorage";
 import type { PerfilUsuario } from "./nutritionPlan";
 
 type ProfileRow = {
@@ -11,6 +13,7 @@ type ProfileRow = {
   conditions: string | null;
   disliked_foods: string | null;
   diet_style: string | null;
+  family_json?: unknown;
 };
 
 export function rowToPerfil(row: ProfileRow): PerfilUsuario {
@@ -50,9 +53,36 @@ export async function fetchProfileRemote(userId: string): Promise<PerfilUsuario 
   return rowToPerfil(data as ProfileRow);
 }
 
-export async function upsertProfileRemote(userId: string, p: PerfilUsuario): Promise<boolean> {
+/** Lee `family_json` sin mutar el dispositivo. */
+export async function fetchFamilyRemote(userId: string): Promise<EstadoPerfiles | null> {
+  if (!supabase) return null;
+  const { data, error } = await supabase.from("profiles").select("family_json").eq("id", userId).maybeSingle();
+  if (error || !data) return null;
+  const raw = (data as { family_json?: unknown }).family_json;
+  if (raw == null) return null;
+  return parseEstadoPerfilesFromUnknown(raw);
+}
+
+/** Aplica perfiles remotos al almacenamiento local si son válidos. */
+export async function fetchAndApplyFamilyRemote(userId: string): Promise<boolean> {
+  const fam = await fetchFamilyRemote(userId);
+  if (!fam) return false;
+  return aplicarEstadoPerfilesRemoto(fam);
+}
+
+export type UpsertProfileOpts = { family?: EstadoPerfiles };
+
+export async function upsertProfileRemote(
+  userId: string,
+  p: PerfilUsuario,
+  opts?: UpsertProfileOpts
+): Promise<boolean> {
   if (!supabase) return false;
-  const row = perfilToRow(userId, p);
+  const row: Partial<ProfileRow> & { id: string; updated_at: string } = {
+    ...perfilToRow(userId, p),
+    updated_at: new Date().toISOString()
+  };
+  if (opts?.family) row.family_json = opts.family;
   const { error } = await supabase.from("profiles").upsert(row, { onConflict: "id" });
   return !error;
 }

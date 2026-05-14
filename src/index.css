@@ -6,6 +6,12 @@ html {
   scroll-behavior: smooth;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
 @layer base {
   * {
     @apply border-slate-200;
@@ -34,7 +40,7 @@ html {
     @apply rounded-xl border border-emerald-200/90 bg-white/90 px-4 py-2 text-sm font-semibold text-teal-900 shadow-sm backdrop-blur-sm transition hover:border-teal-300 hover:bg-white hover:shadow-md;
   }
   .ui-btn-violet {
-    @apply rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-violet-500/25 ring-1 ring-white/20 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-violet-500/25 ring-1 ring-white/20 transition hover:brightness-110 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:active:scale-100;
   }
   .ui-btn-ghost-violet {
     @apply rounded-xl border border-violet-200/90 bg-violet-50/90 px-4 py-2 text-sm font-semibold text-violet-900 shadow-sm backdrop-blur-sm transition hover:bg-violet-100/90;

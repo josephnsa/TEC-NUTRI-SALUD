@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
 import type { ReactNode } from "react";
+import { useRegisterSW } from "virtual:pwa-register/react";
 import { useAuth } from "../context/AuthContext";
 import { MARCA_APP } from "../lib/brand";
 import { PASO_ASISTENTE, PASOS_RECORRIDO_PRINCIPAL, RUTA_MI_ESPACIO } from "../lib/recorrido";
@@ -17,9 +18,14 @@ const btnSalirClass =
 
 export function Layout({ children }: { children: ReactNode }) {
   const { user, signOut, isConfigured } = useAuth();
+  const {
+    needRefresh: [needRefresh, setNeedRefresh],
+    updateServiceWorker
+  } = useRegisterSW();
 
   return (
-    <div className="min-h-dvh flex flex-col">
+    <div className="relative flex min-h-dvh flex-col">
+      <div className="pointer-events-none fixed inset-0 -z-10 bg-mesh" aria-hidden />
       <header className="sticky top-0 z-40 border-b border-white/40 bg-white/75 shadow-sm backdrop-blur-xl supports-[backdrop-filter]:bg-white/65">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-2 px-3 py-2.5 sm:gap-3 sm:px-4 sm:py-3">
           <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
@@ -80,6 +86,34 @@ export function Layout({ children }: { children: ReactNode }) {
           </div>
         </div>
       </header>
+
+      {needRefresh && (
+        <div
+          role="status"
+          className="sticky top-[3.6rem] z-30 flex items-center justify-between gap-3 border-b border-teal-200/80 bg-teal-50/95 px-4 py-2.5 text-sm text-teal-900 shadow-sm backdrop-blur-sm motion-safe:animate-fade-up motion-reduce:animate-none"
+        >
+          <span>
+            <strong>Nueva versión disponible.</strong> Actualiza para tener las últimas mejoras.
+          </span>
+          <div className="flex shrink-0 gap-2">
+            <button
+              type="button"
+              className="rounded-lg bg-teal-700 px-3 py-1 text-xs font-semibold text-white shadow-sm transition hover:bg-teal-800"
+              onClick={() => void updateServiceWorker(true)}
+            >
+              Actualizar
+            </button>
+            <button
+              type="button"
+              className="rounded-lg border border-teal-200 bg-white/80 px-3 py-1 text-xs text-teal-700 shadow-sm transition hover:bg-teal-50"
+              onClick={() => setNeedRefresh(false)}
+              aria-label="Cerrar aviso de actualización"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
 
       <main className="mx-auto w-full max-w-5xl flex-1 px-3 py-6 pb-28 sm:px-4 sm:py-8 md:pb-10">{children}</main>
 

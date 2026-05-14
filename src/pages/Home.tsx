@@ -45,7 +45,7 @@ export function Home() {
         <div className="relative z-10 mt-8 flex flex-wrap gap-3 motion-safe:animate-fade-up-delay-2 motion-reduce:animate-none">
           <Link
             to="/mi-plan"
-            className="rounded-2xl bg-white px-6 py-3 text-sm font-bold text-teal-900 shadow-lg shadow-black/15 ring-1 ring-white/50 transition hover:scale-[1.02] hover:bg-emerald-50 motion-reduce:hover:scale-100"
+            className="rounded-2xl bg-white px-6 py-3 text-sm font-bold text-teal-900 shadow-lg shadow-black/15 ring-1 ring-white/50 transition motion-safe:hover:scale-[1.02] hover:bg-emerald-50 motion-reduce:hover:scale-100"
           >
             Empezar aquí
           </Link>

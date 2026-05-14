@@ -30,6 +30,7 @@ export function Login() {
   const redirectUrl = `${window.location.origin}${window.location.pathname}#/mi-plan`;
 
   const onEmail = async (mode: "signin" | "signup") => {
+    if (!supabase) return;
     setLoading(true);
     setMsg(null);
     try {
@@ -50,6 +51,7 @@ export function Login() {
   };
 
   const onGoogle = async () => {
+    if (!supabase) return;
     setLoading(true);
     setMsg(null);
     try {

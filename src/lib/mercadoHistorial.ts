@@ -14,6 +14,10 @@ export type MercadoSnapshot = {
   items: ListaItem[];
   /** Perfil al que pertenece este mercado guardado (fase 2.2). */
   perfilId?: string;
+  /** Nombre amigable editable (ej. "Semana 19 mayo"). */
+  nombre?: string;
+  /** Nota libre (ej. "Solo verdurería"). */
+  nota?: string;
 };
 
 export function activeMercadoStorageKey(perfilId: string): string {
@@ -120,6 +124,26 @@ export function getMercadoActivoParaPlan(): string | null {
     return leg;
   }
   return null;
+}
+
+/** Actualiza el nombre amigable de un mercado guardado. */
+export function renombrarMercado(id: string, nombre: string): boolean {
+  const list = parseHistorial();
+  const idx = list.findIndex((s) => s.id === id);
+  if (idx === -1) return false;
+  list[idx] = { ...list[idx], nombre: nombre.trim() || undefined };
+  writeHistorial(list);
+  return true;
+}
+
+/** Actualiza la nota libre de un mercado guardado. */
+export function anotarMercado(id: string, nota: string): boolean {
+  const list = parseHistorial();
+  const idx = list.findIndex((s) => s.id === id);
+  if (idx === -1) return false;
+  list[idx] = { ...list[idx], nota: nota.trim() || undefined };
+  writeHistorial(list);
+  return true;
 }
 
 /** Elimina mercados y clave activa asociados a un perfil (al borrar persona). */

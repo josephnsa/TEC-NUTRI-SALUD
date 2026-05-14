@@ -69,19 +69,31 @@ function normalizeMiembro(raw: unknown): PerfilMiembro | null {
   return { ...base, id: o.id, creadoEn, fechaInicioPlan: fechaInicioPlan ?? null };
 }
 
+/** Parsea estado multiperfil desde JSON ya deserializado (p. ej. `family_json` en Supabase). */
+export function parseEstadoPerfilesFromUnknown(data: unknown): EstadoPerfiles | null {
+  if (!data || typeof data !== "object") return null;
+  const root = data as Partial<EstadoPerfiles>;
+  if (!Array.isArray(root.perfiles) || typeof root.activoId !== "string") return null;
+  const perfiles = root.perfiles.map(normalizeMiembro).filter(Boolean) as PerfilMiembro[];
+  if (!perfiles.length) return null;
+  const activoOk = perfiles.some((p) => p.id === root.activoId) ? root.activoId : perfiles[0].id;
+  return { perfiles, activoId: activoOk };
+}
+
 function parseEstado(raw: string): EstadoPerfiles | null {
   try {
-    const data = JSON.parse(raw) as unknown;
-    if (!data || typeof data !== "object") return null;
-    const root = data as Partial<EstadoPerfiles>;
-    if (!Array.isArray(root.perfiles) || typeof root.activoId !== "string") return null;
-    const perfiles = root.perfiles.map(normalizeMiembro).filter(Boolean) as PerfilMiembro[];
-    if (!perfiles.length) return null;
-    const activoOk = perfiles.some((p) => p.id === root.activoId) ? root.activoId : perfiles[0].id;
-    return { perfiles, activoId: activoOk };
+    return parseEstadoPerfilesFromUnknown(JSON.parse(raw) as unknown);
   } catch {
     return null;
   }
+}
+
+/** Sustituye el estado local de perfiles por uno válido (sync nube). */
+export function aplicarEstadoPerfilesRemoto(data: unknown): boolean {
+  const e = parseEstadoPerfilesFromUnknown(data);
+  if (!e) return false;
+  writeEstado(e);
+  return true;
 }
 
 function readEstadoFromDisk(): EstadoPerfiles | null {
@@ -172,7 +184,8 @@ export function savePerfilLocal(p: PerfilUsuario) {
     writeEstado(e);
     return;
   }
-  const idx = e.perfiles.findIndex((x) => x.id === e.activoId);
+  const estado = e;
+  const idx = estado.perfiles.findIndex((x) => x.id === estado.activoId);
   if (idx === -1) {
     const m = nuevoMiembroDesdeUsuario(n);
     e = { perfiles: [...e.perfiles, m], activoId: m.id };
