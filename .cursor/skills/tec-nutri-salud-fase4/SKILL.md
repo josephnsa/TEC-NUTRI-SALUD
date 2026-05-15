@@ -20,7 +20,7 @@ IA: **Google Gemini** via `@google/generative-ai` — clave `VITE_GEMINI_API_KEY
 localStorage
   tec_nutri_salud_perfiles_v1          → EstadoPerfiles (multi-perfil)
   tec_nutri_salud_keto_lista_v1__<id>  → ListaGuardada (items actuales)
-  tec_nutri_salud_mercados_v1          → MercadoSnapshot[] (historial)
+  tec_nutri_salud_mercados_v1          → MercadoSnapshot[] (historial de listas Mi mercado)
   tec_nutri_salud_cronograma_historial_v1 → CronogramaSnapshot[]
   tec_nutri_salud_cronograma_activo_v1__<perfilId> → id del snapshot activo
 ```

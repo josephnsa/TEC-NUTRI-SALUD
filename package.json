@@ -1,5 +1,6 @@
 {
   "name": "tec-nutri-salud",
+  "description": "NutriSalud — PWA: perfiles, Mi mercado, cronograma con IA Gemini; Supabase y GitHub Pages opcional.",
   "private": true,
   "version": "0.1.0",
   "type": "module",

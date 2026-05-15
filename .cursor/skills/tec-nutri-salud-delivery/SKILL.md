@@ -45,7 +45,7 @@ No dupliques listas de pasos en páginas sueltas sin importar `recorrido.ts`.
 - `HashRouter` (`/#/ruta`) por GitHub Pages.
 - `base: "./"` en Vite.
 - UI en **español**, **responsive**, tactil-friendly (targets ≥44px donde aplique), **PWA** (`vite-plugin-pwa`).
-- **Navegación**: desktop **Resumen** primero, luego Datos → Mercado → Menú (+ Belleza + IA); móvil **Inicio**, **Resumen**, mismo orden de pasos e IA (Belleza solo escritorio o desde la home); barra inferior con `safe-area` vía padding en el `<nav>` fijo.
+- **Navegación**: desktop **Resumen** primero, luego Datos → **Mi mercado** (`/#/keto-mercado`) → Menú (+ Belleza + IA); móvil **Inicio**, **Resumen**, mismo orden de pasos e IA (Belleza solo escritorio o desde la home); barra inferior con `safe-area` vía padding en el `<nav>` fijo.
 - Pantallas núcleo del recorrido usan **`StepHeader`** con `pasoActual={1|2|3}` para coherencia sin repetir párrafos largos.
 
 ## Fase 2b — Diseño visual (actualización continua)
@@ -62,10 +62,10 @@ No dupliques listas de pasos en páginas sueltas sin importar `recorrido.ts`.
 - **Números en formularios:** usar `IntField` / `DecimalField` de `src/components/NumericInputs.tsx` para edad, peso, talla y “días” (evita ceros a la izquierda y spinners incómodos).
 - Con Supabase: `supabase/schema.sql`, Google OAuth, redirect URLs con `/#/login`, `/#/mi-plan` y **`/#/actualizar-clave`** (recuperación de contraseña) según panel; detalle en `docs/DEPLOYMENT.md` §5.4.
 
-## Fase 3b — Mercado → cronograma
+## Fase 3b — Mi mercado → cronograma
 
 - Tras **Guardar mercado**, navegar a cronograma con estado `desdeMercado` donde aplique.
-- Mercado **activo** alimenta modos *mercado* / *mixto* en Mi plan y Cronograma.
+- La lista **Mi mercado** marcada como **activa** alimenta modos *mercado* / *mixto* en Mi plan y Cronograma.
 - Botones **Compré todo de una vez** / **Desmarcar todo**; export/import JSON del historial.
 - **Clave de variedad** rota plantillas sin cambiar perfil.
 
@@ -101,7 +101,7 @@ Seguir el orden de **`docs/PLAN_MEJORAS_FASE3_NUTRICION_SUPABASE_UI.md`**: prime
 |--------|------------------|
 | **Auth (email)** | **F3.0:** olvidé contraseña desde login, recuperación → `/#/actualizar-clave`, cambiar contraseña logada desde Mi espacio (no OAuth-only); Redirect URLs en Supabase |
 | **Supabase económico** | Tablas o columnas JSONB con **RLS** `auth.uid()`; payloads compactos por mercado/plan/nutrition_goals; evitar explosión de filas |
-| **Mercado extras** | `ListaItem`/equivalente con origen manual vs generador; mismo snapshot guardado |
+| **Mi mercado (extras)** | `ListaItem`/equivalente con origen manual vs generador; mismo snapshot guardado |
 | **Nutrición orientativa** | Módulo puro (ej. `nutritionTargets.ts`) con fórmula documentada (**Mifflin-St Jeor** + disclaimers obligatorios en UI); no es diagnóstico |
 | **Gemini macros** | Ampliar parseo JSON en `recipesGemini.ts` con **schema estable** (ver prompt abajo) |
 | **Video in-app** | Componente iframe `youtube-nocookie` + extracción de ID; fallback botón externo |
