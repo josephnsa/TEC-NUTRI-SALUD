@@ -75,18 +75,22 @@ export function Home() {
           {user && isConfigured ? (
             <>
               <span className="font-semibold text-emerald-300">✓ Sesión activa</span>
-              {" — "}perfil sincronizado con Supabase. Mercados, cronogramas y fotos se guardan en este dispositivo; las fotos pueden copiarse a la nube desde el detalle del día.
+              {" — "}mercados y cronogramas se respaldan en la nube automáticamente al guardar; trae datos de otros dispositivos desde{" "}
+              <Link to="/mi-espacio" className="font-semibold text-emerald-300 underline decoration-emerald-400/60 hover:decoration-emerald-200">
+                Mi resumen → Sincronizar
+              </Link>
+              .
             </>
           ) : isConfigured ? (
             <>
-              Datos guardados en el navegador de este dispositivo.{" "}
+              Datos guardados en este dispositivo.{" "}
               <Link to="/login" className="font-semibold text-emerald-300 underline decoration-emerald-400/60 hover:decoration-emerald-200">
                 Inicia sesión
               </Link>{" "}
-              para sincronizar el perfil con Supabase.
+              para respaldar mercados y cronogramas en la nube.
             </>
           ) : (
-            "Datos guardados en el navegador de este dispositivo (sin cuenta, 100 % local)."
+            "Datos guardados en el navegador de este dispositivo (100 % local, sin cuenta)."
           )}
         </p>
       </section>

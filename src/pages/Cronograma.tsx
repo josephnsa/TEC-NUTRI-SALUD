@@ -6,6 +6,7 @@ import {
   generarCronograma,
   presupuestoKcalOrientativoDiario,
   resumenNutricional,
+  sumarMacrosComidaDia,
   type DiaPlan,
   type ModoCronograma,
   type PerfilUsuario
@@ -821,25 +822,47 @@ export function Cronograma() {
       <section className="space-y-4" id="lista-cronograma">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <h2 className="ui-section-title text-gradient-brand">Días y recetas</h2>
-          <div className="flex gap-2 rounded-xl border border-emerald-100 bg-white/70 p-1 text-sm">
+          {diasConFecha.length > 0 && (
+            <div className="flex gap-2 rounded-xl border border-emerald-100 bg-white/70 p-1 text-sm">
+              <button
+                type="button"
+                className={layoutDias === "lista" ? "ui-btn-primary px-3 py-1.5 text-xs" : "ui-btn-ghost-violet px-3 py-1.5 text-xs"}
+                onClick={() => setLayoutDias("lista")}
+              >
+                Lista
+              </button>
+              <button
+                type="button"
+                className={
+                  layoutDias === "calendario" ? "ui-btn-primary px-3 py-1.5 text-xs" : "ui-btn-ghost-violet px-3 py-1.5 text-xs"
+                }
+                onClick={() => setLayoutDias("calendario")}
+              >
+                Calendario
+              </button>
+            </div>
+          )}
+        </div>
+
+        {diasConFecha.length === 0 && (
+          <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-teal-300/70 bg-gradient-to-br from-teal-50/80 via-white to-emerald-50/50 px-6 py-12 text-center shadow-sm">
+            <span className="text-5xl">🥗</span>
+            <div className="space-y-1">
+              <p className="font-display text-lg font-semibold text-teal-950">Sin cronograma activo</p>
+              <p className="max-w-sm text-sm text-slate-600">
+                Sube hasta arriba y usa <strong>Generar con IA</strong> (con tu lista de mercado) o{" "}
+                <strong>Generar plantilla</strong> para ver tu menú semanal aquí.
+              </p>
+            </div>
             <button
               type="button"
-              className={layoutDias === "lista" ? "ui-btn-primary px-3 py-1.5 text-xs" : "ui-btn-ghost-violet px-3 py-1.5 text-xs"}
-              onClick={() => setLayoutDias("lista")}
+              className="ui-btn-primary px-5 py-2 text-sm"
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             >
-              Lista
-            </button>
-            <button
-              type="button"
-              className={
-                layoutDias === "calendario" ? "ui-btn-primary px-3 py-1.5 text-xs" : "ui-btn-ghost-violet px-3 py-1.5 text-xs"
-              }
-              onClick={() => setLayoutDias("calendario")}
-            >
-              Calendario
+              Ir a generar cronograma ↑
             </button>
           </div>
-        </div>
+        )}
         <p className="text-sm text-slate-600">
           {vistaCronograma === "ia" && cronogramaIa?.length === diasCronograma ? (
             <>
@@ -951,15 +974,53 @@ export function Cronograma() {
           <div className="space-y-4">
             {diasConFecha.map((d) => {
               const lblFecha = etiquetaFechaDiaPlan(fechaIniCron, d.dia);
+              const totalDia = sumarMacrosComidaDia(d.comidas);
+              const hayKcal = totalDia.kcal > 0;
+              const hayVideo = (["desayuno", "almuerzo", "cena"] as const).some(
+                (s) => d.comidas[s].youtubeVideoId
+              );
+              const esIA = vistaCronograma === "ia" && cronogramaIa?.length === diasCronograma;
               return (
                 <div key={d.dia} className="ui-day-block">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-sm font-semibold text-teal-900">
-                      Día {d.dia}
-                      {lblFecha && <span className="ml-2 font-normal text-slate-600">· {lblFecha}</span>}
-                      <span className="ml-2 font-normal text-slate-500">({d.fecha})</span>
-                    </p>
-                    <button type="button" className="ui-btn-secondary px-3 py-1 text-xs" onClick={() => abrirDia(d)}>
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-teal-900">
+                        Día {d.dia}
+                        {lblFecha && <span className="ml-2 font-normal text-slate-600">· {lblFecha}</span>}
+                        <span className="ml-2 font-normal text-slate-500">({d.fecha})</span>
+                      </p>
+                      <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                        {esIA && (
+                          <span className="rounded-full bg-violet-100/90 px-2 py-0.5 text-[10px] font-semibold text-violet-800">
+                            IA
+                          </span>
+                        )}
+                        {hayKcal && (
+                          <span className="rounded-full border border-amber-200/90 bg-amber-50/90 px-2 py-0.5 text-[10px] font-semibold tabular-nums text-amber-900">
+                            ~{Math.round(totalDia.kcal)} kcal
+                          </span>
+                        )}
+                        {totalDia.proteinG > 0 && (
+                          <span className="rounded-full border border-sky-200/90 bg-sky-50/90 px-2 py-0.5 text-[10px] font-semibold tabular-nums text-sky-900">
+                            P {totalDia.proteinG.toFixed(0)} g
+                          </span>
+                        )}
+                        {totalDia.fatG > 0 && (
+                          <span className="rounded-full border border-violet-200/90 bg-violet-50/90 px-2 py-0.5 text-[10px] font-semibold tabular-nums text-violet-900">
+                            G {totalDia.fatG.toFixed(0)} g
+                          </span>
+                        )}
+                        {hayVideo && (
+                          <span
+                            className="rounded-full border border-teal-200/90 bg-teal-50/90 px-2 py-0.5 text-[10px] font-semibold text-teal-800"
+                            title="Vídeo disponible en el detalle"
+                          >
+                            ▶ vídeo
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <button type="button" className="ui-btn-secondary shrink-0 px-3 py-1 text-xs" onClick={() => abrirDia(d)}>
                       Ver detalle del día
                     </button>
                   </div>
@@ -971,8 +1032,11 @@ export function Cronograma() {
                       return (
                         <div key={slot} className="ui-meal-slot">
                           <p className="text-xs font-semibold uppercase tracking-wide text-teal-800">{tituloSlot}</p>
-                          <p className="mt-1 font-medium text-slate-900">{c.titulo}</p>
-                          <p className="mt-1 whitespace-pre-wrap text-xs text-slate-600">{c.receta}</p>
+                          <p className="mt-1 font-medium leading-snug text-slate-900">{c.titulo}</p>
+                          <p className="mt-1 line-clamp-3 text-xs text-slate-500">{c.receta}</p>
+                          {c.youtubeVideoId && (
+                            <p className="mt-1.5 text-[10px] font-medium text-teal-700">▶ Ver receta en detalle</p>
+                          )}
                         </div>
                       );
                     })}
