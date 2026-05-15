@@ -1,5 +1,6 @@
 import { FormEvent, useState, useId } from "react";
 import { useNavigate } from "react-router-dom";
+import { urlRedireccionOAuth } from "../lib/authOAuth";
 import { urlRedireccionRecuperacionClave } from "../lib/authPassword";
 import { supabase, supabaseConfigured } from "../lib/supabase";
 
@@ -30,9 +31,6 @@ export function Login() {
     );
   }
 
-  /** Tras OAuth, Supabase redirige aquí; Mi plan carga el perfil remoto si hay sesión. */
-  const redirectUrl = `${window.location.origin}${window.location.pathname}#/mi-plan`;
-
   const onEmail = async (mode: "signin" | "signup") => {
     if (!supabase) return;
     setLoading(true);
@@ -61,7 +59,7 @@ export function Login() {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
-        options: { redirectTo: redirectUrl }
+        options: { redirectTo: urlRedireccionOAuth() }
       });
       if (error) throw error;
     } catch (e) {

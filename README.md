@@ -45,7 +45,7 @@ Copia `.env.example` a `.env` y rellena solo si usarás nube o IA.
 1. Crea un proyecto en [Supabase](https://supabase.com/dashboard).
 2. SQL Editor → pega y ejecuta `supabase/schema.sql`.
 3. Authentication → Providers → **Google** (client ID/secret de Google Cloud).
-4. Authentication → URL configuration → **Redirect URLs**: añade la URL de tu GitHub Pages terminada en `/#/login` (ej. `https://TU_USUARIO.github.io/TEC-NUTRI-SALUD/#/login`).
+4. Authentication → URL configuration → **Redirect URLs**: comodines para local y Pages (ej. `http://localhost:5173/**`, `https://TU_USUARIO.github.io/TEC-NUTRI-SALUD/**`). Ver `docs/DEPLOYMENT.md` §5.3.
 5. Copia **Project URL** y **anon public key** a `.env` como `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`.
 
 Sin Supabase, la app sigue funcionando completamente en modo local: perfiles, lista de mercado e historial de mercados, historial de cronogramas, diario de fotos y respaldo completo JSON se guardan en **localStorage / IndexedDB**. Exporta/importa JSON de respaldo desde **Mi Espacio**. La pantalla está en **`/#/keto-mercado`** (ruta técnica heredada).

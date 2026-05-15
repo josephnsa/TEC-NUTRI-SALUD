@@ -80,13 +80,16 @@ En **SQL Editor**, ejecutar el contenido de `supabase/schema.sql` del repositori
 ### 5.3 Proveedor Google (opcional)
 
 1. **Authentication → Providers → Google**: Client ID y Client Secret de Google Cloud Console (OAuth consent + credenciales OAuth 2.0).
-2. **Authentication → URL configuration → Redirect URLs**: incluir la URL de login de la app.
+2. En Google Cloud, **URI de redirección** del cliente web: solo la callback de Supabase (`https://<ref>.supabase.co/auth/v1/callback`). **Orígenes JS**: `http://localhost:5173` y tu dominio de Pages.
+3. **Authentication → URL configuration → Redirect URLs** (allowlist de `redirectTo` de la app). Con **HashRouter** la app usa la URL base **sin** `#/ruta` (PKCE devuelve `?code=` en el query). Añade comodines por puerto de Vite:
 
-Para GitHub Pages la URL suele ser:
+- `http://localhost:5173/**`
+- `http://localhost:5174/**`
+- `http://localhost:5175/**`
+- `http://127.0.0.1:5173/**`
+- Producción: `https://<usuario>.github.io/<repositorio>/**`
 
-`https://<usuario>.github.io/<repositorio>/#/login`
-
-(Con hash antes de `/login`, según cómo Supabase redirija; si hay problemas, revisar la documentación de redirect de Supabase Auth con SPAs.)
+Tras el login, la app limpia la URL y navega a `#/mi-plan`.
 
 ### 5.4 Recuperación y cambio de contraseña (email)
 

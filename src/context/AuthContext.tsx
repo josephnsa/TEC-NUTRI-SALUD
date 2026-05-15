@@ -9,6 +9,11 @@ import {
 } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Session, User } from "@supabase/supabase-js";
+import {
+  esRetornoOAuthEnUrl,
+  limpiarUrlTrasOAuth,
+  restaurarSesionOAuthDesdeUrl
+} from "../lib/authOAuth";
 import { supabase, supabaseConfigured } from "../lib/supabase";
 
 type AuthContextValue = {
@@ -32,15 +37,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    supabase.auth.getSession().then(({ data }) => {
+    void (async () => {
+      if (esRetornoOAuthEnUrl()) {
+        await restaurarSesionOAuthDesdeUrl(supabase);
+      }
+      const { data } = await supabase.auth.getSession();
       setSession(data.session ?? null);
+      if (data.session && esRetornoOAuthEnUrl()) {
+        limpiarUrlTrasOAuth("#/mi-plan");
+        navigate("/mi-plan", { replace: true });
+      }
       setLoading(false);
-    });
+    })();
 
     const {
       data: { subscription }
     } = supabase.auth.onAuthStateChange((event, next) => {
       setSession(next);
+      if (event === "SIGNED_IN" && next && esRetornoOAuthEnUrl()) {
+        limpiarUrlTrasOAuth("#/mi-plan");
+        navigate("/mi-plan", { replace: true });
+      }
       if (event === "PASSWORD_RECOVERY") {
         navigate("/actualizar-clave", { replace: true });
       }
