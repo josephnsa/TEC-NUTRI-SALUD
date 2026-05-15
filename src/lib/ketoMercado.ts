@@ -1,4 +1,4 @@
-import { ketoCatalog, type KetoItem } from "../data/ketoCatalog";
+import { ketoCatalog, mediterraneoCatalog, balanceadoCatalog, type KetoItem } from "../data/ketoCatalog";
 
 import { getActivoPerfilId } from "./perfilStorage";
 
@@ -28,15 +28,36 @@ function roundCantidad(n: number, unidad: string): number {
   return Math.max(1, Math.round(n));
 }
 
-export function generarListaKeto(dias: number, personas: number): ListaItem[] {
+/** Selecciona el catálogo adecuado según el tipo de dieta del perfil. */
+function catalogPorDieta(estiloDieta?: string): KetoItem[] {
+  switch (estiloDieta) {
+    case "mediterranea":
+      return mediterraneoCatalog;
+    case "balanceada":
+      return balanceadoCatalog;
+    default:
+      // keto, lowcarb, paleo, carnivore → catálogo keto (bajo en carbs, alto en grasas)
+      return ketoCatalog;
+  }
+}
+
+/** Genera lista base personalizada al tipo de dieta del usuario.
+ *  Usa `estiloDieta` para seleccionar el catálogo correcto con cantidades orientativas. */
+export function generarListaBase(dias: number, personas: number, estiloDieta?: string): ListaItem[] {
   const d = Math.min(30, Math.max(1, Math.round(dias)));
   const p = Math.min(12, Math.max(1, Math.round(personas)));
-  return ketoCatalog.map((item) => ({
+  const catalog = catalogPorDieta(estiloDieta);
+  return catalog.map((item) => ({
     ...item,
     cantidad: roundCantidad(item.basePorPersonaDia * d * p, item.unidad),
     comprado: false,
     origen: "generador" as const
   }));
+}
+
+/** @deprecated Usa generarListaBase(dias, personas, estiloDieta) para soporte multi-dieta. */
+export function generarListaKeto(dias: number, personas: number): ListaItem[] {
+  return generarListaBase(dias, personas, "keto");
 }
 
 export function loadListaLocal(): ListaGuardada | null {

@@ -46,6 +46,7 @@ import {
 import { getMercadoActivoParaPlan, getMercadoRealizado, setMercadoActivoParaPlan } from "../lib/mercadoHistorial";
 import { URL_GOOGLE_AI_STUDIO_API_KEY, agenteRecetasGratisDisponible, generarCronogramaIA } from "../lib/recipesGemini";
 import { CronogramaDiaDetalleModal } from "../components/CronogramaDiaDetalleModal";
+import { exportarCronogramaPdf } from "../lib/pdfExport";
 
 const defaultPerfil: PerfilUsuario = {
   nombre: "",
@@ -189,18 +190,6 @@ export function Cronograma() {
     return () => window.removeEventListener(PERFILES_STORAGE_EVENT, bootDesdeAlmacenamiento);
   }, [bootDesdeAlmacenamiento]);
 
-  // Restaura automáticamente el plan IA activo al montar o cambiar de perfil
-  useEffect(() => {
-    if (!snapActivoId || !perfilContextoId || iaYaRestoradaRef.current) return;
-    const snap = listarSnapshots(perfilContextoId).find((s) => s.id === snapActivoId);
-    if (snap?.fuente === "ia" && snap.diasPlan.length > 0) {
-      setCronogramaIa(snap.diasPlan);
-      setVistaCronograma("ia");
-      setDiasCronograma(snap.dias);
-      setModoCronograma(snap.modo);
-      iaYaRestoradaRef.current = true;
-    }
-  }, [snapActivoId, perfilContextoId]);
 
   useEffect(() => {
     const onHist = () => {
@@ -267,11 +256,27 @@ export function Cronograma() {
     return getMercadoRealizado(mercadoActivoId);
   }, [mercadoActivoId]);
 
+  // Reset del plan IA cuando el usuario cambia parámetros activamente (modo, días, mercado, dieta o perfil).
+  // IMPORTANTE: este efecto DEBE declararse ANTES del efecto de restauración para que el orden de
+  // ejecución sea correcto: reset primero → restauración después (gana la restauración).
   useEffect(() => {
     setCronogramaIa(null);
     setVistaCronograma("plantillas");
     setIaError(null);
   }, [diasCronograma, modoCronograma, mercadoActivoId, perfil.estiloDieta, perfilContextoId]);
+
+  // Restaura automáticamente el plan IA activo al montar o cambiar de perfil.
+  // Se declara DESPUÉS del efecto reset para que su ejecución lo sobreescriba correctamente.
+  // No modifica diasCronograma/modoCronograma para evitar volver a disparar el reset.
+  useEffect(() => {
+    if (!snapActivoId || !perfilContextoId || iaYaRestoradaRef.current) return;
+    const snap = listarSnapshots(perfilContextoId).find((s) => s.id === snapActivoId);
+    if (snap?.fuente === "ia" && snap.diasPlan.length > 0) {
+      setCronogramaIa(snap.diasPlan);
+      setVistaCronograma("ia");
+      iaYaRestoradaRef.current = true;
+    }
+  }, [snapActivoId, perfilContextoId]);
 
   const itemsMercadoActivo = snapshotMercado?.items;
   const nComprados = contarCompradosMercado(itemsMercadoActivo);
@@ -284,8 +289,11 @@ export function Cronograma() {
     });
   }, [perfil, diasCronograma, modoCronograma, itemsMercadoActivo, claveVariedad, mercadoActivoId]);
 
+  // La condición de longitud se elimina: cuando vistaCronograma === "ia" y hay datos, siempre
+  // mostramos el plan IA independientemente de diasCronograma (el reset effect ya lo limpia
+  // cuando el usuario cambia los parámetros).
   const cronogramaMostrado =
-    vistaCronograma === "ia" && cronogramaIa?.length === diasCronograma ? cronogramaIa : cronograma;
+    vistaCronograma === "ia" && cronogramaIa && cronogramaIa.length > 0 ? cronogramaIa : cronograma;
 
   const resumen = useMemo(() => resumenNutricional(perfil), [perfil]);
   const presupuestoKcal = useMemo(() => presupuestoKcalOrientativoDiario(perfil), [perfil]);
@@ -743,6 +751,28 @@ export function Cronograma() {
           </button>
           {diasConFecha.length > 0 && (
             <CopiarPlanBtn dias={diasConFecha} estiloDieta={perfil.estiloDieta} presupuestoKcal={presupuestoKcal} />
+          )}
+          {cronogramaMostrado.length > 0 && (
+            <button
+              type="button"
+              title="Descargar el cronograma completo como PDF con tabla detallada"
+              onClick={() => {
+                const snapActivo = snapActivoId
+                  ? listarSnapshots(perfilIdActivo).find((s) => s.id === snapActivoId)
+                  : null;
+                exportarCronogramaPdf({
+                  diasPlan: cronogramaMostrado,
+                  nombrePlan: snapActivo?.titulo ?? undefined,
+                  nombrePerfil: perfil.nombre || undefined,
+                  estiloDieta: perfil.estiloDieta,
+                  presupuestoKcal,
+                  fechaInicio: loadPerfilMiembroActivo()?.fechaInicioPlan ?? null
+                });
+              }}
+              className="ui-btn-secondary"
+            >
+              📄 Descargar PDF
+            </button>
           )}
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <span>Días</span>

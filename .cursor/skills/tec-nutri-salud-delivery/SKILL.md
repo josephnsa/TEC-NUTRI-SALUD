@@ -68,6 +68,26 @@ No dupliques listas de pasos en páginas sueltas sin importar `recorrido.ts`.
 - Botones **Compré todo de una vez** / **Desmarcar todo**; export/import JSON del historial.
 - **Clave de variedad** rota plantillas sin cambiar perfil.
 
+## Fase 4 — IA personalizada + persistencia + export PDF (mayo 2026)
+
+### Bug de persistencia del cronograma (H23)
+El efecto `useEffect` de reset (`[diasCronograma, modoCronograma, mercadoActivoId, perfil.estiloDieta, perfilContextoId]`) **debe declararse ANTES** del efecto de restauración (`[snapActivoId, perfilContextoId]`) en `Cronograma.tsx`. React ejecuta efectos en orden de declaración; si el reset va después, sobreescribe la restauración. Regla:
+1. **Orden efectos:** reset first → restauración después.
+2. **No mutar** `diasCronograma` / `modoCronograma` desde el efecto de restauración (evita reactivar el reset).
+3. Condición `cronogramaMostrado`: `vistaCronograma === "ia" && cronogramaIa && cronogramaIa.length > 0` (sin verificar longitud contra diasCronograma).
+
+### Lista base multi-dieta (H24)
+- `src/data/ketoCatalog.ts` exporta tres catálogos: `ketoCatalog`, `mediterraneoCatalog`, `balanceadoCatalog`.
+- `src/lib/ketoMercado.ts` exporta `generarListaBase(dias, personas, estiloDieta?)` que elige el catálogo por dieta.
+- `generarListaKeto` queda como alias `@deprecated` para no romper importaciones antiguas.
+- En `KetoMercado.tsx`: botón **"Generar con IA ✦"** primero, **"Generar lista base"** después.
+
+### Export PDF (H25 / H26)
+- Módulo `src/lib/pdfExport.ts`: funciones `exportarMercadoPdf()` y `exportarCronogramaPdf()`.
+- Genera HTML formateado en ventana nueva + `window.print()` (≈ "Guardar como PDF" en el diálogo).
+- **Sin dependencias externas** (no jspdf, no html2canvas).
+- Botón "📄 Descargar PDF" en `KetoMercado.tsx` y `Cronograma.tsx` cuando hay datos.
+
 ## Belleza (contenido)
 
 - Tips en `src/data/beautyTips.ts`: campo **`categoria`**, orden de secciones **`ORDEN_CATEGORIAS`**, página **`Belleza.tsx`** agrupa por bloque (rutina diaria, rostro, cabello, ojeras, acné, labios/manos). Ampliar tips en el mismo archivo manteniendo precauciones.

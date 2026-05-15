@@ -128,7 +128,45 @@ María quiere comer mejor en estilo keto, organizar el mercado, **guardar lo que
     *quiero* que al cerrar sesión se borren el perfil, mercado y cronograma del dispositivo  
     *para* que la siguiente persona no vea mis datos al abrir la app.
 
-## Estado implementación (historias 13–22, mayo 2026)
+23. **Persistencia real del plan activo entre sesiones** _(fix crítico)_  
+    *Como* usuaria  
+    *quiero* que el cronograma que dejé activo se mantenga al recargar la página o cambiar de pestaña y volver  
+    *para* no perder mi menú generado con IA entre visitas.  
+    **Criterios de aceptación:**  
+    - Al navegar fuera y regresar al cronograma, se muestra el plan IA activo (no las plantillas por defecto).  
+    - El plan activo persiste en `localStorage` con el `snapActivoId`; se restaura en el montaje.  
+    - Los efectos React se ordenan: *reset* → *restauración* para que la restauración gane.  
+    - El plan solo se descarta si el usuario activamente cambia días/modo/dieta/mercado.
+
+24. **Lista base personalizada por tipo de dieta**  
+    *Como* usuaria con dieta mediterránea o balanceada  
+    *quiero* que "Generar lista base" me entregue alimentos de MI tipo de dieta con cantidades coherentes  
+    *para* no recibir siempre una lista keto genérica que no corresponde a lo que como.  
+    **Criterios de aceptación:**  
+    - Hay catálogos distintos para dieta keto/lowcarb, mediterránea y balanceada.  
+    - La función `generarListaBase(dias, personas, estiloDieta)` selecciona el catálogo correcto.  
+    - El botón "Generar con IA ✦" aparece **primero**; "Generar lista base" aparece después.  
+    - Las cantidades base se calculan multiplicando `basePorPersonaDia × días × personas`.
+
+25. **Exportar lista de compras a PDF**  
+    *Como* usuaria  
+    *quiero* descargar mi lista de compras como un PDF con tabla detallada  
+    *para* llevarlo impreso al supermercado o compartirlo.  
+    **Criterios de aceptación:**  
+    - Botón "📄 Descargar PDF" visible en KetoMercado cuando hay ítems.  
+    - PDF muestra: nombre/perfil, tipo de dieta, días/personas, tabla agrupada por categoría (ítem, cantidad, unidad, estado comprado/pendiente, origen IA/manual/base).  
+    - Se genera abriendo una ventana de impresión formateada (sin dependencias externas).
+
+26. **Exportar cronograma a PDF**  
+    *Como* usuaria  
+    *quiero* descargar mi menú semanal como PDF con el detalle de cada comida  
+    *para* tenerlo a mano sin necesidad de estar conectada.  
+    **Criterios de aceptación:**  
+    - Botón "📄 Descargar PDF" visible en el cronograma cuando hay días de plan.  
+    - PDF muestra: nombre del plan, perfil, tipo de dieta, objetivo calórico, por cada día: desayuno/almuerzo/cena con ingredientes truncados y macros (kcal, P, G, C).  
+    - Incluye promedio de kcal/día del plan completo.
+
+## Estado implementación (historias 13–26, mayo 2026)
 
 | Historia | Criterios clave implementados |
 |----------|-------------------------------|
@@ -142,6 +180,10 @@ María quiere comer mejor en estilo keto, organizar el mercado, **guardar lo que
 | **20** (cronograma calórico) | TDEE + déficit/superávit; macros por dieta; persona "dietista experto" en prompt; macros obligatorios |
 | **21** (persistencia IA) | `useEffect` restaura plan IA activo al montar; ref flag para no sobreescribir en sesión activa |
 | **22** (logout limpio) | `signOut` borra `tec_nutri_salud_*` de localStorage cuando Supabase está configurado; navega a `/` |
+| **23** (persistencia fix) | Efectos reordenados (reset → restauración); eliminada condición de longitud en `cronogramaMostrado`; restauración no modifica `diasCronograma`/`modoCronograma` para evitar bucle |
+| **24** (lista base por dieta) | Catálogos `mediterraneoCatalog` + `balanceadoCatalog` en `ketoCatalog.ts`; `generarListaBase(dias, personas, estiloDieta)` selecciona catálogo; botones reordenados en KetoMercado |
+| **25** (PDF mercado) | `exportarMercadoPdf()` en `pdfExport.ts`; botón "📄 Descargar PDF" en KetoMercado; tabla HTML agrupada por categoría |
+| **26** (PDF cronograma) | `exportarCronogramaPdf()` en `pdfExport.ts`; botón "📄 Descargar PDF" en Cronograma; tabla por día con macros |
 
 ## UX polish adicional (mayo 2026)
 

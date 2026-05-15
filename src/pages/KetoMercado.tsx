@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { StepHeader } from "../components/StepHeader";
 import { useAuth } from "../context/AuthContext";
 import {
-  generarListaKeto,
+  generarListaBase,
   loadListaLocal,
   saveListaLocal,
   type ListaItem
@@ -25,13 +25,17 @@ import {
 import { PERFILES_STORAGE_EVENT, loadPerfilLocal } from "../lib/perfilStorage";
 import { deleteMercadoSnapshotRemote, pushMercadoSnapshotRemote } from "../lib/snapshotsRemote";
 import { URL_GOOGLE_AI_STUDIO_API_KEY, geminiMercadoDisponible, generarMercadoIA } from "../lib/mercadoIA";
+import { exportarMercadoPdf } from "../lib/pdfExport";
 
 export function KetoMercado() {
   const navigate = useNavigate();
   const { user, isConfigured } = useAuth();
   const [dias, setDias] = useState(7);
   const [personas, setPersonas] = useState(2);
-  const [items, setItems] = useState<ListaItem[]>(() => generarListaKeto(7, 2));
+  const [items, setItems] = useState<ListaItem[]>(() => {
+    const p = loadPerfilLocal();
+    return generarListaBase(7, 2, p?.estiloDieta);
+  });
   const [historial, setHistorial] = useState<MercadoSnapshot[]>(() => listarMercadosRealizados());
   const [activoId, setActivoId] = useState<string | null>(() => getMercadoActivoParaPlan());
   const [msg, setMsg] = useState<string | null>(null);
@@ -115,7 +119,7 @@ export function KetoMercado() {
       } else {
         setDias(7);
         setPersonas(2);
-        setItems(generarListaKeto(7, 2));
+        setItems(generarListaBase(7, 2, loadPerfilLocal()?.estiloDieta));
       }
       refreshHistorial();
     };
@@ -132,7 +136,8 @@ export function KetoMercado() {
   );
 
   const regenerar = () => {
-    const next = generarListaKeto(dias, personas);
+    const perfil = loadPerfilLocal();
+    const next = generarListaBase(dias, personas, perfil?.estiloDieta);
     persist(next, dias, personas);
     setMsg(null);
     setIaMercadoError(null);
@@ -359,6 +364,25 @@ export function KetoMercado() {
             {copiadoLista ? "¡Lista copiada!" : "📋 Copiar lista"}
           </button>
         )}
+        {items.length > 0 && (
+          <button
+            type="button"
+            title="Descargar lista como PDF con tabla detallada"
+            onClick={() => {
+              const p = loadPerfilLocal();
+              exportarMercadoPdf({
+                items,
+                dias,
+                personas,
+                nombrePerfil: p?.nombre ?? undefined,
+                estiloDieta: p?.estiloDieta
+              });
+            }}
+            className="ui-btn-secondary"
+          >
+            📄 Descargar PDF
+          </button>
+        )}
       </div>
       {msg && (
         <p className="rounded-xl border border-teal-200/80 bg-teal-50/90 px-3 py-2 text-sm text-teal-900 shadow-sm backdrop-blur-sm">
@@ -390,9 +414,6 @@ export function KetoMercado() {
           />
         </label>
         <div className="flex items-end gap-2">
-          <button type="button" onClick={regenerar} className="ui-btn-secondary flex-1">
-            Generar lista base
-          </button>
           {geminiMercadoDisponible() ? (
             <button
               type="button"
@@ -410,6 +431,9 @@ export function KetoMercado() {
               )}
             </button>
           ) : null}
+          <button type="button" onClick={regenerar} className="ui-btn-secondary flex-1">
+            Generar lista base
+          </button>
         </div>
         {!geminiMercadoDisponible() && (
           <p className="text-xs text-slate-500">
