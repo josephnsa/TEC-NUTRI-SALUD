@@ -76,7 +76,7 @@ flowchart LR
 ## Respaldo de datos
 
 - `MiEspacio.tsx` ofrece **descargar / restaurar** un JSON de respaldo que incluye todas las claves `tec_nutri_salud_*` (perfiles, mercados, cronogramas, listas, claves activas).
-- `KetoMercado.tsx` ofrece export/import específico del historial de mercados (fusión por id).
+- **`KetoMercado.tsx`** (Mi mercado en UI) ofrece export/import específico del historial de mercados (fusión por id).
 - Las **fotos y vídeos** del cronograma se guardan en **IndexedDB** del navegador y **no** se incluyen en el respaldo JSON (solo sus metadatos si ya se subieron a Supabase Storage).
 - Con sesión Supabase, los **mercados y planes guardados** pueden **subirse y fusionarse** desde la nube (tablas `user_market_snapshots` / `user_plan_snapshots`); al iniciar sesión la app intenta **traer** copias recientes (por fecha `updated_at`). Al **borrar** un mercado o plan localmente, se elimina también la fila remota si hay sesión activa.
 
@@ -122,4 +122,4 @@ Mejoras adicionales sobre el flujo base, sin cambiar el orden datos → mercado 
 
 ---
 
-*Actualizado: mayo 2026 — fases 2.0–4.x, épicas A–F; Fase 4: Mercado IA, cronograma calórico experto, persistencia plan IA, logout limpio.*
+*Actualizado: mayo 2026 — fases 2.0–4.x, épicas A–F; Fase 4: lista de mercado con IA, cronograma calórico experto, persistencia plan IA, logout limpio.*

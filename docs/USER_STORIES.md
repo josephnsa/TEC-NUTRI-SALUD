@@ -171,18 +171,18 @@ María quiere comer mejor según **su tipo de dieta** (cetogénica, mediterráne
 | Historia | Criterios clave implementados |
 |----------|-------------------------------|
 | **13** (sync Supabase) | Push/pull mercados y planes; borrado remoto al borrar local |
-| **14** (ítems extra) | Campo `origen: "manual"` en `ListaItem`; UI agregar ítem en `KetoMercado`; delete individual |
+| **14** (ítems extra) | Campo `origen: "manual"` en `ListaItem`; UI agregar ítem en **Mi mercado** (`KetoMercado.tsx`); delete individual |
 | **15** (despensa completa + macros) | Prompt recibe lista entera con cantidades y unidades; `porciones`; `fiber_g` |
 | **16** (video + nutrición) | Embed nocookie verificado con miniatura; fallback visual; tarjetas macro por color |
 | **17** (código limpio) | `tsc --noEmit` pasa estricto; fix import `supabase` en `Login`; script `npm run typecheck` |
 | **18** (UI tech) | Tarjetas macro con gradientes y hover; tokens Tailwind; `motion-safe:`/`motion-reduce:` |
-| **19** (mercado IA) | `mercadoIA.ts` con `generarMercadoIA()`; botón "Generar con IA ✦" en KetoMercado; badge IA; reintentar |
+| **19** (mercado IA) | `mercadoIA.ts` con `generarMercadoIA()`; botón "Generar con IA ✦" en **Mi mercado**; badge IA; reintentar |
 | **20** (cronograma calórico) | TDEE + déficit/superávit; macros por dieta; persona "dietista experto" en prompt; macros obligatorios |
 | **21** (persistencia IA) | `useEffect` restaura plan IA activo al montar; ref flag para no sobreescribir en sesión activa |
 | **22** (logout limpio) | `signOut` borra `tec_nutri_salud_*` de localStorage cuando Supabase está configurado; navega a `/` |
 | **23** (persistencia fix) | Efectos reordenados (reset → restauración); eliminada condición de longitud en `cronogramaMostrado`; restauración no modifica `diasCronograma`/`modoCronograma` para evitar bucle |
-| **24** (lista base por dieta) | Catálogos `mediterraneoCatalog` + `balanceadoCatalog` en `ketoCatalog.ts`; `generarListaBase(dias, personas, estiloDieta)` selecciona catálogo; botones reordenados en KetoMercado |
-| **25** (PDF mercado) | `exportarMercadoPdf()` en `pdfExport.ts`; botón "📄 Descargar PDF" en KetoMercado; tabla HTML agrupada por categoría |
+| **24** (lista base por dieta) | Catálogos `mediterraneoCatalog` + `balanceadoCatalog` en `ketoCatalog.ts`; `generarListaBase(dias, personas, estiloDieta)` selecciona catálogo; botones reordenados en **Mi mercado** |
+| **25** (PDF mercado) | `exportarMercadoPdf()` en `pdfExport.ts`; botón "📄 Descargar PDF" en **Mi mercado**; tabla HTML agrupada por categoría |
 | **26** (PDF cronograma) | `exportarCronogramaPdf()` en `pdfExport.ts`; botón "📄 Descargar PDF" en Cronograma; tabla por día con macros |
 
 ## UX polish adicional (mayo 2026)

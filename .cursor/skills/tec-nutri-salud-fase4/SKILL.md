@@ -1,4 +1,4 @@
-# SKILL — TEC Nutri Salud Fase 4: IA Mercado · Cronograma experto · Persistencia · Sesión
+# SKILL — TEC Nutri Salud Fase 4: IA en Mi mercado · Cronograma experto · Persistencia · Sesión
 
 ## Cuándo usar este skill
 
@@ -27,7 +27,7 @@ localStorage
 
 ## Reglas de implementación
 
-### F4.0 — Mercado IA (`src/lib/mercadoIA.ts`)
+### F4.0 — IA lista de compras / Mi mercado (`src/lib/mercadoIA.ts` + `KetoMercado.tsx`)
 
 ```typescript
 // Prompt — salida esperada
@@ -66,26 +66,28 @@ Importar `presupuestoKcalOrientativoDiario` y `calcularTdeePerfil` de `./nutriti
 
 ### F4.2 — Restaurar plan IA (`src/pages/Cronograma.tsx`)
 
+**Reglas críticas (bug de persistencia ya corregido):**
+
+1. Declarar **antes** un `useEffect` que hace *reset* cuando cambian `diasCronograma`, `modoCronograma`, `mercadoActivoId`, `perfil.estiloDieta`, `perfilContextoId` (`setCronogramaIa(null)`, `setVistaCronograma("plantillas")`).
+2. Declarar **después** otro `useEffect` que restaura desde el snapshot activo (`fuente === "ia"`) con `setCronogramaIa`, `setVistaCronograma("ia")`. **No** llamar aquí a `setDiasCronograma` / `setModoCronograma` (evita re-disparar el reset en bucle).
+3. `cronogramaMostrado`: usar vista IA cuando hay `cronogramaIa.length > 0`, sin exigir `length === diasCronograma`.
+4. `iaYaRestoradaRef`: resetear a `false` en `bootDesdeAlmacenamiento` al cambiar perfil; marcar `true` tras restaurar.
+
+Fragmento orientativo del efecto de restauración:
+
 ```typescript
-// Añadir DESPUÉS del useEffect de bootDesdeAlmacenamiento
-// Flag para evitar sobreescribir si el usuario ya generó un nuevo plan
-const iaRestoradaRef = useRef(false);
+const iaYaRestoradaRef = useRef(false);
 
 useEffect(() => {
-  if (!snapActivoId || !perfilContextoId || iaRestoradaRef.current) return;
-  const snaps = listarSnapshots(perfilContextoId);
-  const snap = snaps.find((s) => s.id === snapActivoId);
+  if (!snapActivoId || !perfilContextoId || iaYaRestoradaRef.current) return;
+  const snap = listarSnapshots(perfilContextoId).find((s) => s.id === snapActivoId);
   if (snap?.fuente === "ia" && snap.diasPlan.length > 0) {
     setCronogramaIa(snap.diasPlan);
     setVistaCronograma("ia");
-    setDiasCronograma(snap.dias);
-    setModoCronograma(snap.modo);
-    iaRestoradaRef.current = true;
+    iaYaRestoradaRef.current = true;
   }
 }, [snapActivoId, perfilContextoId]);
 ```
-
-Cuando el usuario genera un nuevo plan IA, resetear `iaRestoradaRef.current = false` solo al cambiar de perfil (no en la regeneración normal).
 
 ### F4.3 — Limpiar localStorage en signout (`src/context/AuthContext.tsx`)
 
@@ -115,7 +117,7 @@ const signOut = useCallback(async () => {
 
 ## Pruebas funcionales antes de push
 
-1. **Mercado IA**: Con clave → generar → verificar lista personalizada. Sin clave → botón oculto.
+1. **Mi mercado (IA lista)**: Con clave → generar → verificar lista personalizada. Sin clave → botón oculto.
 2. **Cronograma calórico**: Perfil con `pesoObjetivoKg` → generar IA → verificar `kcal_estimate` ≈ objetivo.
 3. **Persistencia**: Generar IA → navegar → volver → plan visible sin regenerar.
 4. **Logout**: Login → generar datos → logout → recargar → localStorage vacío.

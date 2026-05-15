@@ -7,7 +7,7 @@ Documento vivo (mayo 2026). Complementa `MEJORAS_NEGOCIO_Y_PRODUCTO.md` (Épica 
 ## Objetivos de producto
 
 1. **Persistir lo que más importa** en Supabase **sin salir del plan gratuito**: priorizar pocas tablas compactas / columnas JSONB con RLS por `auth.uid()`.
-2. **Mercado más flexible**: alimentos “extra” fuera del generador de lista base (plantillas por tipo de dieta / IA), igualmente persistibles en el snapshot del mercado.
+2. **Mi mercado más flexible**: alimentos “extra” fuera del generador de lista base (plantillas por tipo de dieta / IA), igualmente persistibles en el snapshot del mercado.
 3. **Menú nutricionalmente coherente**: considerar **todos** los ítems del mercado activo (incluidos extras), objetivos orientativos (calorías, macros) y texto claro sobre **cantidades orientativas** hacia meta de peso (siempre como **orientación**, no prescripción médica).
 4. **Experiencia de receta rica**: **video reproducible dentro de la app** (iframe embed) donde la licencia/ToS lo permita; fichas de plato con **kcal / grasa / carbos / proteína** (estimaciones) y **presupuesto diario restante**.
 5. **Ingeniería**: código modular, tipos fuertes, comentarios mínimos útiles donde la lógica nutricional no sea obvia.
@@ -39,12 +39,12 @@ Strategia **JSONB por mercado guardado / plan guardado** replica lo que ya hace 
 
 ---
 
-## Mercado — alimentos extra
+## Mi mercado — alimentos extra
 
 ### Modelo
 
 - Extender `ListaItem` (o paralelo seguro para no romper importaciones) con flags opcionales, p. ej. `origen: "generador" \| "manual"` y `nombreCustom` cuando aplique.
-- UI en `KetoMercado.tsx`:
+- UI en **`KetoMercado.tsx`** (Mi mercado):
   - **“Agregar ítem”** libre (texto + unidad opcional + cantidad aprox.) que se marca como comprable y aparece junto al resto por día cuando se distribuya lista.
   - Persistencia: mismo snapshot `MercadoSnapshot.items`.
 
@@ -59,7 +59,7 @@ Strategia **JSONB por mercado guardado / plan guardado** replica lo que ya hace 
 ### Inputs
 
 - Perfil activo (`PerfilUsuario` + fecha inicio opcional).
-- Mercado activo: **lista completa** (`items`), distingiendo generados vs manuales.
+- **Mercado activo** (lista de compras referenciada por el plan): **lista completa** (`items`), distinguiendo generados vs manuales.
 - Objetivo orientativo opcional guardado en perfil/supabase:
   - Peso objetivo (kg), plazo opcional (“relajado / moderado”).
   - Cálculos base: ecuación habitual de gasto (**Mifflin-St Jeor** u otra documentada en código) × factor actividad suave definido por el usuario.
@@ -118,7 +118,7 @@ Alineado a **fase §8** ya existente y al skill:
 |------|---------|--------|
 | F3.0 | **Auth accesible:** olvidé mi contraseña desde `/#/login` (`resetPasswordForEmail`), pantalla `/#/actualizar-clave` (evento `PASSWORD_RECOVERY` + `updateUser`), cambio de contraseña logada en Mi espacio **solo cuenta email** | Redirect URLs Supabase incluyendo `#/actualizar-clave`; ver `docs/DEPLOYMENT.md` |
 | F3.1 | Esquema Supabase nuevo + tipos TS + cliente sync pull/push opcional mercados/planes como JSON | Medir tamaño payloads |
-| F3.2 | Mercado: UI “Ítems extra” + migración ListaItem | Tests manuales import backup |
+| F3.2 | **Mi mercado**: UI “Ítems extra” + migración ListaItem | Tests manuales import backup |
 | F3.3 | Objetivos nutricionales en perfil + cálculos documentados (`src/lib/` nuevo módulo) | Sin Gemini primero OK |
 | F3.4 | Prompt Gemini + tipos nutr + UI tabla macros + presupuesto diario | Fallback sin clave |
 | F3.5 | Embed de video en modal/detalle | Error boundary iframe |

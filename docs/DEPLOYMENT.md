@@ -13,7 +13,7 @@ Este documento describe cómo desplegar **TEC Nutri Salud** en producción, qué
 | Hosting | GitHub Pages + GitHub Actions | Workflow: build → artefacto → deploy |
 | PWA | `vite-plugin-pwa` | Service worker en build |
 | Auth / perfil remoto | Supabase (opcional) | Email + Google; tabla `profiles` |
-| Mercado / historial | `localStorage` del navegador | Sin backend dedicado; export/import JSON en UI |
+| Mi mercado (lista / historial) | `localStorage` del navegador | Sin backend dedicado; export/import JSON en UI |
 | Agentes IA | Google Generative AI (Gemini) en el cliente | Misma clave para chat y recetas multi-día |
 
 No hay servidor propio de aplicación: las llamadas a Gemini van **desde el navegador del usuario** hacia Google (SDK oficial). Las variables `VITE_*` se **incrustan en el bundle en tiempo de build**; cualquiera que descargue el JS puede extraerlas. Por eso la clave debe tratarse como **pública** y restringirse en Google Cloud / AI Studio (ver sección 6).
@@ -75,7 +75,7 @@ npm run preview    # sirve dist/ en local
 
 ### 5.2 Esquema SQL
 
-En **SQL Editor**, ejecutar el contenido de `supabase/schema.sql` del repositorio. Crea la tabla `public.profiles`, las tablas **`user_market_snapshots`** y **`user_plan_snapshots`** (historial Mercado/Cronograma en JSON con RLS) y políticas RLS para `profiles` y Storage (`tec-nutri-media`).
+En **SQL Editor**, ejecutar el contenido de `supabase/schema.sql` del repositorio. Crea la tabla `public.profiles`, las tablas **`user_market_snapshots`** y **`user_plan_snapshots`** (historial **listas de compra / planes** en JSON con RLS) y políticas RLS para `profiles` y Storage (`tec-nutri-media`).
 
 ### 5.3 Proveedor Google (opcional)
 

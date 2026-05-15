@@ -1,4 +1,6 @@
-# Plan Fase 4 — Mercado IA · Cronograma experto · Persistencia · Sesión limpia
+# Plan Fase 4 — Lista de mercado con IA · Cronograma experto · Persistencia · Sesión limpia
+
+*(Pantalla de producto **Mi mercado**; archivo de código `KetoMercado.tsx`. Ruta SPA heredada: `/#/keto-mercado`.)*
 
 ## Contexto y motivación
 
@@ -50,9 +52,9 @@ El recorrido base (datos → mercado → cronograma) está completo y desplegado
 
 **Criterios de aceptación:**
 - Al montar `Cronograma.tsx`, si hay un snapshot activo con `fuente: "ia"`, se restaura en `cronogramaIa` y se muestra la vista IA automáticamente.
-- Cambiar de perfil activo limpia la restauración automáticamente.
-- Los planes de plantillas también se restauran (ya funcionaba, solo afectar IA).
-
+- El `useEffect` que **limpia** el plan IA ante cambios de días/modo/mercado/dieta/perfil debe declararse **antes** que el efecto que **restaura** el snapshot IA; así la restauración gana tras montar la página (orden de efectos React).
+- No actualizar `diasCronograma`/`modoCronograma` desde el efecto de restauración (evita disparar el reset en bucle).
+- Cambiar de perfil activo resetea el flag (`iaYaRestoradaRef`) para volver a evaluar restauración por perfil.
 ---
 
 ### H22 · Limpiar datos locales al cerrar sesión
@@ -136,10 +138,10 @@ El recorrido base (datos → mercado → cronograma) está completo y desplegado
 
 | Escenario | Pasos | Esperado |
 |-----------|-------|---------|
-| Mercado IA | Rellenar perfil keto → ir a Mercado → pulsar "Generar con IA" | Lista con proteínas/grasas keto, sin alimentos marcados en "evitar", cantidades coherentes |
-| Mercado IA sin clave | Igual sin `VITE_GEMINI_API_KEY` | Botón oculto o disabled con aviso claro |
+| Lista de mercado IA | Perfil cetogénico → **Mi mercado** (`/#/keto-mercado`) → "Generar con IA" | Lista acorde al estilo keto, sin ítems de "evitar", cantidades coherentes |
+| Lista de mercado IA sin clave | Igual sin `VITE_GEMINI_API_KEY` | Botón oculto o disabled con aviso claro |
 | Cronograma calórico | Perfil con `pesoObjetivoKg`, pulsar "Agente IA" | `kcal_estimate` suma ~objetivo diario ±20% en cada día |
-| Persistencia cronograma | Generar IA → navegar a Mercado → volver a Cronograma | Plan IA visible automáticamente, sin regenerar |
+| Persistencia cronograma | Generar IA → navegar a **Mi mercado** → volver a Cronograma | Plan IA visible automáticamente, sin regenerar |
 | Persistencia múltiples perfiles | Generar IA en perfil A → cambiar a perfil B → volver a Cronograma | Plan de perfil B (o vacío), no el de A |
 | Logout limpia datos | Iniciar sesión → generar datos → cerrar sesión | localStorage vacío de `tec_nutri_salud_*`; app en estado inicial |
 | Logout sin Supabase | App sin `VITE_SUPABASE_*` → cerrar sesión no aplica | Datos locales intactos |

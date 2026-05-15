@@ -9,7 +9,7 @@ Documento de **planificación** (mayo 2026). Resume lo pedido por producto, el g
 Permitir que **una cuenta o un dispositivo** gestione **varias personas** (perfiles), cada una con:
 
 - Datos propios (nombre, edad, peso, etc.).
-- **Mercado** y **mercado activo** propios (o referencia clara a cuál lista usa).
+- **Mi mercado** (lista de compras por perfil) y **lista activa para el plan** propias (o referencia clara a cuál snapshot usa).
 - **Cronograma** alineado a una **fecha de inicio** (ej. 13/05/2026 = día 1 del plan).
 - **Historial**: poder revisar **qué comió en días pasados** (persistencia, no solo vista en memoria).
 - **UI tipo calendario**: mes con celdas pequeñas (resumen de comidas); al hacer clic, **expandir detalle en la misma página** (drawer, modal o ruta anidada `/#/cronograma?dia=2026-05-15`) sin navegar “a ciegas” a YouTube al tocar el día.
@@ -20,7 +20,7 @@ Permitir que **una cuenta o un dispositivo** gestione **varias personas** (perfi
 | Área | Comportamiento actual |
 |------|-------------------------|
 | Perfil | Un solo objeto `PerfilUsuario` en `localStorage` (`tec_nutri_salud_perfil_v1`). Supabase `profiles` = **una fila por usuario** (no por familiar). |
-| Mercado | Historial global; **un** `mercadoActivoParaPlan` global (`mercadoHistorial.ts`). |
+| Mi mercado | Historial por perfil o global según diseño vigente; **un** `mercadoActivoParaPlan` asociado al perfil activo (`mercadoHistorial.ts`). |
 | Cronograma | Días numerados 1…N relativos a “ahora”, sin anclaje a calendario civil. No se guarda histórico de comidas por fecha. |
 | Medios del usuario | No existe: no hay fotos/vídeos propios ligados a un día o a una comida. |
 
@@ -45,7 +45,7 @@ tec_nutri_salud_perfiles_v1          → JSON: { perfiles: PerfilMiembro[], acti
 
 Migración: si existe `tec_nutri_salud_perfil_v1`, crear un único `PerfilMiembro` con esos datos y marcarlo activo.
 
-### 3.2 Mercado por perfil
+### 3.2 Lista de mercado por perfil
 
 - Clave activa: `tec_nutri_salud_mercado_activo_plan_id_v1__{perfilId}` o un mapa en un solo JSON `mercadoActivoPorPerfil`.
 - Historial: `mercados` ya es lista; añadir campo `perfilId` en cada entrada guardada.
