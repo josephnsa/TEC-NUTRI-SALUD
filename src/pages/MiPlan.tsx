@@ -530,13 +530,91 @@ export function MiPlan() {
         {status && <p className="md:col-span-2 text-sm font-medium text-teal-900">{status}</p>}
       </div>
 
-      <section className="ui-card">
+      <section className="ui-card space-y-5">
         <h2 className="ui-section-title">Resumen orientativo</h2>
-        <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
-          {resumen.map((r) => (
-            <li key={r}>{r}</li>
-          ))}
-        </ul>
+
+        {(() => {
+          const imc = perfil.pesoKg / Math.pow(perfil.tallaCm / 100, 2);
+          if (!Number.isFinite(imc) || imc < 5 || imc > 80) return null;
+          const imcVal = parseFloat(imc.toFixed(1));
+
+          type Zona = { desde: number; hasta: number; label: string; color: string; ring: string; bg: string };
+          const zonas: Zona[] = [
+            { desde: 0,    hasta: 18.5, label: "Bajo peso",  color: "text-sky-700",    ring: "border-sky-300",    bg: "bg-sky-500" },
+            { desde: 18.5, hasta: 25,   label: "Normal",     color: "text-emerald-700",ring: "border-emerald-300",bg: "bg-emerald-500" },
+            { desde: 25,   hasta: 30,   label: "Sobrepeso",  color: "text-amber-700",  ring: "border-amber-300",  bg: "bg-amber-500" },
+            { desde: 30,   hasta: 100,  label: "Obesidad",   color: "text-red-700",    ring: "border-red-300",    bg: "bg-red-500" },
+          ];
+          const zona = zonas.find((z) => imcVal >= z.desde && imcVal < z.hasta) ?? zonas[3]!;
+
+          // Posición de la marca en la barra IMC (rango 15–40)
+          const IMC_MIN = 15, IMC_MAX = 40;
+          const markerPct = Math.min(100, Math.max(0, Math.round(((imcVal - IMC_MIN) / (IMC_MAX - IMC_MIN)) * 100)));
+
+          const tdee = calcularTdeePerfil(perfil);
+          const kcalObj = presupuestoKcalOrientativoDiario(perfil);
+
+          return (
+            <div className="grid gap-3 sm:grid-cols-3">
+              {/* IMC */}
+              <div className={`rounded-2xl border ${zona.ring} bg-white/80 p-4 shadow-sm`}>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">IMC</p>
+                <p className={`mt-1 font-mono text-2xl font-bold tabular-nums ${zona.color}`}>{imcVal}</p>
+                <p className={`text-xs font-semibold ${zona.color}`}>{zona.label}</p>
+                <div className="relative mt-3 h-2 w-full overflow-visible rounded-full bg-gradient-to-r from-sky-300 via-emerald-400 to-red-400">
+                  <div
+                    className="absolute top-1/2 h-3.5 w-1 -translate-y-1/2 rounded-full bg-slate-800 shadow"
+                    style={{ left: `calc(${markerPct}% - 2px)` }}
+                    title={`IMC ${imcVal}`}
+                  />
+                </div>
+                <div className="mt-1 flex justify-between text-[9px] text-slate-400">
+                  <span>15</span><span>18.5</span><span>25</span><span>30</span><span>40</span>
+                </div>
+              </div>
+
+              {/* TDEE */}
+              <div className="rounded-2xl border border-amber-200/80 bg-white/80 p-4 shadow-sm">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">TDEE estimado</p>
+                <p className="mt-1 font-mono text-2xl font-bold tabular-nums text-amber-800">~{tdee}</p>
+                <p className="text-xs text-slate-500">kcal/día (mantenimiento)</p>
+                <p className="mt-2 text-[10px] leading-snug text-slate-400">
+                  Según Mifflin-St Jeor + actividad autodeclarada. No diagnóstico.
+                </p>
+              </div>
+
+              {/* Objetivo */}
+              <div className={`rounded-2xl border bg-white/80 p-4 shadow-sm ${kcalObj != null ? "border-teal-200/80" : "border-slate-200/60"}`}>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  {kcalObj != null ? "Objetivo calórico" : "Peso objetivo"}
+                </p>
+                {kcalObj != null ? (
+                  <>
+                    <p className="mt-1 font-mono text-2xl font-bold tabular-nums text-teal-800">~{kcalObj}</p>
+                    <p className="text-xs text-slate-500">kcal/día</p>
+                    <p className="mt-2 text-[10px] leading-snug text-slate-400">
+                      {kcalObj < tdee ? `Déficit ~${tdee - kcalObj} kcal/día` : `Superávit ~${kcalObj - tdee} kcal/día`}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="mt-1 font-mono text-2xl font-bold tabular-nums text-slate-400">—</p>
+                    <p className="text-xs text-slate-500">Define un peso objetivo arriba</p>
+                  </>
+                )}
+              </div>
+            </div>
+          );
+        })()}
+
+        <div>
+          <p className="text-xs font-semibold text-slate-600">Notas adicionales</p>
+          <ul className="mt-1 list-disc space-y-1 pl-5 text-xs text-slate-600">
+            {resumen.map((r) => (
+              <li key={r}>{r}</li>
+            ))}
+          </ul>
+        </div>
       </section>
 
       <div className="flex flex-wrap gap-3">

@@ -801,6 +801,23 @@ export function Cronograma() {
                               ✓ Plan activo de la semana
                             </span>
                           )}
+                          {(() => {
+                            const diasConK = s.diasPlan?.filter((d) => sumarMacrosComidaDia(d.comidas).kcal > 0) ?? [];
+                            if (!diasConK.length) return null;
+                            const avgK = Math.round(diasConK.reduce((acc, d) => acc + sumarMacrosComidaDia(d.comidas).kcal, 0) / diasConK.length);
+                            const diff = presupuestoKcal != null ? avgK - presupuestoKcal : null;
+                            const color =
+                              diff == null ? "text-amber-700 bg-amber-50 border-amber-200"
+                              : Math.abs(diff) <= (presupuestoKcal ?? 0) * 0.1 ? "text-emerald-700 bg-emerald-50 border-emerald-200"
+                              : diff > 0 ? "text-amber-700 bg-amber-50 border-amber-200"
+                              : "text-sky-700 bg-sky-50 border-sky-200";
+                            return (
+                              <span className={`mt-1 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold tabular-nums ${color}`}>
+                                ~{avgK} kcal/día
+                                {diff != null && Math.abs(diff) <= (presupuestoKcal ?? 0) * 0.1 && " ✓"}
+                              </span>
+                            );
+                          })()}
                         </div>
                         <div className="flex flex-shrink-0 flex-wrap gap-1.5">
                           <button
