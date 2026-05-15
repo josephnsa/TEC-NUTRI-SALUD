@@ -1,6 +1,6 @@
 # Plan de mejoras — Fase 2: multiperfil, fechas reales y calendario
 
-Documento de **planificación** (mayo 2026). Resume lo pedido por producto, el gap frente al código actual y un orden sugerido de implementación. La marca visible en app es **NutriSalud** (`src/lib/brand.ts`).
+Documento de **planificación** (mayo 2026). Resume objetivo de producto, **estado ya integrado en `main`** respecto al plan original, modelo de datos de referencia y orden histórico de implementación. La marca visible en app es **NutriSalud** (`src/lib/brand.ts`).
 
 ---
 
@@ -17,14 +17,21 @@ Permitir que **una cuenta o un dispositivo** gestione **varias personas** (perfi
 
 ---
 
-| Área | Comportamiento actual |
-|------|-------------------------|
-| Perfil | Un solo objeto `PerfilUsuario` en `localStorage` (`tec_nutri_salud_perfil_v1`). Supabase `profiles` = **una fila por usuario** (no por familiar). |
-| Mi mercado | Historial por perfil o global según diseño vigente; **un** `mercadoActivoParaPlan` asociado al perfil activo (`mercadoHistorial.ts`). |
-| Cronograma | Días numerados 1…N relativos a “ahora”, sin anclaje a calendario civil. No se guarda histórico de comidas por fecha. |
-| Medios del usuario | No existe: no hay fotos/vídeos propios ligados a un día o a una comida. |
+## 2. Estado actual en `main` (mayo 2026)
 
-**Ya entregado (fase 1 reciente):** campo **nombre** en perfil; inputs numéricos **sin ceros a la izquierda** (`NumericInputs.tsx`); Belleza **por categorías**; marca **NutriSalud**.
+La tabla siguiente sustituye al “gap” histórico: la base del plan **2.1–2.5b** ya está integrada en código; Supabase sigue siendo **una fila `profiles` por usuario** para el dueño, con **familia / JSON** y snapshots remotos según `docs/DEPLOYMENT.md` y `supabase/schema.sql`.
+
+| Área | Comportamiento en código hoy |
+|------|------------------------------|
+| **Perfil** | `tec_nutri_salud_perfiles_v1` → `EstadoPerfiles` (`perfilStorage.ts`): varios `PerfilMiembro`, `activoId`, migración desde `tec_nutri_salud_perfil_v1`. Selector en cabecera (`SelectorPerfilHeader.tsx`). |
+| **Mi mercado** | Historial y mercado activo para el plan **prefijados por `perfilId`** (`mercadoHistorial.ts`). |
+| **Fecha de inicio** | `fechaInicioPlan` por miembro; UI en Mi plan (`saveFechaInicioPlanActivo`). Etiquetas de día ↔ fecha (`planFechas.ts`, snapshots con fechas en `cronogramaHistorial.ts`). |
+| **Cronograma** | Snapshots locales + activo por perfil; plantillas e IA; **vista Lista / Calendario** (`Cronograma.tsx`); enlace **`/#/cronograma?dia=YYYY-MM-DD`** abre detalle si hay día en plan o historial (`buscarDiaEnSnapshots`). |
+| **Medios del usuario** | Fotos/vídeo por día (slots) en **IndexedDB** + miniaturas (`diaAdjuntosIDB.ts`, `imageThumb.ts`, `CronogramaDiaDetalleModal.tsx`). Opcional **subida a Supabase Storage** si hay sesión (`mediaRemoteStorage.ts`). |
+
+**Sigue abierto como evolutivo (no bloqueante del núcleo F2):** backup/export que incluya **referencias binarias IDB** (p. ej. ZIP en una fase posterior), políticas/cuotas de Storage por usuario, y pulido UX del calendario según feedback.
+
+**Ya desde antes en app:** campo **nombre**; **NumericInputs**; Belleza por categorías; marca **NutriSalud**.
 
 ---
 
@@ -122,16 +129,16 @@ Recomendación: **local primero** + export/import ya existente extendido a “fa
 
 ## 6. Orden de implementación sugerido
 
-| Fase | Entrega | Riesgo |
-|------|---------|--------|
-| 2.0 | **Refresh visual global** (tokens, mesh, nav, micro-motion con `motion-reduce`) | Bajo |
-| 2.1 | `perfiles[]` + selector + migración desde perfil único | Medio |
-| 2.2 | Prefijar mercado activo/historial por `perfilId` | Medio |
-| 2.3 | `fechaInicioPlan` + etiquetas de día con fecha en UI | Bajo–medio |
-| 2.4 | Guardar snapshot de cronograma al generar (plantillas/IA) | Medio |
-| 2.5 | Vista calendario + panel detalle (plan + fecha) | Alto (UX) |
-| 2.5b | **Adjuntos**: fotos/vídeo por día (o por comida), IDB + miniaturas, detalle con galería y progreso | Alto (almacenamiento + UX) |
-| 2.6 | Sync nube opcional (incl. media: Storage Supabase S3, políticas y cuotas) | Muy alto |
+| Fase | Entrega | Riesgo | Estado (mayo 2026) |
+|------|---------|--------|---------------------|
+| 2.0 | **Refresh visual global** (tokens, mesh, nav, micro-motion con `motion-reduce`) | Bajo | Entregado de forma transversal (Layout, home, tokens en Tailwind). |
+| 2.1 | `perfiles[]` + selector + migración desde perfil único | Medio | **Hecho** (`perfilStorage`, `SelectorPerfilHeader`, `MAX_PERFILES`). |
+| 2.2 | Prefijar mercado activo/historial por `perfilId` | Medio | **Hecho** (`mercadoHistorial`). |
+| 2.3 | `fechaInicioPlan` + etiquetas de día con fecha en UI | Bajo–medio | **Hecho** (`MiPlan`, `planFechas`, PDF). |
+| 2.4 | Guardar snapshot de cronograma al generar (plantillas/IA) | Medio | **Hecho** (`cronogramaHistorial`, sync remoto opcional). |
+| 2.5 | Vista calendario + panel detalle (plan + fecha) | Alto (UX) | **Hecho** (Cronograma lista/calendario, modal detalle, query `dia`). |
+| 2.5b | **Adjuntos**: fotos/vídeo por día (o por comida), IDB + miniaturas, detalle con galería y progreso | Alto (almacenamiento + UX) | **Hecho** (IDB + modal; progreso según UI actual). |
+| 2.6 | Sync nube opcional (incl. media: Storage Supabase, políticas y cuotas) | Muy alto | **Parcial**: snapshots mercado/plan + upload evidencias; falta cierre de backup rico y límites documentados en producto. |
 
 > **Nota:** 2.5 y 2.5b pueden partirse en PRs (primero detalle texto+progreso sin media, luego media).
 

@@ -47,6 +47,7 @@ import { getMercadoActivoParaPlan, getMercadoRealizado, setMercadoActivoParaPlan
 import { URL_GOOGLE_AI_STUDIO_API_KEY, agenteRecetasGratisDisponible, generarCronogramaIA } from "../lib/recipesGemini";
 import { CronogramaDiaDetalleModal } from "../components/CronogramaDiaDetalleModal";
 import { exportarCronogramaPdf } from "../lib/pdfExport";
+import { MARCA_APP } from "../lib/brand";
 import { labelDieta } from "../lib/nutritionPlan";
 
 const defaultPerfil: PerfilUsuario = {
@@ -108,7 +109,7 @@ function CopiarPlanBtn({
       if (resCena) lineas.push(`     ${resCena}`);
       lineas.push("");
     }
-    lineas.push("Generado con TEC Nutri Salud 🌿");
+    lineas.push(`Generado con ${MARCA_APP} 🌿`);
 
     void navigator.clipboard.writeText(lineas.join("\n")).then(() => {
       setCopiado(true);

@@ -26,6 +26,7 @@ import { PERFILES_STORAGE_EVENT, loadPerfilLocal } from "../lib/perfilStorage";
 import { CATEGORIA_LABELS, DIETA_LABELS, labelDieta } from "../lib/nutritionPlan";
 import { deleteMercadoSnapshotRemote, pushMercadoSnapshotRemote } from "../lib/snapshotsRemote";
 import { URL_GOOGLE_AI_STUDIO_API_KEY, geminiMercadoDisponible, generarMercadoIA } from "../lib/mercadoIA";
+import { MARCA_APP } from "../lib/brand";
 import { exportarMercadoPdf } from "../lib/pdfExport";
 
 export function KetoMercado() {
@@ -85,7 +86,7 @@ export function KetoMercado() {
     });
     const comprados = items.filter((i) => i.comprado).length;
     lineas.push(`Progreso: ${comprados}/${items.length} ítems`);
-    lineas.push("Generado con TEC Nutri Salud 🌿");
+    lineas.push(`Generado con ${MARCA_APP} 🌿`);
 
     void navigator.clipboard.writeText(lineas.join("\n")).then(() => {
       setCopiadoLista(true);
