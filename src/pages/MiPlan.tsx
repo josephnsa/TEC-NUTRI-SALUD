@@ -233,6 +233,47 @@ export function MiPlan() {
         )}
       </div>
 
+      {(() => {
+        const campos = [
+          { ok: perfil.nombre.trim().length > 0, label: "Nombre" },
+          { ok: perfil.edad >= 12 && perfil.edad <= 100, label: "Edad" },
+          { ok: perfil.pesoKg >= 30, label: "Peso" },
+          { ok: perfil.tallaCm >= 120, label: "Talla" },
+          { ok: !!perfil.estiloDieta, label: "Estilo de plan" },
+          { ok: perfil.enfermedades.trim().length > 0, label: "Condiciones" },
+          { ok: perfil.alimentosEvitar.trim().length > 0, label: "Evitar" },
+          { ok: !!perfil.nivelActividad, label: "Actividad" },
+          { ok: !!perfil.objetivosNutricion?.pesoObjetivoKg, label: "Objetivo peso" }
+        ];
+        const llenos = campos.filter((c) => c.ok).length;
+        const pct = Math.round((llenos / campos.length) * 100);
+        const nivel =
+          pct >= 89 ? { label: "Detallado", color: "bg-emerald-100 text-emerald-800 border-emerald-200" }
+          : pct >= 55 ? { label: "Recomendado", color: "bg-teal-100 text-teal-800 border-teal-200" }
+          : { label: "Básico", color: "bg-amber-100 text-amber-800 border-amber-200" };
+        return (
+          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200/80 bg-white/80 px-4 py-2.5 text-sm shadow-sm">
+            <span className={`rounded-full border px-2.5 py-0.5 text-xs font-bold ${nivel.color}`}>
+              {nivel.label}
+            </span>
+            <div className="flex-1 min-w-[6rem]">
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-teal-500 to-emerald-400 transition-all duration-500"
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+            </div>
+            <span className="text-xs tabular-nums text-slate-500">{llenos}/{campos.length} campos</span>
+            {pct < 89 && (
+              <span className="text-xs text-slate-500">
+                Falta: {campos.filter((c) => !c.ok).map((c) => c.label).join(", ")}
+              </span>
+            )}
+          </div>
+        );
+      })()}
+
       <div className="ui-card grid gap-4 md:grid-cols-2">
         <label className="text-sm md:col-span-2">
           <span className="font-medium">Nombre o apodo</span>

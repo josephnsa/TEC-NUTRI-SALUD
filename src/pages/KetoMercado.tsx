@@ -43,6 +43,9 @@ export function KetoMercado() {
   const [extraCant, setExtraCant] = useState(1);
   const [extraUni, setExtraUni] = useState("g");
   const [soloPendientes, setSoloPendientes] = useState(false);
+  /** id del ítem cuya cantidad se está editando inline */
+  const [editCantId, setEditCantId] = useState<string | null>(null);
+  const [editCantVal, setEditCantVal] = useState("");
 
   const refreshHistorial = useCallback(() => {
     setHistorial(listarMercadosRealizados());
@@ -189,6 +192,20 @@ export function KetoMercado() {
     };
     reader.readAsText(file, "UTF-8");
     e.target.value = "";
+  };
+
+  const abrirEditCant = (it: ListaItem) => {
+    setEditCantId(it.id);
+    setEditCantVal(String(it.cantidad));
+  };
+
+  const guardarEditCant = (id: string) => {
+    const n = parseFloat(editCantVal.replace(",", "."));
+    if (Number.isFinite(n) && n > 0) {
+      const next = items.map((it) => (it.id === id ? { ...it, cantidad: Math.round(n * 10) / 10 } : it));
+      persist(next, dias, personas);
+    }
+    setEditCantId(null);
   };
 
   const eliminarItem = (id: string, esManual: boolean) => {
@@ -586,9 +603,35 @@ export function KetoMercado() {
                         </span>
                       ) : null}
                     </div>
-                    <p className="text-sm text-slate-600">
-                      {it.cantidad} {it.unidad}
-                    </p>
+                    {editCantId === it.id ? (
+                      <div className="mt-0.5 flex items-center gap-1.5">
+                        <input
+                          type="number"
+                          min={0.1}
+                          step={0.5}
+                          autoFocus
+                          value={editCantVal}
+                          onChange={(e) => setEditCantVal(e.target.value)}
+                          onBlur={() => guardarEditCant(it.id)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") guardarEditCant(it.id);
+                            if (e.key === "Escape") setEditCantId(null);
+                          }}
+                          className="w-20 rounded-lg border border-teal-300/80 bg-white px-2 py-0.5 text-sm text-slate-900 shadow-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500/30"
+                        />
+                        <span className="text-sm text-slate-500">{it.unidad}</span>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => abrirEditCant(it)}
+                        title="Tocar para editar cantidad"
+                        className="mt-0.5 rounded px-0.5 text-sm text-slate-600 hover:bg-teal-50 hover:text-teal-800 transition"
+                      >
+                        {it.cantidad} {it.unidad}
+                        <span className="ml-1 text-[9px] text-slate-400">✎</span>
+                      </button>
+                    )}
                     {it.nota && <p className="mt-1 text-xs text-amber-800">{it.nota}</p>}
                   </div>
                   <button
