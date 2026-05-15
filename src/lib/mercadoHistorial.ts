@@ -171,7 +171,7 @@ export function fusionarMercadosRemotos(
   const mapa = new Map<string, MercadoSnapshot>();
   for (const s of parseHistorial()) mapa.set(s.id, s);
   for (const row of rows) {
-    if (!esSnapshotValido(row.payload)) continue;
+    if (!mercadoSnapshotEsValido(row.payload)) continue;
     const incoming = row.payload as MercadoSnapshot;
     const copy: MercadoSnapshot = {
       ...incoming,
@@ -229,7 +229,8 @@ export function descargarRespaldoMercadoJson() {
   URL.revokeObjectURL(url);
 }
 
-function esSnapshotValido(x: unknown): x is MercadoSnapshot {
+/** Forma mínima de `MercadoSnapshot` (sync/import); usable en tests. */
+export function mercadoSnapshotEsValido(x: unknown): x is MercadoSnapshot {
   if (!x || typeof x !== "object") return false;
   const o = x as Record<string, unknown>;
   return (
@@ -254,7 +255,7 @@ export function importarRespaldoMercadoJson(texto: string): { ok: true; fusionad
   if (root.v !== 1) return { ok: false, error: "Versión de archivo no soportada (se espera v: 1)." };
   const arr = root.historial;
   if (!Array.isArray(arr)) return { ok: false, error: 'Falta el array "historial".' };
-  const entrantes = arr.filter(esSnapshotValido);
+  const entrantes = arr.filter(mercadoSnapshotEsValido);
   if (!entrantes.length) return { ok: false, error: "No hay mercados válidos en el archivo." };
 
   const mapa = new Map<string, MercadoSnapshot>();
