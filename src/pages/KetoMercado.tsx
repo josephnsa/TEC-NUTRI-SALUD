@@ -42,6 +42,7 @@ export function KetoMercado() {
   const [extraNombre, setExtraNombre] = useState("");
   const [extraCant, setExtraCant] = useState(1);
   const [extraUni, setExtraUni] = useState("g");
+  const [soloPendientes, setSoloPendientes] = useState(false);
 
   const refreshHistorial = useCallback(() => {
     setHistorial(listarMercadosRealizados());
@@ -316,6 +317,17 @@ export function KetoMercado() {
         >
           Desmarcar todo
         </button>
+        <button
+          type="button"
+          onClick={() => setSoloPendientes((v) => !v)}
+          className={`rounded-xl border px-3 py-2 text-sm font-semibold transition ${
+            soloPendientes
+              ? "border-teal-400/80 bg-teal-100/90 text-teal-900 shadow-sm"
+              : "border-emerald-200/90 bg-white/90 text-slate-700 hover:border-teal-300"
+          }`}
+        >
+          {soloPendientes ? "Ver todo" : "Solo pendientes"}
+        </button>
       </div>
 
       <div className="ui-card space-y-3">
@@ -526,12 +538,26 @@ export function KetoMercado() {
         );
       })()}
 
+      {soloPendientes && items.filter((i) => !i.comprado).length === 0 && (
+        <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-emerald-300/70 bg-gradient-to-br from-emerald-50/80 via-white to-teal-50/50 px-6 py-10 text-center">
+          <span className="text-4xl">🛒</span>
+          <p className="font-display text-lg font-semibold text-teal-950">¡Todo comprado!</p>
+          <p className="text-sm text-slate-600">No quedan ítems pendientes. Guarda el mercado para seguir al cronograma.</p>
+          <button type="button" className="ui-btn-secondary px-4 py-2 text-sm" onClick={() => setSoloPendientes(false)}>
+            Ver lista completa
+          </button>
+        </div>
+      )}
+
       <div className="space-y-8">
-        {Array.from(grupos.entries()).map(([cat, list]) => (
+        {Array.from(grupos.entries()).map(([cat, list]) => {
+          const listaFiltrada = soloPendientes ? list.filter((i) => !i.comprado) : list;
+          if (listaFiltrada.length === 0) return null;
+          return (
           <section key={cat}>
             <h2 className="ui-section-title mb-2 text-gradient-brand">{labels[cat] ?? cat}</h2>
             <ul className="space-y-2">
-              {list.map((it) => (
+              {listaFiltrada.map((it) => (
                 <li
                   key={it.id}
                   className={`flex items-start gap-3 rounded-2xl border px-3 py-3 shadow-sm backdrop-blur-sm transition motion-safe:hover:shadow-md ${
@@ -580,7 +606,8 @@ export function KetoMercado() {
               ))}
             </ul>
           </section>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { loadPerfilLocal } from "../lib/perfilStorage";
 import { consultarAgenteNutricion, geminiDisponible } from "../lib/geminiAgent";
@@ -14,11 +14,43 @@ const SUGERENCIAS = [
   "¿Qué alimentos ayudan a mejorar el sueño desde la dieta?",
 ];
 
+const HISTORIAL_KEY = "tec_nutri_salud_agente_historial_v1";
+const MAX_HISTORIAL = 8;
+
+function leerHistorial(): string[] {
+  try {
+    const raw = localStorage.getItem(HISTORIAL_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw) as unknown;
+    return Array.isArray(arr) ? (arr as string[]).filter((s) => typeof s === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+function guardarEnHistorial(pregunta: string): string[] {
+  const trimmed = pregunta.trim();
+  if (!trimmed) return leerHistorial();
+  const prev = leerHistorial().filter((s) => s !== trimmed);
+  const next = [trimmed, ...prev].slice(0, MAX_HISTORIAL);
+  try {
+    localStorage.setItem(HISTORIAL_KEY, JSON.stringify(next));
+  } catch {
+    /* storage lleno */
+  }
+  return next;
+}
+
 export function Agente() {
   const [pregunta, setPregunta] = useState(SUGERENCIAS[0]!);
   const [respuesta, setRespuesta] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [historial, setHistorial] = useState<string[]>(() => leerHistorial());
   const respuestaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setHistorial(leerHistorial());
+  }, []);
 
   const enviar = async () => {
     setLoading(true);
@@ -36,6 +68,8 @@ export function Agente() {
       };
       const text = await consultarAgenteNutricion(perfil, pregunta);
       setRespuesta(text);
+      const next = guardarEnHistorial(pregunta);
+      setHistorial(next);
       setTimeout(() => {
         respuestaRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 80);
@@ -44,6 +78,15 @@ export function Agente() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const limpiarHistorial = () => {
+    try {
+      localStorage.removeItem(HISTORIAL_KEY);
+    } catch {
+      /* ignore */
+    }
+    setHistorial([]);
   };
 
   const linkClass = "font-semibold text-teal-900 underline decoration-teal-500/50 hover:decoration-teal-700";
@@ -125,6 +168,40 @@ export function Agente() {
           {loading ? "Pensando…" : "Enviar pregunta"}
         </button>
       </div>
+
+      {historial.length > 0 && (
+        <div className="rounded-2xl border border-slate-200/80 bg-white/80 p-4 shadow-sm backdrop-blur-sm">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Preguntas recientes
+            </p>
+            <button
+              type="button"
+              onClick={limpiarHistorial}
+              className="text-[10px] font-medium text-slate-400 hover:text-red-500 transition"
+            >
+              Limpiar
+            </button>
+          </div>
+          <ul className="mt-2 space-y-1.5">
+            {historial.map((h) => (
+              <li key={h}>
+                <button
+                  type="button"
+                  onClick={() => setPregunta(h)}
+                  className={`w-full rounded-xl border px-3 py-2 text-left text-xs transition ${
+                    pregunta === h
+                      ? "border-teal-300/80 bg-teal-50 font-semibold text-teal-900"
+                      : "border-slate-100 bg-slate-50/80 text-slate-700 hover:border-teal-200 hover:bg-white"
+                  }`}
+                >
+                  {h}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {loading && (
         <div className="flex items-center gap-3 rounded-2xl border border-teal-200/80 bg-teal-50/60 px-4 py-4 text-sm text-teal-800">
