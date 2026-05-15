@@ -51,7 +51,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(async () => {
     if (supabase) await supabase.auth.signOut();
-  }, []);
+    // Solo borra datos locales cuando hay cuenta Supabase (están respaldados en la nube)
+    if (supabaseConfigured) {
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k?.startsWith("tec_nutri_salud_")) keysToRemove.push(k);
+      }
+      keysToRemove.forEach((k) => localStorage.removeItem(k));
+      // Notificar componentes reactivos para que se actualicen
+      try {
+        window.dispatchEvent(new CustomEvent("tec-nutri-salud-perfiles", { detail: {} }));
+        window.dispatchEvent(new CustomEvent("tec-nutri-salud-cronograma-historial", { detail: {} }));
+      } catch { /* ignore */ }
+      navigate("/", { replace: true });
+    }
+  }, [navigate]);
 
   const value = useMemo<AuthContextValue>(
     () => ({

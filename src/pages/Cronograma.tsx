@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -147,6 +147,8 @@ export function Cronograma() {
   const [snapActivoId, setSnapActivoId] = useState<string | null>(null);
   /** mostrar / ocultar el panel de planes guardados */
   const [historialAbierto, setHistorialAbierto] = useState(false);
+  /** Evita sobreescribir el plan IA si el usuario ya regeneró en esta sesión de navegación */
+  const iaYaRestoradaRef = useRef(false);
 
   const bootDesdeAlmacenamiento = useCallback(() => {
     const l = loadPerfilLocal();
@@ -163,6 +165,19 @@ export function Cronograma() {
     window.addEventListener(PERFILES_STORAGE_EVENT, bootDesdeAlmacenamiento);
     return () => window.removeEventListener(PERFILES_STORAGE_EVENT, bootDesdeAlmacenamiento);
   }, [bootDesdeAlmacenamiento]);
+
+  // Restaura automáticamente el plan IA activo al montar o cambiar de perfil
+  useEffect(() => {
+    if (!snapActivoId || !perfilContextoId || iaYaRestoradaRef.current) return;
+    const snap = listarSnapshots(perfilContextoId).find((s) => s.id === snapActivoId);
+    if (snap?.fuente === "ia" && snap.diasPlan.length > 0) {
+      setCronogramaIa(snap.diasPlan);
+      setVistaCronograma("ia");
+      setDiasCronograma(snap.dias);
+      setModoCronograma(snap.modo);
+      iaYaRestoradaRef.current = true;
+    }
+  }, [snapActivoId, perfilContextoId]);
 
   useEffect(() => {
     const onHist = () => {
@@ -477,6 +492,7 @@ export function Cronograma() {
     setIaError(null);
     setStatus(null);
     setIaProgreso({ hecho: 0, total: diasCronograma, fase: "generando" });
+    iaYaRestoradaRef.current = true;
     try {
       const plan = await generarCronogramaIA(
         perfil,

@@ -22,8 +22,9 @@ import {
   setMercadoActivoParaPlan,
   type MercadoSnapshot
 } from "../lib/mercadoHistorial";
-import { PERFILES_STORAGE_EVENT } from "../lib/perfilStorage";
+import { PERFILES_STORAGE_EVENT, loadPerfilLocal } from "../lib/perfilStorage";
 import { deleteMercadoSnapshotRemote, pushMercadoSnapshotRemote } from "../lib/snapshotsRemote";
+import { URL_GOOGLE_AI_STUDIO_API_KEY, geminiMercadoDisponible, generarMercadoIA } from "../lib/mercadoIA";
 
 export function KetoMercado() {
   const navigate = useNavigate();
@@ -46,6 +47,9 @@ export function KetoMercado() {
   /** id del ítem cuya cantidad se está editando inline */
   const [editCantId, setEditCantId] = useState<string | null>(null);
   const [editCantVal, setEditCantVal] = useState("");
+  /** IA mercado */
+  const [iaMercadoCargando, setIaMercadoCargando] = useState(false);
+  const [iaMercadoError, setIaMercadoError] = useState<string | null>(null);
 
   const refreshHistorial = useCallback(() => {
     setHistorial(listarMercadosRealizados());
@@ -92,6 +96,28 @@ export function KetoMercado() {
     const next = generarListaKeto(dias, personas);
     persist(next, dias, personas);
     setMsg(null);
+    setIaMercadoError(null);
+  };
+
+  const generarConIA = () => {
+    const perfil = loadPerfilLocal();
+    if (!perfil) {
+      setIaMercadoError("Guarda tu perfil en Mis datos antes de usar la IA.");
+      return;
+    }
+    setIaMercadoCargando(true);
+    setIaMercadoError(null);
+    void (async () => {
+      try {
+        const iaItems = await generarMercadoIA(perfil, dias, personas);
+        persist(iaItems, dias, personas);
+        setMsg(`IA generó ${iaItems.length} ítems personalizados para tu dieta ${perfil.estiloDieta}.`);
+      } catch (e) {
+        setIaMercadoError(e instanceof Error ? e.message : "Error al generar con IA.");
+      } finally {
+        setIaMercadoCargando(false);
+      }
+    })();
   };
 
   const toggle = (id: string) => {
@@ -309,11 +335,54 @@ export function KetoMercado() {
             onChange={(e) => setPersonas(Number(e.target.value))}
           />
         </label>
-        <div className="flex items-end">
-          <button type="button" onClick={regenerar} className="ui-btn-primary w-full">
-            Generar / actualizar lista
+        <div className="flex items-end gap-2">
+          <button type="button" onClick={regenerar} className="ui-btn-secondary flex-1">
+            Generar lista base
           </button>
+          {geminiMercadoDisponible() ? (
+            <button
+              type="button"
+              disabled={iaMercadoCargando}
+              onClick={generarConIA}
+              className="ui-btn-violet flex-1"
+            >
+              {iaMercadoCargando ? (
+                <span className="flex items-center justify-center gap-1.5">
+                  <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-white/80 border-t-transparent" />
+                  Generando con IA…
+                </span>
+              ) : (
+                "Generar con IA ✦"
+              )}
+            </button>
+          ) : null}
         </div>
+        {!geminiMercadoDisponible() && (
+          <p className="text-xs text-slate-500">
+            Para personalizar la lista con IA, configura{" "}
+            <a
+              href={URL_GOOGLE_AI_STUDIO_API_KEY}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-teal-800 underline"
+            >
+              VITE_GEMINI_API_KEY
+            </a>
+            .
+          </p>
+        )}
+        {iaMercadoError && (
+          <div className="flex items-start justify-between gap-3 rounded-xl border border-red-200/80 bg-red-50/90 px-3 py-2">
+            <p className="text-sm text-red-700">{iaMercadoError}</p>
+            <button
+              type="button"
+              className="shrink-0 rounded-lg border border-red-200/80 bg-white/90 px-2.5 py-1 text-xs font-semibold text-red-700 transition hover:bg-red-100"
+              onClick={generarConIA}
+            >
+              Reintentar
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="ui-card-muted flex flex-wrap items-center gap-2 px-4 py-3">
@@ -616,6 +685,10 @@ export function KetoMercado() {
                       {it.origen === "manual" ? (
                         <span className="rounded-full bg-cyan-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-cyan-900">
                           Extra
+                        </span>
+                      ) : it.origen === "ia" ? (
+                        <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-900">
+                          IA
                         </span>
                       ) : null}
                     </div>

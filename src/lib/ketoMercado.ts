@@ -5,7 +5,7 @@ import { getActivoPerfilId } from "./perfilStorage";
 export type ListaItem = KetoItem & {
   cantidad: number;
   comprado: boolean;
-  origen?: "generador" | "manual";
+  origen?: "generador" | "manual" | "ia";
   /** Si el usuario editó la etiqueta (ítems manuales). */
   nombreCustom?: string;
 };

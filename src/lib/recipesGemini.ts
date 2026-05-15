@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { ListaItem } from "./ketoMercado";
 import type { DiaPlan, ModoCronograma, PerfilUsuario, PlatoReceta } from "./nutritionPlan";
+import { calcularTdeePerfil, presupuestoKcalOrientativoDiario } from "./nutritionPlan";
 import { GEMINI_MODEL_IDS } from "./geminiModels";
 import { URL_GOOGLE_AI_STUDIO_API_KEY } from "./googleAiStudio";
 import { miniaturaYoutubeCarga, youtubeVideoIdFromInput } from "./youtubeEmbed";
@@ -146,6 +147,48 @@ function parseCronogramaJson(raw: unknown, diasEsperados: number, offsetDia: num
   return out;
 }
 
+/** Calcula la distribución de macros objetivo según el estilo de dieta y kcal diarias. */
+function macrosPorDieta(
+  estilo: PerfilUsuario["estiloDieta"],
+  kcalDia: number
+): { protG: number; grasaG: number; carbG: number } {
+  const ratios: Record<typeof estilo, { prot: number; grasa: number; carb: number }> = {
+    keto:          { prot: 0.25, grasa: 0.70, carb: 0.05 },
+    mediterranea:  { prot: 0.20, grasa: 0.35, carb: 0.45 },
+    balanceada:    { prot: 0.20, grasa: 0.30, carb: 0.50 }
+  };
+  const r = ratios[estilo] ?? ratios.balanceada;
+  return {
+    protG:  Math.round((kcalDia * r.prot) / 4),
+    grasaG: Math.round((kcalDia * r.grasa) / 9),
+    carbG:  Math.round((kcalDia * r.carb) / 4)
+  };
+}
+
+function bloqueObjetivoCalorico(perfil: PerfilUsuario): string {
+  const kcalObjetivo = presupuestoKcalOrientativoDiario(perfil) ?? calcularTdeePerfil(perfil);
+  const { protG, grasaG, carbG } = macrosPorDieta(perfil.estiloDieta, kcalObjetivo);
+  const descripcionRitmo = perfil.objetivosNutricion?.pesoObjetivoKg
+    ? `(objetivo: ${perfil.objetivosNutricion.pesoObjetivoKg} kg, ritmo ${perfil.objetivosNutricion?.ritmo ?? "relajado"})`
+    : "(mantenimiento)";
+
+  const estiloNombre: Record<string, string> = {
+    keto: "cetogénica",
+    mediterranea: "mediterránea",
+    balanceada: "balanceada"
+  };
+
+  return `
+=== OBJETIVO NUTRICIONAL DIARIO (orientativo, no terapéutico) ===
+Calorías objetivo: ~${kcalObjetivo} kcal/día ${descripcionRitmo}
+Distribución de macros para dieta ${estiloNombre[perfil.estiloDieta] ?? perfil.estiloDieta}:
+  • Proteína: ~${protG}g/día  • Grasa: ~${grasaG}g/día  • Carbohidratos: ~${carbG}g/día
+
+INSTRUCCIÓN CRÍTICA: La suma de kcal_estimate de los 3 platos del día DEBE acercarse a ${kcalObjetivo} kcal.
+Distribuye como guía: desayuno ~${Math.round(kcalObjetivo * 0.25)} kcal, almuerzo ~${Math.round(kcalObjetivo * 0.40)} kcal, cena ~${Math.round(kcalObjetivo * 0.35)} kcal.
+Todos los campos kcal_estimate, protein_g, fat_g, carb_g son OBLIGATORIOS en cada plato (no null).`;
+}
+
 async function generarChunkModelo(
   modelId: string,
   perfil: PerfilUsuario,
@@ -168,12 +211,23 @@ async function generarChunkModelo(
   const compradosTxt = textoComprados(mercadoItems);
   const hayCompradosMarcados = Boolean(mercadoItems?.some((i) => i.comprado));
   const guiaMercado = instruccionMercadoPorModo(modo, hayCompradosMarcados);
+  const bloqueKcal = bloqueObjetivoCalorico(perfil);
 
-  const prompt = `Eres un agente de recetas y dietética educativa (no clínico). Genera EXACTAMENTE ${diasChunk} días de comidas en español.
+  const estiloLabel: Record<string, string> = {
+    keto: "cetogénica estricta (< 50 g carbos/día, alta en grasas saludables)",
+    mediterranea: "mediterránea (aceite oliva, pescado, verduras, legumbres, granos integrales)",
+    balanceada: "balanceada con todos los grupos de alimentos"
+  };
+  const expertaPersona = `Eres un dietista-nutricionista con especialización en dieta ${estiloLabel[perfil.estiloDieta] ?? perfil.estiloDieta}. Hablas con precisión técnica, propones cantidades realistas y adaptas las proporciones exactas al perfil del usuario. No das consejos clínicos ni diagnósticos.`;
+
+  const prompt = `${expertaPersona}
+
+Genera EXACTAMENTE ${diasChunk} días de comidas en español.
 Cada día tiene desayuno, almuerzo y cena. Los números de día global van de ${offsetDia} a ${offsetDia + diasChunk - 1}.
 
 Perfil (JSON): ${JSON.stringify(perfil)}
 Modo de contexto declarado por el usuario: "${modo}".
+${bloqueKcal}
 
 === LISTA DEL MERCADO (todas las filas tienen nombre + cantidades reales según usuario) ===
 ${listaMercadoCompletaTxt}
