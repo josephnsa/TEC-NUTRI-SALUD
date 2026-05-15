@@ -27,7 +27,16 @@ npm install
 npm run dev
 ```
 
-Comprobaciones locales: `npm run typecheck`, `npm run test`, `npm run build`.
+Comprobaciones locales:
+
+```bash
+npm run typecheck   # TypeScript sin emitir
+npm run test        # Vitest (lógica pura en src/lib/*.test.ts)
+npm run test:watch  # mismo suite en modo watch
+npm run build       # bundle + PWA
+```
+
+Los tests cubren fechas de plan, respaldo JSON, cronograma, mercado, perfil y auth. Un caso usa **happy-dom** para `window` (recuperación de contraseña con hash `#/actualizar-clave`). En CI (GitHub Pages) se ejecutan `typecheck` y `test` antes del build.
 
 Copia `.env.example` a `.env` y rellena solo si usarás nube o IA.
 

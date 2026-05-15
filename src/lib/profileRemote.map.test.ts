@@ -21,6 +21,23 @@ describe("profileRemote.rowToPerfil", () => {
     expect(p.enfermedades).toBe("dm2");
   });
 
+  it("acepta balanceada y sexo masculino", () => {
+    const p = rowToPerfil({
+      id: "u2",
+      display_name: "Luis",
+      age: 45,
+      weight_kg: 82,
+      height_cm: 178,
+      sex: "m",
+      conditions: "",
+      disliked_foods: "",
+      diet_style: "balanceada"
+    });
+    expect(p.estiloDieta).toBe("balanceada");
+    expect(p.sexo).toBe("m");
+    expect(p.pesoKg).toBe(82);
+  });
+
   it("cae en keto y valores por defecto si faltan o son raros", () => {
     const p = rowToPerfil({
       id: "u1",
