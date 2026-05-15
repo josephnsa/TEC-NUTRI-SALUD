@@ -71,9 +71,8 @@ export function MiEspacio() {
     ? (listarSnapshots(perfilId).find((s) => s.id === snapActivoCronId) ?? null)
     : snapshotMasReciente(perfilId);
 
-  void tick;
-
   const siguiente = useMemo(() => {
+    void tick;
     if (!tienePerfilLocal || !perfil) {
       return { texto: "Continuar en paso 1 · Mis datos", to: "/mi-plan" as const };
     }
@@ -81,9 +80,7 @@ export function MiEspacio() {
       return { texto: "Continuar en paso 2 · Mercado keto", to: "/keto-mercado" as const };
     }
     return { texto: "Continuar en paso 3 · Cronograma", to: "/cronograma" as const };
-  }, [tienePerfilLocal, perfil, mercadoActivoId]);
-
-  void tick;
+  }, [tick, tienePerfilLocal, perfil, mercadoActivoId]);
 
   return (
     <div className="space-y-8">

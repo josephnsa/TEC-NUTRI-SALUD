@@ -532,6 +532,8 @@ export function Cronograma() {
         open={diaModalOpen}
         onClose={cerrarDetalleDia}
         dia={diaSeleccionado}
+        dias={diasConFecha.length > 1 ? diasConFecha : undefined}
+        onNavDia={abrirDia}
         perfilId={perfilIdActivo}
         perfil={perfil}
         presupuestoKcalDiario={presupuestoKcal}

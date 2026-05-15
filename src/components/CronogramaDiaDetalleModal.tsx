@@ -135,6 +135,9 @@ type Props = {
   open: boolean;
   onClose: () => void;
   dia: DiaPlanConFecha | null;
+  /** Si se pasan todos los días del plan se activan los botones ◀ ▶ de navegación. */
+  dias?: DiaPlanConFecha[];
+  onNavDia?: (dia: DiaPlanConFecha) => void;
   perfilId: string | null;
   perfil: PerfilUsuario;
   /** Referencia orientativa para comparar suma del día (~kcal IA). */
@@ -145,6 +148,8 @@ export function CronogramaDiaDetalleModal({
   open,
   onClose,
   dia,
+  dias,
+  onNavDia,
   perfilId,
   perfil,
   presupuestoKcalDiario = null
@@ -159,6 +164,10 @@ export function CronogramaDiaDetalleModal({
   const [avisoCopiaCuenta, setAvisoCopiaCuenta] = useState<string | null>(null);
 
   const fechaIso = dia?.fecha ?? null;
+
+  const diaIdx = dias && dia ? dias.findIndex((d) => d.dia === dia.dia) : -1;
+  const diaAnterior = diaIdx > 0 && dias ? dias[diaIdx - 1]! : null;
+  const diaSiguiente = diaIdx >= 0 && dias && diaIdx < dias.length - 1 ? dias[diaIdx + 1]! : null;
 
   const recargar = useCallback(async () => {
     if (!perfilId || !fechaIso) {
@@ -230,10 +239,14 @@ export function CronogramaDiaDetalleModal({
           onClose();
         }
       }
+      if (!lightboxUrl && onNavDia) {
+        if (e.key === "ArrowLeft" && diaAnterior) onNavDia(diaAnterior);
+        if (e.key === "ArrowRight" && diaSiguiente) onNavDia(diaSiguiente);
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open, lightboxUrl, onClose]);
+  }, [open, lightboxUrl, onClose, onNavDia, diaAnterior, diaSiguiente]);
 
   if (!open || !dia || !fechaIso) return null;
 
@@ -355,10 +368,32 @@ export function CronogramaDiaDetalleModal({
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex shrink-0 items-center justify-between border-b border-emerald-100 bg-white/95 px-4 py-3 backdrop-blur-sm">
-            <h2 id="cronograma-dia-titulo" className="font-display text-base font-semibold text-teal-950">
-              Día {dia.dia} · {dia.fecha}
-            </h2>
-            <button type="button" className="ui-btn-ghost-violet px-2 py-1 text-sm" onClick={onClose}>
+            <div className="flex min-w-0 items-center gap-2">
+              {onNavDia && diaAnterior && (
+                <button
+                  type="button"
+                  aria-label="Día anterior"
+                  onClick={() => onNavDia(diaAnterior)}
+                  className="rounded-lg border border-slate-200/80 bg-white/90 px-2 py-1 text-xs font-semibold text-slate-600 shadow-sm transition hover:border-teal-300 hover:text-teal-800"
+                >
+                  ◀
+                </button>
+              )}
+              <h2 id="cronograma-dia-titulo" className="min-w-0 truncate font-display text-base font-semibold text-teal-950">
+                Día {dia.dia} · {dia.fecha}
+              </h2>
+              {onNavDia && diaSiguiente && (
+                <button
+                  type="button"
+                  aria-label="Día siguiente"
+                  onClick={() => onNavDia(diaSiguiente)}
+                  className="rounded-lg border border-slate-200/80 bg-white/90 px-2 py-1 text-xs font-semibold text-slate-600 shadow-sm transition hover:border-teal-300 hover:text-teal-800"
+                >
+                  ▶
+                </button>
+              )}
+            </div>
+            <button type="button" className="ui-btn-ghost-violet shrink-0 px-2 py-1 text-sm" onClick={onClose}>
               Cerrar
             </button>
           </div>

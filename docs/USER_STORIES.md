@@ -109,11 +109,25 @@ María quiere comer mejor en estilo keto, organizar el mercado, **guardar lo que
 | Historia | Criterios clave implementados |
 |----------|-------------------------------|
 | **13** (sync Supabase) | Push/pull mercados y planes; borrado remoto al borrar local |
-| **14** (ítems extra) | Campo `origen: "manual"` en `ListaItem`; UI agregar ítem en `KetoMercado` |
+| **14** (ítems extra) | Campo `origen: "manual"` en `ListaItem`; UI agregar ítem en `KetoMercado`; delete individual |
 | **15** (despensa completa + macros) | Prompt recibe lista entera con cantidades y unidades; `porciones`; `fiber_g` |
 | **16** (video + nutrición) | Embed nocookie verificado con miniatura; fallback visual; tarjetas macro por color |
 | **17** (código limpio) | `tsc --noEmit` pasa estricto; fix import `supabase` en `Login`; script `npm run typecheck` |
 | **18** (UI tech) | Tarjetas macro con gradientes y hover; tokens Tailwind; `motion-safe:`/`motion-reduce:` |
+
+## UX polish adicional (mayo 2026)
+
+| Área | Implementado |
+|------|-------------|
+| **Cronograma** | Barra de progreso IA (por chunks + %) y botón Reintentar; botón Copiar plan; empty state guiado; badges kcal/macros/vídeo/IA por día en lista |
+| **Modal día** | Botones ◀ ▶ para navegar entre días (+ teclas ArrowLeft / ArrowRight); botón Copiar receta por slot |
+| **Mercado keto** | Barra progreso compras global; contador X/Y por categoría; edición cantidad en línea; eliminar ítem; filtro "solo pendientes" |
+| **Asistente** | Respuestas en Markdown; chips de sugerencias; historial reciente en localStorage |
+| **Mis datos** | Barra de completitud del perfil (Básico / Recomendado / Detallado) |
+| **Mi espacio** | CTA "Siguiente paso" como banner con gradiente en la parte superior; badges de antigüedad en mercado y plan |
+| **Belleza** | Barra sticky de categorías con scroll anclado |
+| **Login** | Toggle mostrar/ocultar contraseña |
+| **404** | Página propia con CTAs al inicio y al cronograma |
 
 ## Criterios transversales
 
