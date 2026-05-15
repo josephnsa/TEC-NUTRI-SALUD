@@ -8,6 +8,9 @@ dist/
 .env.*.local
 !.env.example
 
+# Usuario de pruebas locales (credenciales)
+config/usuario-prueba.local.json
+
 # Logs y depuración
 *.log
 npm-debug.log*

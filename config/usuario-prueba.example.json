@@ -1,0 +1,6 @@
+{
+  "email": "tu-correo@ejemplo.com",
+  "password": "tu-clave-de-prueba",
+  "nombre": "Usuario prueba",
+  "notas": "Copia a usuario-prueba.local.json (gitignored) para pruebas locales y scripts."
+}

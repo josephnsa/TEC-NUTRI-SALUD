@@ -4,6 +4,8 @@
  */
 import type { ListaItem } from "./ketoMercado";
 import { labelDieta, CATEGORIA_LABELS, type ComidaDia, type DiaPlan, type PlatoReceta } from "./nutritionPlan";
+import { imagenUrlParaPlato } from "./platoImagen";
+import { parseRecetaDetalle } from "./recetaTexto";
 
 const ESTILOS_BASE = `
   body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #1a202c; margin: 0; padding: 20px; }
@@ -26,6 +28,9 @@ const ESTILOS_BASE = `
   .meal-label { font-weight: 600; font-size: 11px; color: #047857; min-width: 80px; }
   .meal-title { font-size: 12px; }
   .meal-detail { font-size: 11px; color: #6b7280; margin-left: 86px; line-height: 1.5; }
+  .meal-pasos { font-size: 11px; color: #374151; margin: 6px 0 0 86px; line-height: 1.55; }
+  .meal-img { width: 120px; height: 90px; object-fit: cover; border-radius: 8px; border: 1px solid #d1fae5; float: right; margin: 0 0 8px 12px; }
+  .meal-img-ph { width: 120px; height: 90px; border-radius: 8px; border: 1px dashed #a7f3d0; background: #f0fdf4; display: flex; align-items: center; justify-content: center; font-size: 28px; float: right; margin: 0 0 8px 12px; }
   .macros { font-size: 11px; color: #374151; background: #f0fdf4; border: 1px solid #d1fae5; border-radius: 4px; padding: 4px 8px; display: inline-block; margin-top: 4px; }
   @media print {
     body { padding: 0; }
@@ -162,7 +167,15 @@ function truncarTexto(txt: string, max: number): string {
   return txt.length > max ? txt.slice(0, max) + "…" : txt;
 }
 
-export function exportarCronogramaPdf({
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+export async function exportarCronogramaPdf({
   diasPlan,
   nombrePlan,
   nombrePerfil,
@@ -178,32 +191,40 @@ export function exportarCronogramaPdf({
     { key: "cena", label: "Cena" }
   ];
 
-  /** Extrae la sección de ingredientes del campo receta (antes de "· Pasos:"). */
-  function extractIngredientes(receta: string): string {
-    const match = /ingredientes[^:]*:(.*?)(?:·\s*pasos|$)/i.exec(receta);
-    if (match) return match[1].trim().replace(/·\s*/g, " · ").replace(/\s+/g, " ");
-    return truncarTexto(receta.replace(/\n/g, " "), 180);
-  }
-
-  function renderSlot(label: string, plato: PlatoReceta): string {
-    const ingredientesLineas = extractIngredientes(plato.receta);
+  async function renderSlot(label: string, plato: PlatoReceta): Promise<string> {
+    const { ingredientes: ingredientesLineas, pasos } = parseRecetaDetalle(plato.receta);
+    const imgUrl = await imagenUrlParaPlato(plato);
+    const imgHtml = imgUrl
+      ? `<img class="meal-img" src="${escapeHtml(imgUrl)}" alt="${escapeHtml(plato.titulo)}" />`
+      : `<div class="meal-img-ph" aria-hidden="true">🍽️</div>`;
     const macrosInline =
       plato.kcal_estimate != null
         ? `<span class="macros">${plato.kcal_estimate} kcal · P ${plato.protein_g ?? "?"}g · G ${plato.fat_g ?? "?"}g · C ${plato.carb_g ?? "?"}g</span>`
         : "";
     return `
-      <div style="margin-bottom:8px;page-break-inside:avoid">
+      <div style="margin-bottom:12px;page-break-inside:avoid;overflow:hidden">
+        ${imgHtml}
         <div class="meal-row">
           <span class="meal-label">${label}</span>
-          <span class="meal-title"><strong>${plato.titulo}</strong></span>
+          <span class="meal-title"><strong>${escapeHtml(plato.titulo)}</strong></span>
         </div>
-        ${ingredientesLineas ? `<div class="meal-detail">${truncarTexto(ingredientesLineas, 200)}</div>` : ""}
-        ${macrosInline ? `<div style="margin-left:86px;margin-top:3px">${macrosInline}</div>` : ""}
+        ${
+          ingredientesLineas
+            ? `<div class="meal-detail"><strong>Ingredientes:</strong> ${escapeHtml(truncarTexto(ingredientesLineas, 520))}</div>`
+            : ""
+        }
+        ${
+          pasos
+            ? `<div class="meal-pasos"><strong>Pasos:</strong> ${escapeHtml(truncarTexto(pasos, 680))}</div>`
+            : ""
+        }
+        ${macrosInline ? `<div style="margin-left:86px;margin-top:6px;clear:both">${macrosInline}</div>` : ""}
       </div>`;
   }
 
   let diasHtml = "";
-  diasPlan.forEach((dia, idx) => {
+  for (let idx = 0; idx < diasPlan.length; idx++) {
+    const dia = diasPlan[idx];
     let fechaDia = "";
     if (fechaInicio) {
       const f = new Date(fechaInicio);
@@ -218,14 +239,15 @@ export function exportarCronogramaPdf({
     const totalCarb = slots.reduce((sum, p) => sum + (p.carb_g ?? 0), 0);
 
     let comidasHtml = "";
-    SLOTS.forEach((s) => {
-      comidasHtml += renderSlot(s.label, dia.comidas[s.key]);
-    });
+    for (const s of SLOTS) {
+      comidasHtml += await renderSlot(s.label, dia.comidas[s.key]);
+    }
 
     const resumenKcal = totalKcal > 0 ? `${totalKcal} kcal · P ${Math.round(totalProt)}g · G ${Math.round(totalGrasa)}g · C ${Math.round(totalCarb)}g` : "";
-    const metaKcal = presupuestoKcal && totalKcal > 0
-      ? ` · ${Math.round((totalKcal / presupuestoKcal) * 100)}% del objetivo`
-      : "";
+    const metaKcal =
+      presupuestoKcal && totalKcal > 0
+        ? ` · ${Math.round((totalKcal / presupuestoKcal) * 100)}% del objetivo`
+        : "";
 
     diasHtml += `
       <div class="day-card">
@@ -233,7 +255,7 @@ export function exportarCronogramaPdf({
         ${resumenKcal ? `<div style="font-size:11px;color:#047857;margin-bottom:6px">${resumenKcal}${metaKcal}</div>` : ""}
         ${comidasHtml}
       </div>`;
-  });
+  }
 
   const avgKcal =
     diasPlan.length > 0

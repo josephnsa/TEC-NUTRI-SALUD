@@ -185,7 +185,11 @@ María quiere comer mejor según **su tipo de dieta** (cetogénica, mediterráne
 | **H29** | usuario con cuenta | que «Marcar activo» del plan persista tras cerrar sesión | retome el mismo menú al volver a entrar |
 | **H30** | cocinero | ver el tutorial en la app aunque esté en TikTok, YouTube u otra red | reproduzca en el modal sin depender solo de YouTube |
 
-**H30 — criterios:** `react-player` con URL en `videoUrl`; IA devuelve `video_url` pública; badge de plataforma; fallback de búsqueda. Ver `docs/PLAN_FIX_PROD_MAY2026.md`.
+**H30 — criterios:** `react-player` con URL en `videoUrl`; búsqueda automática (`recipeVideoResolve`) con validación embed (`videoEmbedValidate` + noembed); badge de plataforma; fallback de búsqueda. Ver `docs/PLAN_FIX_PROD_MAY2026.md`.
+
+| **H31** | usuario del cronograma | descargar el menú en PDF con receta completa e imagen del plato | cocinar sin abrir la app |
+
+**H31 — criterios:** PDF async con ingredientes + pasos (`parseRecetaDetalle`), miniatura YouTube o TheMealDB (`platoImagen`), botón «Preparando PDF…» en Cronograma.
 
 ## Estado implementación (historias 13–26, mayo 2026)
 

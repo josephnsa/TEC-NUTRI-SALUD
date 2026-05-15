@@ -173,6 +173,7 @@ export function Cronograma() {
   const [snapActivoId, setSnapActivoId] = useState<string | null>(null);
   /** mostrar / ocultar el panel de planes guardados */
   const [historialAbierto, setHistorialAbierto] = useState(false);
+  const [pdfGenerando, setPdfGenerando] = useState(false);
   /** Evita sobreescribir el plan IA si el usuario ya regeneró en esta sesión de navegación */
   const iaYaRestoradaRef = useRef(false);
 
@@ -771,22 +772,30 @@ export function Cronograma() {
             <button
               type="button"
               title="Descargar el cronograma completo como PDF con tabla detallada"
+              disabled={pdfGenerando}
               onClick={() => {
-                const snapActivo = snapActivoId
-                  ? listarSnapshots(perfilIdActivo).find((s) => s.id === snapActivoId)
-                  : null;
-                exportarCronogramaPdf({
-                  diasPlan: cronogramaMostrado,
-                  nombrePlan: snapActivo?.titulo ?? undefined,
-                  nombrePerfil: perfil.nombre || undefined,
-                  estiloDieta: perfil.estiloDieta,
-                  presupuestoKcal,
-                  fechaInicio: loadPerfilMiembroActivo()?.fechaInicioPlan ?? null
-                });
+                void (async () => {
+                  const snapActivo = snapActivoId
+                    ? listarSnapshots(perfilIdActivo).find((s) => s.id === snapActivoId)
+                    : null;
+                  setPdfGenerando(true);
+                  try {
+                    await exportarCronogramaPdf({
+                      diasPlan: cronogramaMostrado,
+                      nombrePlan: snapActivo?.titulo ?? undefined,
+                      nombrePerfil: perfil.nombre || undefined,
+                      estiloDieta: perfil.estiloDieta,
+                      presupuestoKcal,
+                      fechaInicio: loadPerfilMiembroActivo()?.fechaInicioPlan ?? null
+                    });
+                  } finally {
+                    setPdfGenerando(false);
+                  }
+                })();
               }}
               className="ui-btn-secondary"
             >
-              📄 Descargar PDF
+              {pdfGenerando ? "Preparando PDF…" : "📄 Descargar PDF"}
             </button>
           )}
           <div className="flex flex-wrap items-center gap-2 text-sm">
