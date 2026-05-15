@@ -73,6 +73,38 @@ function celdasMes(year: number, monthIndex: number): (Date | null)[] {
   return cells;
 }
 
+function CopiarPlanBtn({ dias }: { dias: import("../lib/cronogramaHistorial").DiaPlanConFecha[] }) {
+  const [copiado, setCopiado] = useState(false);
+
+  const copiar = () => {
+    const lineas: string[] = [];
+    for (const d of dias) {
+      lineas.push(`── Día ${d.dia} (${d.fecha}) ──`);
+      lineas.push(`Desayuno: ${d.comidas.desayuno.titulo}`);
+      lineas.push(d.comidas.desayuno.receta.split("\n")[0] ?? "");
+      lineas.push(`Almuerzo: ${d.comidas.almuerzo.titulo}`);
+      lineas.push(d.comidas.almuerzo.receta.split("\n")[0] ?? "");
+      lineas.push(`Cena: ${d.comidas.cena.titulo}`);
+      lineas.push(d.comidas.cena.receta.split("\n")[0] ?? "");
+      lineas.push("");
+    }
+    void navigator.clipboard.writeText(lineas.join("\n")).then(() => {
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 2200);
+    });
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={copiar}
+      className={`ui-btn-secondary transition ${copiado ? "border-emerald-300 bg-emerald-50 text-emerald-800" : ""}`}
+    >
+      {copiado ? "¡Plan copiado!" : "Copiar plan"}
+    </button>
+  );
+}
+
 export function Cronograma() {
   const { user, isConfigured } = useAuth();
   const location = useLocation();
@@ -659,6 +691,9 @@ export function Cronograma() {
           <button type="button" onClick={guardarMenuEnHistorial} className="ui-btn-secondary">
             Guardar menú en historial
           </button>
+          {diasConFecha.length > 0 && (
+            <CopiarPlanBtn dias={diasConFecha} />
+          )}
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <span>Días</span>
             <IntField

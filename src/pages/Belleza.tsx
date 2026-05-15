@@ -1,5 +1,10 @@
 import { ORDEN_CATEGORIAS, beautyTips } from "../data/beautyTips";
 
+function scrollACategoria(id: string) {
+  const el = document.getElementById(`sec-belleza-${id}`);
+  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 export function Belleza() {
   return (
     <div className="space-y-10">
@@ -10,16 +15,36 @@ export function Belleza() {
         </p>
       </header>
 
+      {/* Navegación rápida por categoría */}
+      <nav
+        className="sticky top-[3.4rem] z-30 -mx-3 overflow-x-auto border-b border-emerald-100/80 bg-white/85 px-3 py-2 backdrop-blur-xl sm:-mx-4 sm:px-4"
+        aria-label="Categorías de belleza"
+      >
+        <div className="flex min-w-max gap-2">
+          {ORDEN_CATEGORIAS.map((cat) => (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => scrollACategoria(cat.id)}
+              className="rounded-xl border border-emerald-200/80 bg-white/90 px-3 py-1.5 text-xs font-semibold text-teal-900 shadow-sm transition hover:border-teal-300 hover:bg-teal-50/80 whitespace-nowrap"
+            >
+              {cat.titulo}
+            </button>
+          ))}
+        </div>
+      </nav>
+
       {ORDEN_CATEGORIAS.map((cat) => {
         const tips = beautyTips.filter((t) => t.categoria === cat.id);
         if (!tips.length) return null;
         return (
           <section
             key={cat.id}
-            className="ui-card-muted scroll-mt-4 sm:p-6"
-            aria-labelledby={`belleza-${cat.id}`}
+            id={`sec-belleza-${cat.id}`}
+            className="ui-card-muted scroll-mt-24 sm:p-6"
+            aria-labelledby={`lbl-belleza-${cat.id}`}
           >
-            <h2 id={`belleza-${cat.id}`} className="ui-section-title text-gradient-brand">
+            <h2 id={`lbl-belleza-${cat.id}`} className="ui-section-title text-gradient-brand">
               {cat.titulo}
             </h2>
             <p className="mt-2 text-sm text-slate-600">{cat.intro}</p>
