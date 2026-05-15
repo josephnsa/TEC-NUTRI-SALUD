@@ -274,6 +274,43 @@ export function MiPlan() {
         );
       })()}
 
+      {(() => {
+        const campos = [
+          { ok: perfil.nombre.trim().length > 0 },
+          { ok: perfil.edad >= 12 },
+          { ok: perfil.pesoKg >= 30 },
+          { ok: perfil.tallaCm >= 120 },
+          { ok: !!perfil.estiloDieta },
+          { ok: perfil.enfermedades.trim().length > 0 },
+          { ok: perfil.alimentosEvitar.trim().length > 0 },
+          { ok: !!perfil.nivelActividad },
+          { ok: !!perfil.objetivosNutricion?.pesoObjetivoKg }
+        ];
+        const pct = Math.round((campos.filter((c) => c.ok).length / campos.length) * 100);
+        if (pct < 55) return null;
+        return (
+          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-violet-200/80 bg-gradient-to-r from-violet-50/80 to-fuchsia-50/60 px-4 py-3 text-sm shadow-sm">
+            <span className="text-lg">✦</span>
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold text-violet-900">Tu perfil está listo para generar con IA</p>
+              <p className="text-xs text-violet-700/80 mt-0.5">
+                {pct >= 89
+                  ? "Perfil completo · la IA usará todos tus datos para personalizar tu mercado y menú."
+                  : "Perfil recomendado · puedes completar más campos para resultados aún más precisos."}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link to="/keto-mercado" className="rounded-full border border-violet-300 bg-white/80 px-3 py-1 text-xs font-semibold text-violet-900 shadow-sm hover:bg-violet-50 transition-colors">
+                Generar mercado →
+              </Link>
+              <Link to="/cronograma" className="rounded-full border border-teal-300 bg-white/80 px-3 py-1 text-xs font-semibold text-teal-900 shadow-sm hover:bg-teal-50 transition-colors">
+                Generar menú →
+              </Link>
+            </div>
+          </div>
+        );
+      })()}
+
       <div className="ui-card grid gap-4 md:grid-cols-2">
         <label className="text-sm md:col-span-2">
           <span className="font-medium">Nombre o apodo</span>

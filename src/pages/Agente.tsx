@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { loadPerfilLocal } from "../lib/perfilStorage";
-import { consultarAgenteNutricion, geminiDisponible } from "../lib/geminiAgent";
+import { getActivoPerfilId, loadPerfilLocal } from "../lib/perfilStorage";
+import { consultarAgenteNutricion, geminiDisponible, type ContextoAgente } from "../lib/geminiAgent";
 import { MarkdownRender } from "../components/MarkdownRender";
 import { URL_GOOGLE_AI_STUDIO_API_KEY } from "../lib/googleAiStudio";
+import { getMercadoActivoParaPlan, getMercadoRealizado } from "../lib/mercadoHistorial";
+import { getSnapshotActivoId, listarSnapshots } from "../lib/cronogramaHistorial";
 
 const SUGERENCIAS = [
   "3 meriendas keto sin horno con ingredientes básicos de despensa.",
@@ -66,7 +68,21 @@ export function Agente() {
         alimentosEvitar: "",
         estiloDieta: "keto" as const
       };
-      const text = await consultarAgenteNutricion(perfil, pregunta);
+
+      // Cargar contexto del mercado y plan activos
+      const contexto: ContextoAgente = {};
+      const mercadoId = getMercadoActivoParaPlan();
+      if (mercadoId) {
+        const snap = getMercadoRealizado(mercadoId);
+        if (snap?.items?.length) contexto.mercadoItems = snap.items;
+      }
+      const perfilId = getActivoPerfilId();
+      const snapId = getSnapshotActivoId(perfilId);
+      if (snapId && perfilId) {
+        contexto.snapActivo = listarSnapshots(perfilId).find((s) => s.id === snapId) ?? null;
+      }
+
+      const text = await consultarAgenteNutricion(perfil, pregunta, contexto);
       setRespuesta(text);
       const next = guardarEnHistorial(pregunta);
       setHistorial(next);
@@ -92,6 +108,13 @@ export function Agente() {
   const linkClass = "font-semibold text-teal-900 underline decoration-teal-500/50 hover:decoration-teal-700";
   const tieneApiKey = geminiDisponible();
 
+  // Detectar contexto disponible para mostrar al usuario
+  const mercadoId = getMercadoActivoParaPlan();
+  const tieneMercado = Boolean(mercadoId && getMercadoRealizado(mercadoId)?.items?.length);
+  const perfilId = getActivoPerfilId();
+  const snapId = getSnapshotActivoId(perfilId);
+  const tieneSnap = Boolean(snapId && perfilId && listarSnapshots(perfilId).some((s) => s.id === snapId));
+
   return (
     <div className="space-y-8">
       <header className="space-y-2">
@@ -109,6 +132,21 @@ export function Agente() {
           .
         </p>
       </header>
+
+      {(tieneMercado || tieneSnap) && (
+        <div className="flex flex-wrap gap-2">
+          {tieneMercado && (
+            <span className="rounded-full border border-emerald-200/80 bg-emerald-50/80 px-3 py-1 text-xs font-semibold text-emerald-800">
+              ✓ Mercado activo incluido en contexto
+            </span>
+          )}
+          {tieneSnap && (
+            <span className="rounded-full border border-teal-200/80 bg-teal-50/80 px-3 py-1 text-xs font-semibold text-teal-800">
+              ✓ Plan activo incluido en contexto
+            </span>
+          )}
+        </div>
+      )}
 
       {!tieneApiKey && (
         <div className="rounded-xl border border-amber-200/80 bg-amber-50/90 px-4 py-3 text-sm text-amber-950 shadow-sm backdrop-blur-sm">

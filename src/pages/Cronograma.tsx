@@ -945,7 +945,44 @@ export function Cronograma() {
                 orientativo, {n} día{n !== 1 ? "s" : ""} con datos
               </span>
             </div>
-            <div className="motion-safe:animate-fade-up mt-3 flex flex-wrap gap-2">
+            {presupuestoKcal != null && (() => {
+              const avgKcal = Math.round(avg.kcal / n);
+              const pct = Math.min(100, Math.round((avgKcal / presupuestoKcal) * 100));
+              const diff = avgKcal - presupuestoKcal;
+              const color =
+                Math.abs(diff) <= presupuestoKcal * 0.1
+                  ? "bg-emerald-500"
+                  : diff > 0
+                  ? "bg-amber-500"
+                  : "bg-sky-500";
+              const label =
+                Math.abs(diff) <= presupuestoKcal * 0.1
+                  ? "✓ En objetivo"
+                  : diff > 0
+                  ? `+${diff} kcal sobre objetivo`
+                  : `${diff} kcal bajo objetivo`;
+              return (
+                <div className="mb-3 space-y-1.5 rounded-xl border border-violet-200/60 bg-white/60 px-3 py-2.5">
+                  <div className="flex items-center justify-between gap-2 text-xs">
+                    <span className="font-semibold text-violet-900">Promedio vs objetivo diario</span>
+                    <span className="tabular-nums text-slate-600">
+                      ~{avgKcal} / {presupuestoKcal} kcal ·{" "}
+                      <span className={Math.abs(diff) <= presupuestoKcal * 0.1 ? "text-emerald-700 font-semibold" : "text-amber-700"}>
+                        {label}
+                      </span>
+                    </span>
+                  </div>
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-violet-100">
+                    <div
+                      className={`h-full rounded-full transition-all duration-700 ${color}`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })()}
+
+          <div className="motion-safe:animate-fade-up mt-3 flex flex-wrap gap-2">
               <div className={`${chip} border-amber-200/90 bg-gradient-to-br from-amber-50 via-white to-amber-50/40`}>
                 <span className="text-[9px] font-bold uppercase tracking-wider text-amber-900/85">Calorías</span>
                 <span className="font-mono text-base font-bold tabular-nums text-amber-950">~{Math.round(avg.kcal / n)}</span>
