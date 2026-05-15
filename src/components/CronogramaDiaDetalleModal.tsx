@@ -6,8 +6,7 @@ import {
   type PerfilUsuario,
   type PlatoReceta
 } from "../lib/nutritionPlan";
-import { busquedaVideoRecetaHref, urlReproducibleDesdePlato } from "../lib/recipeVideoUrl";
-import { RecipeVideoEmbedSafe } from "./RecipeVideoEmbed";
+import { RecipeVideoPanel } from "./RecipeVideoPanel";
 import type { DiaPlanConFecha } from "../lib/cronogramaHistorial";
 import {
   ETIQUETAS_PROGRESO_DIA,
@@ -445,11 +444,6 @@ export function CronogramaDiaDetalleModal({
                   const tituloSlot =
                     slot === "desayuno" ? "Desayuno" : slot === "almuerzo" ? "Almuerzo" : "Cena";
                   const m = sumarMacrosPlatoSlot(c);
-                  const playUrl = urlReproducibleDesdePlato(c);
-                  const busquedaVideoHref = busquedaVideoRecetaHref(
-                    c.titulo,
-                    `${c.videoQuery} ${perfil.estiloDieta}`
-                  );
                   const muestraMacros =
                     m.kcal > 0 || m.proteinG > 0 || m.fatG > 0 || m.carbG > 0 || m.fiberG > 0;
                   const porTxt = EtiquetaPorciones(c);
@@ -481,32 +475,8 @@ export function CronogramaDiaDetalleModal({
                       )}
                       <div className="mt-4 border-t border-emerald-50 pt-3">
                         <p className="text-[11px] font-semibold uppercase tracking-wide text-teal-800">Video cocina</p>
-                        {/* Siempre intentamos el embed: RecipeVideoEmbedSafe valida la miniatura y
-                            detecta errores de embedding; si falla, muestra la tarjeta de búsqueda. */}
                         <div className="mt-2">
-                          {playUrl ? (
-                            <div className="space-y-2">
-                              <RecipeVideoEmbedSafe
-                                playUrl={playUrl}
-                                videoId={c.youtubeVideoId ?? undefined}
-                                title={c.titulo}
-                                searchFallbackHref={busquedaVideoHref}
-                              />
-                              <a
-                                className="inline-flex items-center gap-1.5 text-[11px] font-medium text-teal-700 underline-offset-2 hover:underline"
-                                href={busquedaVideoHref}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                <span>↗</span> Buscar en otras plataformas
-                              </a>
-                            </div>
-                          ) : (
-                            <RecipeVideoEmbedSafe
-                              title={c.titulo}
-                              searchFallbackHref={busquedaVideoHref}
-                            />
-                          )}
+                          <RecipeVideoPanel plato={c} dietaHint={perfil.estiloDieta} />
                         </div>
                       </div>
                     </div>

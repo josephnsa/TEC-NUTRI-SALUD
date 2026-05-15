@@ -4,6 +4,7 @@ import type { DiaPlan, ModoCronograma, PerfilUsuario, PlatoReceta } from "./nutr
 import { calcularTdeePerfil, presupuestoKcalOrientativoDiario } from "./nutritionPlan";
 import { GEMINI_MODEL_IDS } from "./geminiModels";
 import { URL_GOOGLE_AI_STUDIO_API_KEY } from "./googleAiStudio";
+import { buscarVideoParaReceta } from "./recipeVideoResolve";
 import { urlReproducibleReceta } from "./recipeVideoUrl";
 import { youtubeVideoIdFromInput } from "./youtubeEmbed";
 
@@ -279,10 +280,6 @@ Devuelve SOLO JSON: array de longitud ${diasChunk}. Cada elemento:
 
 type SlotCron = "desayuno" | "almuerzo" | "cena";
 
-function claveSlotYoutube(dayIdx: number, slot: SlotCron): string {
-  return `${dayIdx}|${slot}`;
-}
-
 function clonarPlanes(plan: DiaPlan[]): DiaPlan[] {
   return JSON.parse(JSON.stringify(plan)) as DiaPlan[];
 }
@@ -316,65 +313,24 @@ async function enriquecerVideosFaltantes(plan: DiaPlan[]): Promise<DiaPlan[]> {
   if (pend.length === 0) return plan;
 
   const out = clonarPlanes(plan);
-  const LOTE = 16;
-  const genAI = new GoogleGenerativeAI(key);
 
-  for (let i = 0; i < pend.length; i += LOTE) {
-    const slice = pend.slice(i, i + LOTE);
-    const payload = slice.map((p) => ({
-      key: claveSlotYoutube(p.dayPos, p.slot),
-      titulo: p.titulo,
-      busqueda: p.q
-    }));
-
+  for (const it of pend) {
     try {
-      const model = genAI.getGenerativeModel({
-        model: GEMINI_MODEL_IDS[0]!,
-        generationConfig: {
-          responseMimeType: "application/json",
-          maxOutputTokens: 4096,
-          temperature: 0.25
-        }
-      });
-      const r = await model.generateContent(`
-Devuelve SÓLO un objeto JSON. Cada CLAVE debe ser EXACTAMENTE el string "key" de cada entrada (ej. "1|desayuno").
-
-Valor por clave: objeto { "video_url": "https://..." } o null.
-- video_url: URL COMPLETA y pública de un tutorial de cocina en español (YouTube, TikTok, Vimeo, Instagram, Facebook). Debe existir hoy y ser embebible.
-- null si no tienes certeza (NUNCA inventes URLs).
-
-Entradas:
-${JSON.stringify(payload)}
-`);
-      const text = r.response.text();
-      const mapa = JSON.parse(text) as Record<string, unknown>;
-      for (const it of slice) {
-        const k = claveSlotYoutube(it.dayPos, it.slot);
-        const entrada = mapa[k];
-        if (entrada === null || entrada === "null") continue;
-        let urlRaw = "";
-        if (typeof entrada === "string") urlRaw = entrada.trim();
-        else if (entrada && typeof entrada === "object") {
-          const o = entrada as { video_url?: unknown; youtube_video_id?: unknown };
-          if (typeof o.video_url === "string") urlRaw = o.video_url.trim();
-          else if (typeof o.youtube_video_id === "string" && /^[a-zA-Z0-9_-]{11}$/.test(o.youtube_video_id)) {
-            urlRaw = `https://www.youtube.com/watch?v=${o.youtube_video_id}`;
-          }
-        }
-        const urlOk = urlReproducibleReceta(urlRaw);
-        if (!urlOk) continue;
-        const díaIdx = it.dayPos - 1;
-        const díaObj = out[díaIdx];
-        if (!díaObj?.comidas[it.slot]) continue;
-        const ytId = youtubeVideoIdFromInput(urlOk);
-        díaObj.comidas[it.slot] = {
-          ...díaObj.comidas[it.slot],
-          videoUrl: urlOk,
-          ...(ytId ? { youtubeVideoId: ytId } : {})
-        };
-      }
+      const díaIdx = it.dayPos - 1;
+      const díaObj = out[díaIdx];
+      if (!díaObj?.comidas[it.slot]) continue;
+      /* eslint-disable no-await-in-loop -- búsqueda secuencial para no saturar APIs */
+      const urlOk = await buscarVideoParaReceta(it.titulo, it.q);
+      /* eslint-enable no-await-in-loop */
+      if (!urlOk) continue;
+      const ytId = youtubeVideoIdFromInput(urlOk);
+      díaObj.comidas[it.slot] = {
+        ...díaObj.comidas[it.slot],
+        videoUrl: urlOk,
+        ...(ytId ? { youtubeVideoId: ytId } : {})
+      };
     } catch {
-      /* continuar sin vídeos extra */
+      /* continuar con el siguiente plato */
     }
   }
 
