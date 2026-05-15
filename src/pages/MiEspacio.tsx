@@ -7,7 +7,7 @@ import {
 } from "../lib/recorrido";
 import { usuarioTieneProveedorEmail } from "../lib/authPassword";
 import { supabase } from "../lib/supabase";
-import { calcularTdeePerfil, contarCompradosMercado, presupuestoKcalOrientativoDiario, sumarMacrosComidaDia } from "../lib/nutritionPlan";
+import { calcularTdeePerfil, contarCompradosMercado, labelDieta, presupuestoKcalOrientativoDiario, sumarMacrosComidaDia } from "../lib/nutritionPlan";
 import {
   getMercadoActivoParaPlan,
   getMercadoRealizado,
@@ -77,7 +77,7 @@ export function MiEspacio() {
       return { texto: "Continuar en paso 1 · Mis datos", to: "/mi-plan" as const };
     }
     if (!mercadoActivoId) {
-      return { texto: "Continuar en paso 2 · Mercado keto", to: "/keto-mercado" as const };
+      return { texto: "Continuar en paso 2 · Mi mercado", to: "/keto-mercado" as const };
     }
     return { texto: "Continuar en paso 3 · Cronograma", to: "/cronograma" as const };
   }, [tick, tienePerfilLocal, perfil, mercadoActivoId]);
@@ -189,7 +189,7 @@ export function MiEspacio() {
                   </li>
                 ) : null}
                 <li>
-                  <span className="text-slate-500">Estilo:</span> {perfil.estiloDieta}
+                  <span className="text-slate-500">Estilo:</span> {labelDieta(perfil.estiloDieta)}
                 </li>
                 <li>
                   <span className="text-slate-500">Edad / peso:</span> {perfil.edad} años · {perfil.pesoKg} kg

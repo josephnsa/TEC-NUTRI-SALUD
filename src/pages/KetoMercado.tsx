@@ -23,6 +23,7 @@ import {
   type MercadoSnapshot
 } from "../lib/mercadoHistorial";
 import { PERFILES_STORAGE_EVENT, loadPerfilLocal } from "../lib/perfilStorage";
+import { CATEGORIA_LABELS, DIETA_LABELS } from "../lib/nutritionPlan";
 import { deleteMercadoSnapshotRemote, pushMercadoSnapshotRemote } from "../lib/snapshotsRemote";
 import { URL_GOOGLE_AI_STUDIO_API_KEY, geminiMercadoDisponible, generarMercadoIA } from "../lib/mercadoIA";
 import { exportarMercadoPdf } from "../lib/pdfExport";
@@ -62,13 +63,6 @@ export function KetoMercado() {
   }, []);
 
   const copiarListaTexto = useCallback(() => {
-    const labelsCopy: Record<string, string> = {
-      proteina: "Proteínas",
-      grasa: "Grasas saludables",
-      verdura: "Verduras",
-      lacteo: "Lácteos",
-      extras: "Extras"
-    };
     const gruposLocal = new Map<string, typeof items>();
     items.forEach((it) => {
       const arr = gruposLocal.get(it.categoria) ?? [];
@@ -81,7 +75,7 @@ export function KetoMercado() {
       ""
     ];
     gruposLocal.forEach((list, cat) => {
-      lineas.push(`── ${labelsCopy[cat] ?? cat} ──`);
+      lineas.push(`── ${CATEGORIA_LABELS[cat] ?? cat} ──`);
       list.forEach((it) => {
         const nombre = it.nombreCustom?.trim() || it.nombre;
         const cantidad = `${it.cantidad} ${it.unidad}`;
@@ -324,17 +318,15 @@ export function KetoMercado() {
     return m;
   }, [items]);
 
-  const labels: Record<string, string> = {
-    proteina: "Proteínas",
-    grasa: "Grasas saludables",
-    verdura: "Verduras",
-    lacteo: "Lácteos",
-    extras: "Extras"
-  };
+  const tituloPagina = (() => {
+    const p = loadPerfilLocal();
+    if (!p?.estiloDieta) return "Lista de compras";
+    return `Mercado · dieta ${DIETA_LABELS[p.estiloDieta] ?? p.estiloDieta}`;
+  })();
 
   return (
     <div className="space-y-8">
-      <StepHeader pasoActual={2} titulo="Mercado dieta keto" />
+      <StepHeader pasoActual={2} titulo={tituloPagina} />
 
       <p className="rounded-xl border border-amber-200/80 bg-amber-50/85 px-4 py-3 text-xs text-amber-950 shadow-sm backdrop-blur-sm">
         Antes completa{" "}
@@ -738,7 +730,7 @@ export function KetoMercado() {
                   }`}
                 >
                   {completo && <span>✓</span>}
-                  {labels[cat] ?? cat}
+                  {CATEGORIA_LABELS[cat] ?? cat}
                   <span className="rounded-full bg-slate-100/90 px-1.5 py-0.5 text-[9px] tabular-nums text-slate-500">
                     {comprados}/{total}
                   </span>
@@ -759,7 +751,7 @@ export function KetoMercado() {
           return (
           <section key={cat} id={`mercado-cat-${cat}`} className="scroll-mt-28">
             <div className="mb-2 flex items-center gap-2">
-              <h2 className="ui-section-title text-gradient-brand">{labels[cat] ?? cat}</h2>
+              <h2 className="ui-section-title text-gradient-brand">{CATEGORIA_LABELS[cat] ?? cat}</h2>
               <span
                 className={`rounded-full px-2 py-0.5 text-[10px] font-bold tabular-nums ${
                   todosComprados

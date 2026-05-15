@@ -47,6 +47,7 @@ import { getMercadoActivoParaPlan, getMercadoRealizado, setMercadoActivoParaPlan
 import { URL_GOOGLE_AI_STUDIO_API_KEY, agenteRecetasGratisDisponible, generarCronogramaIA } from "../lib/recipesGemini";
 import { CronogramaDiaDetalleModal } from "../components/CronogramaDiaDetalleModal";
 import { exportarCronogramaPdf } from "../lib/pdfExport";
+import { labelDieta } from "../lib/nutritionPlan";
 
 const defaultPerfil: PerfilUsuario = {
   nombre: "",
@@ -87,7 +88,7 @@ function CopiarPlanBtn({
 
   const copiar = () => {
     const header: string[] = [];
-    header.push(`🥗 Plan ${estiloDieta ? estiloDieta.charAt(0).toUpperCase() + estiloDieta.slice(1) : "nutricional"} · ${dias.length} días`);
+    header.push(`🥗 Plan ${estiloDieta ? labelDieta(estiloDieta) : "nutricional"} · ${dias.length} días`);
     if (presupuestoKcal) header.push(`Objetivo: ~${presupuestoKcal} kcal/día`);
     header.push("");
 

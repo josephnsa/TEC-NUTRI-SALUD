@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { getMercadoActivoParaPlan, getMercadoRealizado } from "../lib/mercadoHistorial";
 import { getActivoPerfilId, loadPerfilLocal, perfilGuardadoEnDispositivo } from "../lib/perfilStorage";
 import { getSnapshotActivoId, listarSnapshots } from "../lib/cronogramaHistorial";
-import { calcularTdeePerfil, presupuestoKcalOrientativoDiario } from "../lib/nutritionPlan";
+import { calcularTdeePerfil, labelDieta, presupuestoKcalOrientativoDiario } from "../lib/nutritionPlan";
 
 export function Home() {
   const { user, isConfigured } = useAuth();
@@ -135,7 +135,7 @@ export function Home() {
                   {estado.nombre ? `Bienvenido de vuelta, ${estado.nombre}` : "Bienvenido de vuelta"}
                 </p>
                 <p className="mt-1 text-sm text-slate-600">
-                  Dieta <strong className="text-teal-900">{estado.estilo}</strong>
+                  Dieta <strong className="text-teal-900">{labelDieta(estado.estilo)}</strong>
                   {estado.kcalObjetivo != null && (
                     <> · objetivo <strong className="text-teal-900">{estado.kcalObjetivo} kcal/día</strong></>
                   )}
@@ -195,8 +195,8 @@ export function Home() {
               to: "/mi-plan"
             },
             {
-              t: "Mercado keto",
-              d: "Lista y despensa para el plan.",
+              t: "Mi mercado",
+              d: "Lista de compras y despensa para el plan.",
               to: "/keto-mercado"
             },
             {

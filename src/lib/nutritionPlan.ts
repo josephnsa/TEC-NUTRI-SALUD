@@ -19,6 +19,34 @@ export type PlatoReceta = {
   porciones?: number;
 };
 
+/** Nombres legibles para cada tipo de dieta (uso en UI, export, copy). */
+export const DIETA_LABELS: Record<string, string> = {
+  keto: "Cetogénica (Keto)",
+  lowcarb: "Baja en carbos",
+  balanceada: "Balanceada",
+  mediterranea: "Mediterránea",
+  paleo: "Paleo",
+  carnivore: "Carnívora"
+};
+
+/** Retorna el nombre legible del estilo de dieta o el propio valor si no tiene mapa. */
+export function labelDieta(estiloDieta?: string): string {
+  if (!estiloDieta) return "No definida";
+  return DIETA_LABELS[estiloDieta] ?? estiloDieta.charAt(0).toUpperCase() + estiloDieta.slice(1);
+}
+
+/** Nombres legibles para categorías del mercado (uso en UI, copy, PDF). */
+export const CATEGORIA_LABELS: Record<string, string> = {
+  proteina: "Proteínas",
+  grasa: "Grasas saludables",
+  verdura: "Verduras",
+  lacteo: "Lácteos",
+  extras: "Extras",
+  cereal: "Cereales / granos",
+  fruta: "Frutas",
+  legumbre: "Legumbres"
+};
+
 export type PerfilUsuario = {
   /** Nombre o apodo (visible en resumen y opcional en IA). */
   nombre: string;

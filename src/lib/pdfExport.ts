@@ -3,7 +3,7 @@
  * Sin dependencias externas; el usuario imprime/guarda como PDF desde el diálogo del navegador.
  */
 import type { ListaItem } from "./ketoMercado";
-import type { ComidaDia, DiaPlan, PlatoReceta } from "./nutritionPlan";
+import { labelDieta, CATEGORIA_LABELS, type ComidaDia, type DiaPlan, type PlatoReceta } from "./nutritionPlan";
 
 const ESTILOS_BASE = `
   body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #1a202c; margin: 0; padding: 20px; }
@@ -60,29 +60,7 @@ function abrirVentanaImpresion(html: string, titulo: string) {
 }
 
 function labelCategoria(cat: string): string {
-  const m: Record<string, string> = {
-    proteina: "Proteína",
-    grasa: "Grasa saludable",
-    verdura: "Verdura",
-    lacteo: "Lácteo",
-    extras: "Extras",
-    cereal: "Cereales / granos",
-    fruta: "Fruta",
-    legumbre: "Legumbre"
-  };
-  return m[cat] ?? cat;
-}
-
-function labelDieta(estiloDieta?: string): string {
-  const m: Record<string, string> = {
-    keto: "Cetogénica (Keto)",
-    lowcarb: "Baja en carbos",
-    balanceada: "Balanceada",
-    mediterranea: "Mediterránea",
-    paleo: "Paleo",
-    carnivore: "Carnívora"
-  };
-  return estiloDieta ? (m[estiloDieta] ?? estiloDieta) : "No definida";
+  return CATEGORIA_LABELS[cat] ?? cat;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

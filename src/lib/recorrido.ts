@@ -23,11 +23,11 @@ export const PASOS_RECORRIDO_PRINCIPAL: readonly PasoRecorridoDef[] = [
   },
   {
     paso: 2,
-    tituloPagina: "Mercado keto",
+    tituloPagina: "Mi mercado",
     navCorto: "Mercado",
     navDesktop: "Mercado",
     to: "/keto-mercado",
-    descripcionBanner: "Lista, marca comprados y guarda para enlazar al menú."
+    descripcionBanner: "Lista de compras por dieta, marca comprados y guarda para enlazar al menú."
   },
   {
     paso: 3,
