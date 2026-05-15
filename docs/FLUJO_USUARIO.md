@@ -59,7 +59,7 @@ flowchart LR
 
 4. **Detalle del día** (modal desde calendario o lista)  
    Tres pestañas:  
-   - **Plan** — recetas; **video embebido** (YouTube nocookie) o búsqueda externa; resumen orientativo **kcal / macros** cuando existan datos.  
+   - **Plan** — recetas con etiqueta de **porciones**; resumen del día en **tarjetas de colores** (kcal ámbar · proteína azul · grasa violeta · carbos esmeralda · fibra lima); **video embebido** YouTube `nocookie` cuando hay ID verificado, o botón destacado "Ver vídeos en YouTube" cuando no hay coincidencia; comparativa vs presupuesto diario del perfil.  
    - **Tu registro** — fotos y vídeos propios por comida (IndexedDB + miniaturas); con sesión, **copia automática en la cuenta** (Storage privado del proyecto).  
    - **Progreso** — seguimiento del plan (sí / parcial / no), checklist del día y nota libre.
 
@@ -73,7 +73,7 @@ flowchart LR
 - `MiEspacio.tsx` ofrece **descargar / restaurar** un JSON de respaldo que incluye todas las claves `tec_nutri_salud_*` (perfiles, mercados, cronogramas, listas, claves activas).
 - `KetoMercado.tsx` ofrece export/import específico del historial de mercados (fusión por id).
 - Las **fotos y vídeos** del cronograma se guardan en **IndexedDB** del navegador y **no** se incluyen en el respaldo JSON (solo sus metadatos si ya se subieron a Supabase Storage).
-- Con sesión Supabase, los **mercados y planes guardados** pueden **subirse y fusionarse** desde la nube (tablas `user_market_snapshots` / `user_plan_snapshots`); al iniciar sesión la app intenta **traer** copias recientes (por fecha `updated_at`).
+- Con sesión Supabase, los **mercados y planes guardados** pueden **subirse y fusionarse** desde la nube (tablas `user_market_snapshots` / `user_plan_snapshots`); al iniciar sesión la app intenta **traer** copias recientes (por fecha `updated_at`). Al **borrar** un mercado o plan localmente, se elimina también la fila remota si hay sesión activa.
 
 ---
 
@@ -85,7 +85,10 @@ La app es instalable como PWA. Cuando hay una nueva versión del service worker 
 
 ## Qué hace el agente en recetas
 
-- Devuelve JSON con `titulo`, `receta`, `videoQuery` y campos opcionales **`kcal_estimate`**, **`protein_g`**, **`fat_g`**, **`carb_g`**, **`youtube_video_id`** (11 caracteres) cuando el modelo puede estimarlos; receta orientada a **una porción**.
+- Devuelve JSON con `titulo`, `receta`, `videoQuery`, `porciones` (1–4, cuántas raciones cubre la preparación) y campos opcionales **`kcal_estimate`**, **`protein_g`**, **`fat_g`**, **`carb_g`**, **`fiber_g`**, **`youtube_video_id`** (11 caracteres válidos) cuando el modelo puede estimarlos.
+- El prompt recibe **toda la lista del mercado con cantidades y unidades** (no solo los comprados); la instrucción varía según modo: mercado activo prioriza comprados estrictamente, mixto combina, perfil usa la lista como despensa probable.
+- Tras recibir la respuesta principal, una **segunda pasada** pide IDs de YouTube para los slots sin vídeo, verifica cada ID cargando la miniatura real (`i.ytimg.com`) y solo asigna los que confirman.
+- Ver contrato en `src/lib/recipesGemini.ts` y plan **`docs/PLAN_MEJORAS_FASE3_NUTRICION_SUPABASE_UI.md`**.
 - Ver contrato en `src/lib/recipesGemini.ts` y plan **`docs/PLAN_MEJORAS_FASE3_NUTRICION_SUPABASE_UI.md`**.
 
 ---

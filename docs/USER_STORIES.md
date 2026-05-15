@@ -104,6 +104,17 @@ María quiere comer mejor en estilo keto, organizar el mercado, **guardar lo que
     *quiero* una estética más **marcada y moderna** con animaciones **cortas y opcionales** según configuración del sistema  
     *para* disfrutar la interfaz sin sacrificar claridad ni `prefers-reduced-motion`.
 
+## Estado implementación (historias 13–18, mayo 2026)
+
+| Historia | Criterios clave implementados |
+|----------|-------------------------------|
+| **13** (sync Supabase) | Push/pull mercados y planes; borrado remoto al borrar local |
+| **14** (ítems extra) | Campo `origen: "manual"` en `ListaItem`; UI agregar ítem en `KetoMercado` |
+| **15** (despensa completa + macros) | Prompt recibe lista entera con cantidades y unidades; `porciones`; `fiber_g` |
+| **16** (video + nutrición) | Embed nocookie verificado con miniatura; fallback visual; tarjetas macro por color |
+| **17** (código limpio) | `tsc --noEmit` pasa estricto; fix import `supabase` en `Login`; script `npm run typecheck` |
+| **18** (UI tech) | Tarjetas macro con gradientes y hover; tokens Tailwind; `motion-safe:`/`motion-reduce:` |
+
 ## Criterios transversales
 
 - Aviso visible: las estimaciones nutricionales, las recetas generadas por IA y el chat del asistente son **orientativas**.

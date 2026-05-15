@@ -124,7 +124,14 @@ Alineado a **fase §8** ya existente y al skill:
 | F3.5 | Embed de video en modal/detalle | Error boundary iframe |
 | F3.6 | Refresh visual Tailwind tokens + revisión Lighthouse contraste | Checklist |
 
-**Estado mayo 2026:** F3.1–F3.6 implementados en el repo (`snapshotsRemote`, tablas SQL, ítems extra mercado, presupuesto kcal/Gemini/embed, tokens `ion` / `glow-cyan`). Falta ejecutar **`supabase/schema.sql`** en tu proyecto Supabase si aún no existen las tablas nuevas.
+**Estado mayo 2026:** F3.0–F3.6 implementados y en `main`. Últimas mejoras adicionales:
+- `fiber_g` y `porciones` en el contrato JSON de Gemini y en la UI (tarjetas por macro con colores, etiqueta porciones).
+- Prompt de Gemini recibe **lista completa del mercado con cantidades** (no solo comprados); instrucción varía por modo perfil/mercado/mixto; segunda pasada para vídeos faltantes con verificación de miniatura.
+- Borrado remoto (Supabase) al eliminar mercados o planes locales cuando hay sesión.
+- Error boundary en `RecipeVideoEmbed` y fallback visual de acceso YouTube.
+- Fix: `Login.tsx` importaba `supabase` sin declararlo (ReferenceError en prod); solucionado junto con null-safety en `ActualizarClave` y `MiEspacio`.
+
+Falta ejecutar **`supabase/schema.sql`** en tu proyecto Supabase si aún no existen las tablas `user_market_snapshots` / `user_plan_snapshots`.
 
 ---
 
