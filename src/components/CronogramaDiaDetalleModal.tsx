@@ -471,37 +471,40 @@ export function CronogramaDiaDetalleModal({
                       )}
                       <div className="mt-4 border-t border-emerald-50 pt-3">
                         <p className="text-[11px] font-semibold uppercase tracking-wide text-teal-800">Video cocina</p>
-                        <p className="mt-0.5 text-[10px] text-slate-500">
-                          Preferimos YouTube embebido (privacidad: youtube-nocookie) cuando encontramos coincidencias.
-                        </p>
-                        {c.youtubeVideoId ? (
-                          <div className="motion-safe:animate-fade-up mt-3 space-y-3">
-                            <RecipeVideoEmbedSafe videoId={c.youtubeVideoId} title={c.titulo} />
+                        {/* Siempre intentamos el embed: RecipeVideoEmbedSafe valida la miniatura y
+                            detecta errores de embedding; si falla, muestra la tarjeta de búsqueda. */}
+                        <div className="mt-2">
+                          {c.youtubeVideoId ? (
+                            <div className="space-y-2">
+                              <RecipeVideoEmbedSafe
+                                videoId={c.youtubeVideoId}
+                                title={c.titulo}
+                                searchFallbackHref={busquedaHref}
+                              />
+                              <a
+                                className="inline-flex items-center gap-1.5 text-[11px] font-medium text-teal-700 underline-offset-2 hover:underline"
+                                href={busquedaHref}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <span>↗</span> Más resultados en YouTube
+                              </a>
+                            </div>
+                          ) : (
                             <a
-                              className="ui-video-link inline-flex items-center gap-2 text-[11px] font-semibold text-teal-900"
                               href={busquedaHref}
                               target="_blank"
                               rel="noopener noreferrer"
+                              className="motion-safe:hover:border-teal-400/70 motion-safe:hover:shadow-md mt-1 flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-teal-300/80 bg-gradient-to-br from-teal-50 via-white to-violet-50/35 px-5 text-center text-teal-900 shadow-inner transition motion-safe:duration-150"
                             >
-                              Abrir otros resultados en YouTube
-                            </a>
-                          </div>
-                        ) : (
-                          <>
-                            <a
-                              href={busquedaHref}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="motion-safe:hover:border-teal-400/70 motion-safe:hover:shadow-md mt-3 flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-teal-300/80 bg-gradient-to-br from-teal-50 via-white to-violet-50/35 px-5 text-center text-teal-900 shadow-inner transition motion-safe:duration-150"
-                            >
-            <span className="text-4xl motion-safe:animate-pulse motion-reduce:animate-none">▶</span>
-                              <span className="text-sm font-semibold">Ver vídeos de esta receta en YouTube</span>
+                              <span className="text-4xl motion-safe:animate-pulse motion-reduce:animate-none">▶</span>
+                              <span className="text-sm font-semibold">Ver receta en YouTube</span>
                               <span className="text-[11px] text-teal-800/85">
-                                No encontramos ID confiable para incrustado en la app · abrir resultados relacionados con tu lista
+                                {c.titulo} · abre YouTube en nueva pestaña
                               </span>
                             </a>
-                          </>
-                        )}
+                          )}
+                        </div>
                       </div>
                     </div>
                   );

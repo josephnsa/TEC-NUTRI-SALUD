@@ -247,9 +247,9 @@ Reglas obligatorias:
   Pasos numerados breves (máx. ~560 caracteres el campo).
 - Por defecto cada comida apunta a 1 persona; si porciones>1 dímelo en el texto.
 - "titulo": corto y claro.
-- "videoQuery": texto 6–16 palabras en español alineado con el mismo plato (ingrediente clave + técnica).
+- "videoQuery": texto 6–16 palabras en español optimizado para YouTube. Incluye: nombre exacto del plato + ingrediente principal + "receta". Ejemplo: "salmón al horno con brócoli receta saludable fácil español".
 - Macros por comida cuando puedas estimar sin extremos falsos (1 porción): "kcal_estimate", "protein_g", "fat_g", "carb_g", "fiber_g" (grams; distribuye proporcionalmente si porciones>1 sólo como referencia TOTAL del plato entero aclarándolo implícito en valores).
-- "youtube_video_id" (exactamente 11 caracteres válidos youtube o null): DEBES rellenarlo si conoces algún vídeo español/tutorial real que coincida claramente con el plato; es preferible embedding en la app antes que null.
+- "youtube_video_id" (exactamente 11 caracteres válidos youtube o null): IMPORTANTE. Proporciona un ID de vídeo de YouTube REAL que exista actualmente y muestre cómo preparar ese plato en español. Usa canales reconocidos de cocina (Tasty Español, Las Recetas de Laura, Paulina Cocina, Cocina con Carmen, etc.). Si no estás 100% seguro de que el ID es válido y accesible hoy, devuelve null. NUNCA inventes IDs: es preferible null a un ID incorrecto.
 
 Devuelve SOLO JSON: array de longitud ${diasChunk}. Cada elemento:
 {
@@ -331,11 +331,11 @@ async function enriquecerYoutubeFaltantes(plan: DiaPlan[]): Promise<DiaPlan[]> {
         }
       });
       const r = await model.generateContent(`
-Devuelve SÓLO un objeto JSON: cada CLAVE debe ser EXACTAMENTE el string "key" de cada entrada (ej. "1|desayuno").
+Devuelve SÓLO un objeto JSON. Cada CLAVE debe ser EXACTAMENTE el string "key" de cada entrada (ej. "1|desayuno").
 
 Valor por clave:
-- string de EXACTAMENTE 11 caracteres (YouTube youtube_video_id) de un vídeo español/tutorial de cocina que encaje con "titulo" y "busqueda", cuando conozcas un id REAL público, o
-- null si no conoces ninguno (NO inventes cadenas).
+- string de EXACTAMENTE 11 caracteres alfanuméricos (YouTube video ID) de un tutorial de cocina en español que encaje exactamente con "titulo" y "busqueda". Solo de canales reconocidos (Tasty Español, Paulina Cocina, Las Recetas de Laura, Cocina con Carmen, etc.). El vídeo debe existir hoy y tener embedding habilitado.
+- null si no tienes certeza total (NUNCA inventes IDs; es mejor null que un ID incorrecto).
 
 Entradas:
 ${JSON.stringify(payload)}
