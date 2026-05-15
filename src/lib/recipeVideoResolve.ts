@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GEMINI_MODEL_IDS } from "./geminiModels";
-import { urlReproducibleReceta } from "./recipeVideoUrl";
+import { type VideoBusquedaContexto, textoBusquedaVideo, urlReproducibleReceta } from "./recipeVideoUrl";
 import { primerVideoEmbebibleValido, validarVideoEmbebible } from "./videoEmbedValidate";
 import { youtubeVideoIdFromInput } from "./youtubeEmbed";
 
@@ -18,11 +18,12 @@ const INVIDIOUS_BASES = [
 
 type CacheMap = Record<string, string>;
 
-function queryBusqueda(titulo: string, videoQuery?: string): string {
-  return `${titulo.trim()} ${(videoQuery ?? "").trim()} receta español`
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 180);
+function queryBusqueda(
+  titulo: string,
+  videoQuery?: string,
+  contexto: VideoBusquedaContexto = "receta"
+): string {
+  return textoBusquedaVideo(titulo, videoQuery, contexto).slice(0, 180);
 }
 
 function readCache(): CacheMap {
@@ -116,7 +117,11 @@ async function searchInvidiousCandidates(q: string): Promise<string[]> {
   return out;
 }
 
-async function searchGeminiConGoogle(titulo: string, q: string): Promise<string | null> {
+async function searchGeminiConGoogle(
+  titulo: string,
+  q: string,
+  contexto: VideoBusquedaContexto
+): Promise<string | null> {
   if (!geminiKey) return null;
   try {
     const genAI = new GoogleGenerativeAI(geminiKey);
@@ -125,7 +130,11 @@ async function searchGeminiConGoogle(titulo: string, q: string): Promise<string 
       // @ts-expect-error googleSearch tool
       tools: [{ googleSearch: {} }]
     });
-    const prompt = `Busca UN tutorial de cocina en español para: "${titulo}" (${q}).
+    const tema =
+      contexto === "belleza"
+        ? "belleza / cuidado personal / cabello"
+        : "cocina / receta";
+    const prompt = `Busca UN tutorial de ${tema} en español para: "${titulo}" (${q}).
 Responde SOLO una URL https de YouTube, TikTok o Vimeo que exista hoy y permita embed, o NULL si no hay certeza.`;
     const r = await model.generateContent(prompt);
     const text = r.response.text().trim();
@@ -156,8 +165,12 @@ export function fuentesBusquedaVideo(): { youtubeApi: boolean; gemini: boolean }
 /**
  * Busca vídeo real, valida embed y devuelve URL reproducible en la PWA.
  */
-export async function buscarVideoParaReceta(titulo: string, videoQuery?: string): Promise<string | null> {
-  const q = queryBusqueda(titulo, videoQuery);
+export async function buscarVideoEmbeddible(
+  titulo: string,
+  videoQuery?: string,
+  contexto: VideoBusquedaContexto = "receta"
+): Promise<string | null> {
+  const q = queryBusqueda(titulo, videoQuery, contexto);
   if (!q) return null;
 
   const cached = readCache()[q];
@@ -170,11 +183,11 @@ export async function buscarVideoParaReceta(titulo: string, videoQuery?: string)
   const candidatos: string[] = [];
   candidatos.push(...(await searchYoutubeDataApiCandidates(q)));
   try {
-    const gem = await searchGeminiConGoogle(titulo, q);
+    const gem = await searchGeminiConGoogle(titulo, q, contexto);
     if (gem) candidatos.push(gem);
   } catch (e) {
-    if (esErrorCuotaGemini(e)) throw new Error("GEMINI_QUOTA");
-    throw e;
+    if (!esErrorCuotaGemini(e)) throw e;
+    // Cuota Gemini agotada: seguir con candidatos de YouTube Data API (u otras fuentes).
   }
   candidatos.push(...(await searchInvidiousCandidates(q)));
 
@@ -182,6 +195,16 @@ export async function buscarVideoParaReceta(titulo: string, videoQuery?: string)
   const valido = await primerVideoEmbebibleValido(unicos);
   if (valido) setCached(q, valido);
   return valido;
+}
+
+/** Búsqueda de vídeo para recetas del cronograma. */
+export async function buscarVideoParaReceta(titulo: string, videoQuery?: string): Promise<string | null> {
+  return buscarVideoEmbeddible(titulo, videoQuery, "receta");
+}
+
+/** Búsqueda de vídeo para tips de belleza. */
+export async function buscarVideoParaBelleza(titulo: string, videoQuery?: string): Promise<string | null> {
+  return buscarVideoEmbeddible(titulo, videoQuery, "belleza");
 }
 
 /** Valida URL ya conocida (p. ej. guardada en el plan). */

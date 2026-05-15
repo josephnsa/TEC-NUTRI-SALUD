@@ -1,4 +1,5 @@
 import { ORDEN_CATEGORIAS, beautyTips } from "../data/beautyTips";
+import { TutorialVideoPanel } from "../components/TutorialVideoPanel";
 
 function scrollACategoria(id: string) {
   const el = document.getElementById(`sec-belleza-${id}`);
@@ -11,11 +12,11 @@ export function Belleza() {
       <header className="space-y-2">
         <h1 className="font-display text-2xl font-bold text-teal-950 sm:text-3xl">Belleza natural</h1>
         <p className="max-w-2xl text-sm leading-relaxed text-slate-700">
-          Tips caseros por tema. Si tienes alergias o piel sensible, prueba en una zona pequeña.
+          Tips caseros por tema con vídeo tutorial integrado cuando hay coincidencia. Si tienes alergias o
+          piel sensible, prueba en una zona pequeña.
         </p>
       </header>
 
-      {/* Navegación rápida por categoría */}
       <nav
         className="sticky top-[3.4rem] z-30 -mx-3 overflow-x-auto border-b border-emerald-100/80 bg-white/85 px-3 py-2 backdrop-blur-xl sm:-mx-4 sm:px-4"
         aria-label="Categorías de belleza"
@@ -66,6 +67,19 @@ export function Belleza() {
                       {tip.precaucion}
                     </p>
                   )}
+                  <div className="mt-4 space-y-1">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-teal-800">
+                      Video tutorial
+                    </p>
+                    <TutorialVideoPanel
+                      source={{
+                        titulo: tip.titulo,
+                        videoQuery: tip.videoQuery
+                      }}
+                      contexto="belleza"
+                      sinVideoLabel="este tip"
+                    />
+                  </div>
                 </article>
               ))}
             </div>

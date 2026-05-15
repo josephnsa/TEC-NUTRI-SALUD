@@ -85,8 +85,35 @@ export function urlReproducibleDesdePlato(
   return null;
 }
 
+export type VideoBusquedaContexto = "receta" | "belleza";
+
+const SUFIJO_BUSQUEDA_VIDEO: Record<VideoBusquedaContexto, string> = {
+  receta: "receta español",
+  belleza: "belleza natural español"
+};
+
+/** Texto de búsqueda para YouTube / caché (cronograma, belleza, etc.). */
+export function textoBusquedaVideo(
+  titulo: string,
+  videoQuery?: string,
+  contexto: VideoBusquedaContexto = "receta"
+): string {
+  return `${titulo.trim()} ${(videoQuery ?? "").trim()} ${SUFIJO_BUSQUEDA_VIDEO[contexto]}`
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 /** Enlace de búsqueda multi-plataforma (prioriza YouTube; usuario puede cambiar en el buscador). */
-export function busquedaVideoRecetaHref(titulo: string, videoQuery?: string): string {
-  const q = `${titulo.trim()} ${(videoQuery ?? "").trim()} receta español`.replace(/\s+/g, " ").trim();
+export function busquedaVideoHref(
+  titulo: string,
+  videoQuery?: string,
+  contexto: VideoBusquedaContexto = "receta"
+): string {
+  const q = textoBusquedaVideo(titulo, videoQuery, contexto);
   return `https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`;
+}
+
+/** @deprecated Usa busquedaVideoHref */
+export function busquedaVideoRecetaHref(titulo: string, videoQuery?: string): string {
+  return busquedaVideoHref(titulo, videoQuery, "receta");
 }
