@@ -1,6 +1,10 @@
 import { Link } from "react-router-dom";
 import type { PasoRecorridoNum } from "../lib/recorrido";
 import { PASOS_RECORRIDO_PRINCIPAL } from "../lib/recorrido";
+import { perfilGuardadoEnDispositivo } from "../lib/perfilStorage";
+import { getMercadoActivoParaPlan } from "../lib/mercadoHistorial";
+import { getActivoPerfilId, } from "../lib/perfilStorage";
+import { getSnapshotActivoId } from "../lib/cronogramaHistorial";
 
 type Props = {
   pasoActual: PasoRecorridoNum;
@@ -11,7 +15,14 @@ type Props = {
 };
 
 const pillBase =
-  "inline-flex items-center justify-center rounded-full px-3 py-1.5 text-xs font-semibold transition-all duration-200 sm:text-sm";
+  "inline-flex items-center gap-1.5 justify-center rounded-full px-3 py-1.5 text-xs font-semibold transition-all duration-200 sm:text-sm";
+
+function completadoPaso(paso: PasoRecorridoNum): boolean {
+  if (paso === 1) return perfilGuardadoEnDispositivo();
+  if (paso === 2) return Boolean(getMercadoActivoParaPlan());
+  if (paso === 3) return Boolean(getSnapshotActivoId(getActivoPerfilId()));
+  return false;
+}
 
 export function StepHeader({ pasoActual, titulo, subtitulo }: Props) {
   return (
@@ -23,6 +34,7 @@ export function StepHeader({ pasoActual, titulo, subtitulo }: Props) {
         <nav className="mt-3 flex flex-wrap gap-2" aria-label="Pasos del recorrido principal">
           {PASOS_RECORRIDO_PRINCIPAL.map((p) => {
             const active = p.paso === pasoActual;
+            const done = !active && completadoPaso(p.paso);
             return (
               <Link
                 key={p.paso}
@@ -30,10 +42,13 @@ export function StepHeader({ pasoActual, titulo, subtitulo }: Props) {
                 className={`${pillBase} ${
                   active
                     ? "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md shadow-glow-sm ring-2 ring-emerald-400/35"
+                    : done
+                    ? "border border-emerald-300/90 bg-emerald-50/90 text-emerald-800 shadow-sm hover:bg-emerald-100"
                     : "border border-emerald-200/90 bg-white/90 text-emerald-900 shadow-sm hover:border-teal-300 hover:bg-white hover:shadow"
                 }`}
                 aria-current={active ? "step" : undefined}
               >
+                {done && <span className="text-emerald-600 text-[11px]">✓</span>}
                 <span className="hidden sm:inline">{p.navDesktop}</span>
                 <span className="sm:hidden">{p.navCorto}</span>
               </Link>

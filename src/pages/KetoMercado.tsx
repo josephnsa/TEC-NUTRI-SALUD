@@ -50,11 +50,50 @@ export function KetoMercado() {
   /** IA mercado */
   const [iaMercadoCargando, setIaMercadoCargando] = useState(false);
   const [iaMercadoError, setIaMercadoError] = useState<string | null>(null);
+  const [copiadoLista, setCopiadoLista] = useState(false);
 
   const refreshHistorial = useCallback(() => {
     setHistorial(listarMercadosRealizados());
     setActivoId(getMercadoActivoParaPlan());
   }, []);
+
+  const copiarListaTexto = useCallback(() => {
+    const labelsCopy: Record<string, string> = {
+      proteina: "Proteínas",
+      grasa: "Grasas saludables",
+      verdura: "Verduras",
+      lacteo: "Lácteos",
+      extras: "Extras"
+    };
+    const gruposLocal = new Map<string, typeof items>();
+    items.forEach((it) => {
+      const arr = gruposLocal.get(it.categoria) ?? [];
+      arr.push(it);
+      gruposLocal.set(it.categoria, arr);
+    });
+
+    const lineas: string[] = [
+      `🛒 Lista de compras · ${dias} días · ${personas} persona${personas !== 1 ? "s" : ""}`,
+      ""
+    ];
+    gruposLocal.forEach((list, cat) => {
+      lineas.push(`── ${labelsCopy[cat] ?? cat} ──`);
+      list.forEach((it) => {
+        const nombre = it.nombreCustom?.trim() || it.nombre;
+        const cantidad = `${it.cantidad} ${it.unidad}`;
+        lineas.push(`${it.comprado ? "✓" : "□"} ${nombre} · ${cantidad}`);
+      });
+      lineas.push("");
+    });
+    const comprados = items.filter((i) => i.comprado).length;
+    lineas.push(`Progreso: ${comprados}/${items.length} ítems`);
+    lineas.push("Generado con TEC Nutri Salud 🌿");
+
+    void navigator.clipboard.writeText(lineas.join("\n")).then(() => {
+      setCopiadoLista(true);
+      setTimeout(() => setCopiadoLista(false), 2500);
+    });
+  }, [items, dias, personas]);
 
   useEffect(() => {
     const saved = loadListaLocal();
@@ -310,6 +349,16 @@ export function KetoMercado() {
         <Link to="/cronograma" className="ui-btn-secondary inline-flex items-center justify-center">
           Ver cronograma
         </Link>
+        {items.length > 0 && (
+          <button
+            type="button"
+            onClick={copiarListaTexto}
+            title="Copiar lista completa para compartir por WhatsApp, notas, etc."
+            className={`ui-btn-secondary transition ${copiadoLista ? "border-emerald-300 bg-emerald-50 text-emerald-800" : ""}`}
+          >
+            {copiadoLista ? "¡Lista copiada!" : "📋 Copiar lista"}
+          </button>
+        )}
       </div>
       {msg && (
         <p className="rounded-xl border border-teal-200/80 bg-teal-50/90 px-3 py-2 text-sm text-teal-900 shadow-sm backdrop-blur-sm">
