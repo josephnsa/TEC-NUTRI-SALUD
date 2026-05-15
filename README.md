@@ -27,6 +27,8 @@ npm install
 npm run dev
 ```
 
+Comprobaciones locales: `npm run typecheck`, `npm run test`, `npm run build`.
+
 Copia `.env.example` a `.env` y rellena solo si usarás nube o IA.
 
 ## Supabase (opcional pero recomendado para cuenta Google)
