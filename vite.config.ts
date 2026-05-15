@@ -13,7 +13,7 @@ export default defineConfig({
         id: "./",
         name: "NutriSalud — perfil, mercado y menú",
         short_name: "NutriSalud",
-        description: "Perfil, mercado keto y menú por días en el navegador.",
+        description: "Perfil, lista de mercado por dieta y menú por días (plantillas o IA) en tu navegador.",
         start_url: "./",
         scope: "./",
         theme_color: "#0d9488",

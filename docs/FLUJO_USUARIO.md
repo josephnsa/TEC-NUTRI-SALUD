@@ -10,8 +10,8 @@ Las cantidades del cronograma son **orientativas para 1 persona**; si cocinas pa
 La implementación expone este orden en:
 
 - `src/lib/recorrido.ts` — definición única de pasos y rutas.
-- `src/components/StepHeader.tsx` — franja "paso X de 3" en Mi plan, Mercado y Cronograma.
-- `src/components/Layout.tsx` — navegación con **Resumen** (`/#/mi-espacio`) visible antes del orden Datos → Mercado → Menú (…).
+- `src/components/StepHeader.tsx` — franja "paso X de 3" en Mi plan, Mi mercado y Cronograma.
+- `src/components/Layout.tsx` — navegación con **Resumen** (`/#/mi-espacio`) visible antes del orden Datos → Mi mercado → Menú (…).
 
 ---
 

@@ -143,7 +143,7 @@ María quiere comer mejor según **su tipo de dieta** (cetogénica, mediterráne
     *quiero* que "Generar lista base" me entregue alimentos de MI tipo de dieta con cantidades coherentes  
     *para* no recibir siempre una **lista plantilla equivocada** (p. ej. solo keto) que no corresponde a lo que como.  
     **Criterios de aceptación:**  
-    - Hay catálogos distintos para dieta keto/lowcarb, mediterránea y balanceada.  
+    - Hay **catálogos distintos** por `estiloDieta` del perfil (**cetogénica**, **mediterránea**, **balanceada**) vía `generarListaBase`.
     - La función `generarListaBase(dias, personas, estiloDieta)` selecciona el catálogo correcto.  
     - El botón "Generar con IA ✦" aparece **primero**; "Generar lista base" aparece después.  
     - Las cantidades base se calculan multiplicando `basePorPersonaDia × días × personas`.
@@ -153,7 +153,7 @@ María quiere comer mejor según **su tipo de dieta** (cetogénica, mediterráne
     *quiero* descargar mi lista de compras como un PDF con tabla detallada  
     *para* llevarlo impreso al supermercado o compartirlo.  
     **Criterios de aceptación:**  
-    - Botón "📄 Descargar PDF" visible en KetoMercado cuando hay ítems.  
+    - Botón "📄 Descargar PDF" visible en Mi mercado (`KetoMercado.tsx`) cuando hay ítems.  
     - PDF muestra: nombre/perfil, tipo de dieta, días/personas, tabla agrupada por categoría (ítem, cantidad, unidad, estado comprado/pendiente, origen IA/manual/base).  
     - Se genera abriendo una ventana de impresión formateada (sin dependencias externas).
 

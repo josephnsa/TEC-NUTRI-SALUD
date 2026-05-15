@@ -6,7 +6,7 @@ Documento **estratégico**: describe cómo debe evolucionar la experiencia para 
 
 ## 1. Visión de producto (estado deseado)
 
-La usuaria debe sentir que tiene **un solo centro**: su **perfil**, desde donde entiende qué está pasando (quién es, qué compró, qué plan está comiendo esta semana). Las pantallas actuales (Mercado, Mi plan, Cronograma, Asistente) se mantienen como **capacidades**, pero la información **no debe repetirse** sin función; cada vista debe tener **un rol claro** en el recorrido.
+La usuaria debe sentir que tiene **un solo centro**: su **perfil**, desde donde entiende qué está pasando (quién es, qué compró, qué plan está comiendo esta semana). Las pantallas actuales (Mi mercado, Mi plan, Cronograma, Asistente) se mantienen como **capacidades**, pero la información **no debe repetirse** sin función; cada vista debe tener **un rol claro** en el recorrido.
 
 **Principios:**
 
@@ -15,7 +15,7 @@ La usuaria debe sentir que tiene **un solo centro**: su **perfil**, desde donde 
 | **Un perfil, muchas decisiones** | Datos corporales y gustos son **estables**; mercados y cronogramas son **versiones en el tiempo** que cuelgan del usuario. |
 | **Varios mercados** | Cada compra guardada es una **“instantánea”** con fecha y etiqueta opcional; puede haber varias vivas en historial, con una marcada como **activa para el plan**. |
 | **Varios cronogramas** | Cada combinación “días + modo + fuente (plantillas / IA) + mercado de referencia” puede guardarse como **plan nombrado** (“Semana 12 mayo”, “Vacaciones”), no solo como vista efímera en pantalla. |
-| **Flujo estratégico** | Orden mental: **Perfil → Mercado (opcional pero recomendado) → Cronograma → Consultas (Asistente)**; Belleza y cuenta como **satélites**. |
+| **Flujo estratégico** | Orden mental: **Perfil → Mi mercado (opcional pero recomendado) → Cronograma → Consultas (Asistente)**; Belleza y cuenta como **satélites**. |
 | **Limpieza** | Misma acción no se explica tres veces en tres pantallas; **banner de flujo** solo donde ayuda al primer uso o tras onboarding vacío. |
 | **Responsive + PWA** | Misma lógica en móvil y escritorio; navegación táctil, jerarquía tipográfica clara, sin tablas anchas obligatorias; instalación como app opcional ya alineada con PWA. |
 
@@ -25,7 +25,7 @@ La usuaria debe sentir que tiene **un solo centro**: su **perfil**, desde donde 
 
 ### 2.1 Lo que ya cumple el MVP
 
-- Lista keto por días y personas, marcado de comprados, guardado de mercado con **historial** y **uno activo** para el plan.
+- Lista de compras por días/personas y tipo de dieta del perfil, marcado de comprados, guardado de mercado con **historial** y **uno activo** para el plan.
 - Perfil local/remoto (Supabase) con datos para priorizar recetas.
 - Cronograma con modos perfil / mercado / mixto, plantillas y agente IA (Gemini), búsqueda YouTube por plato.
 - Flujo documentado en `FLUJO_USUARIO.md` y banners en UI.
@@ -35,7 +35,7 @@ La usuaria debe sentir que tiene **un solo centro**: su **perfil**, desde donde 
 1. **Perfil como “lugar” visible**: hoy el perfil vive en Mi plan mezclado con cronograma; la usuaria no tiene una **resumen-dashboard** que diga: mercado activo, último cronograma generado, próximo paso sugerido.
 2. **Varios mercados como concepto de negocio explícito**: el historial existe, pero no hay narrativa fuerte de **“mis compras”** con rename, notas, ni comparación rápida (“esta semana vs la anterior”).
 3. **Varios cronogramas**: hoy el cronograma generado (sobre todo IA) es **volátil**; si recarga o cambia filtros, pierde la versión anterior salvo que la usuaria haga captura externa. Negocio pediría **versiones guardadas** ligadas a perfil y opcionalmente a un mercado concreto.
-4. **Redundancia**: Mercado, Mi plan y Cronograma repiten bloques similares (mercado activo, modo, días). Mejora: **componentes únicos** y **una sola fuente de verdad** en UI copy.
+4. **Redundancia**: Mi mercado, Mi plan y Cronograma repiten bloques similares (mercado activo, modo, días). Mejora: **componentes únicos** y **una sola fuente de verdad** en UI copy.
 5. **Dinamismo interpretativo**: “Dinámico” aquí significa que la app **reacciona al estado** (sin mercado → CTA ir al mercado; sin cronograma guardado → sugerir generar; con IA sin clave → degradación clara). Eso es **lógica de producto** más que animaciones.
 
 ---
@@ -104,8 +104,8 @@ María usa el móvil en el supermercado y el portátil el domingo. No quiere lee
 
 **Mejoras de negocio:**
 
-- **Jerarquía de navegación**: nivel 1 — Inicio / Mi espacio, Mercado, Plan & Cronograma (o fusionar en “Menú” con subpasos), Belleza, Asistente, Cuenta.
-- **Eliminar redundancia**: un solo bloque “Mercado activo” reutilizable; Mi plan se enfoca en **datos personales + preferencias de generación**; Cronograma en **visualización y generación** de menús.
+- **Jerarquía de navegación**: nivel 1 — Inicio / Mi espacio, **Mi mercado**, Plan & Cronograma (o fusionar en “Menú” con subpasos), Belleza, Asistente, Cuenta.
+- **Eliminar redundancia**: un solo bloque **“Mercado activo”** (lista de compras) reutilizable; Mi plan se enfoca en **datos personales + preferencias de generación**; Cronograma en **visualización y generación** de menús.
 - **Microcopy único**: mensajes legales/orientativos una vez por pantalla o en modal “ℹ️”.
 - **Estados vacíos guiados**: ilustración o texto corto + CTA (“Aún no tienes mercados guardados → Crear lista”).
 - **PWA**: mantener manifest y SW; revisar que actualización de versión no deje usuarios en JS viejo sin mensaje (“Hay una nueva versión — actualizar”).
@@ -113,7 +113,7 @@ María usa el móvil en el supermercado y el portátil el domingo. No quiere lee
 **Criterios de aceptación:**
 
 - Lighthouse / uso manual: formularios y botones usables con pulgar en viewport típico móvil.
-- Flujo principal comprueba sin pérdida: Mercado → Guardar → (opcional Mi espacio) → Cronograma → Guardar plan.
+- Flujo principal comprueba sin pérdida: Mi mercado → Guardar → (opcional Mi espacio) → Cronograma → Guardar plan.
 
 ---
 

@@ -7,7 +7,7 @@ Documento vivo (mayo 2026). Complementa `MEJORAS_NEGOCIO_Y_PRODUCTO.md` (Épica 
 ## Objetivos de producto
 
 1. **Persistir lo que más importa** en Supabase **sin salir del plan gratuito**: priorizar pocas tablas compactas / columnas JSONB con RLS por `auth.uid()`.
-2. **Mercado más flexible**: alimentos “extra” fuera del generador keto base, igualmente persistibles en el snapshot del mercado.
+2. **Mercado más flexible**: alimentos “extra” fuera del generador de lista base (plantillas por tipo de dieta / IA), igualmente persistibles en el snapshot del mercado.
 3. **Menú nutricionalmente coherente**: considerar **todos** los ítems del mercado activo (incluidos extras), objetivos orientativos (calorías, macros) y texto claro sobre **cantidades orientativas** hacia meta de peso (siempre como **orientación**, no prescripción médica).
 4. **Experiencia de receta rica**: **video reproducible dentro de la app** (iframe embed) donde la licencia/ToS lo permita; fichas de plato con **kcal / grasa / carbos / proteína** (estimaciones) y **presupuesto diario restante**.
 5. **Ingeniería**: código modular, tipos fuertes, comentarios mínimos útiles donde la lógica nutricional no sea obvia.
