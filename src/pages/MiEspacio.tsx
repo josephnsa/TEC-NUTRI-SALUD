@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -31,6 +31,7 @@ import {
   snapshotMasReciente
 } from "../lib/cronogramaHistorial";
 import { pullCloudSnapshots } from "../lib/snapshotsRemote";
+import { ADJUNTOS_DIA_EVENT, contarAdjuntosGlobal } from "../lib/diaAdjuntosIDB";
 
 export function MiEspacio() {
   const { user, isConfigured } = useAuth();
@@ -43,6 +44,15 @@ export function MiEspacio() {
   const [guardandoClave, setGuardandoClave] = useState(false);
   const [msgSyncNube, setMsgSyncNube] = useState<string | null>(null);
   const [syncNubeCargando, setSyncNubeCargando] = useState(false);
+  const [idbAdjuntos, setIdbAdjuntos] = useState<{
+    diasConDatos: number;
+    nImg: number;
+    nVideo: number;
+  } | null>(null);
+
+  const refreshIdbAdjuntos = useCallback(() => {
+    void contarAdjuntosGlobal().then(setIdbAdjuntos);
+  }, []);
 
   useEffect(() => {
     const sync = () => setTick((t) => t + 1);
@@ -57,6 +67,12 @@ export function MiEspacio() {
       window.clearInterval(id);
     };
   }, []);
+
+  useEffect(() => {
+    refreshIdbAdjuntos();
+    window.addEventListener(ADJUNTOS_DIA_EVENT, refreshIdbAdjuntos);
+    return () => window.removeEventListener(ADJUNTOS_DIA_EVENT, refreshIdbAdjuntos);
+  }, [refreshIdbAdjuntos]);
 
   const perfil = loadPerfilLocal();
   const tienePerfilLocal = perfilGuardadoEnDispositivo();
@@ -367,6 +383,17 @@ export function MiEspacio() {
           (perfiles, mercado, historial de menús, listas). Las fotos y vídeos del cronograma siguen solo en el
           navegador (IndexedDB).
         </p>
+        {idbAdjuntos && idbAdjuntos.diasConDatos > 0 && (
+          <p className="mt-2 rounded-lg border border-amber-200/90 bg-amber-50/80 px-3 py-2 text-xs text-amber-950">
+            <strong>Cronograma · tu registro (IndexedDB):</strong> {idbAdjuntos.diasConDatos} día
+            {idbAdjuntos.diasConDatos !== 1 ? "s" : ""} con datos
+            {idbAdjuntos.nImg + idbAdjuntos.nVideo > 0
+              ? ` · ${idbAdjuntos.nImg} foto${idbAdjuntos.nImg !== 1 ? "s" : ""} · ${idbAdjuntos.nVideo} vídeo${idbAdjuntos.nVideo !== 1 ? "s" : ""}`
+              : " (notas o progreso, sin fotos/vídeo)"}
+            . <strong>Eso no va dentro del JSON</strong> de respaldo: sigue solo en este navegador; con cuenta y Storage
+            parte del contenido puede estar copiado a la nube si lo subiste desde el detalle del día.
+          </p>
+        )}
         <p className="mt-1 text-xs text-slate-500">Claves detectadas: {contarClavesRespaldo()}</p>
         <div className="mt-4 flex flex-wrap gap-2">
           <button
@@ -401,6 +428,7 @@ export function MiEspacio() {
                   if (r.ok) {
                     setEstadoImport(`Listo: se aplicaron ${r.claves} clave(s). Recarga la página si algo no se actualiza.`);
                     setTick((t) => t + 1);
+                    refreshIdbAdjuntos();
                   } else setEstadoImport(r.error);
                 } catch {
                   setEstadoImport("Error al leer el archivo.");

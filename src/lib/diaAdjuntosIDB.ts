@@ -321,3 +321,52 @@ export async function listResumenAdjuntosMes(
   }
   return out;
 }
+
+/** Conteo global de días con registro adjunto y totales de medios (todos los perfiles). */
+export async function contarAdjuntosGlobal(): Promise<{
+  diasConDatos: number;
+  nImg: number;
+  nVideo: number;
+}> {
+  const db = await openDb();
+  const empty = { diasConDatos: 0, nImg: 0, nVideo: 0 };
+  if (!db) return empty;
+  try {
+    const rows = await new Promise<unknown[]>((resolve, reject) => {
+      const tx = db.transaction(STORE, "readonly");
+      const r = tx.objectStore(STORE).getAll();
+      r.onsuccess = () => resolve((r.result as unknown[]) ?? []);
+      r.onerror = () => reject(r.error);
+    });
+    let diasConDatos = 0;
+    let nImg = 0;
+    let nVideo = 0;
+    for (const row of rows) {
+      if (!row || typeof row !== "object") continue;
+      const rec = row as Partial<DiaAdjuntosRecord>;
+      const medias = Array.isArray(rec.medias) ? rec.medias : [];
+      let rowImg = 0;
+      let rowVideo = 0;
+      for (const m of medias) {
+        if (!m || typeof m !== "object") continue;
+        const k = (m as { kind?: string }).kind;
+        if (k === "image") rowImg++;
+        else if (k === "video") rowVideo++;
+      }
+      const progress = Array.isArray(rec.progress) ? rec.progress : [];
+      const progOk = progress.some(Boolean);
+      const nota = typeof rec.nota === "string" ? rec.nota.trim() : "";
+      const seg = rec.seguimientoPlan;
+      const segOk = seg === "si" || seg === "parcial" || seg === "no";
+      const tieneRegistroExtra = progOk || Boolean(nota) || segOk;
+      if (rowImg || rowVideo || tieneRegistroExtra) {
+        diasConDatos++;
+        nImg += rowImg;
+        nVideo += rowVideo;
+      }
+    }
+    return { diasConDatos, nImg, nVideo };
+  } catch {
+    return empty;
+  }
+}
