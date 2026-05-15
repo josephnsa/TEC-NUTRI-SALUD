@@ -198,6 +198,23 @@ export function MiEspacio() {
               {snapshotMercado.nombre && (
                 <p className="mt-2 font-semibold text-teal-950">{snapshotMercado.nombre}</p>
               )}
+              {(() => {
+                const diasTranscurridos = Math.max(
+                  0,
+                  Math.round((Date.now() - new Date(snapshotMercado.createdAt).getTime()) / 86400000)
+                );
+                const color =
+                  diasTranscurridos <= 2
+                    ? "bg-emerald-100 text-emerald-800"
+                    : diasTranscurridos <= 7
+                    ? "bg-amber-100 text-amber-800"
+                    : "bg-red-100 text-red-800";
+                return (
+                  <span className={`mt-1.5 inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold ${color}`}>
+                    hace {diasTranscurridos} día{diasTranscurridos !== 1 ? "s" : ""}
+                  </span>
+                );
+              })()}
               <ul className={`${snapshotMercado.nombre ? "mt-1" : "mt-3"} space-y-1 text-sm text-slate-800`}>
                 <li>
                   <span className="text-slate-500">Guardado:</span>{" "}
@@ -231,14 +248,27 @@ export function MiEspacio() {
               {snapCron.titulo && (
                 <p className="mt-2 font-semibold text-teal-950">{snapCron.titulo}</p>
               )}
+              {(() => {
+                const diasTranscurridos = Math.max(
+                  0,
+                  Math.round((Date.now() - new Date(snapCron.createdAt).getTime()) / 86400000)
+                );
+                const color =
+                  diasTranscurridos <= 2
+                    ? "bg-violet-100 text-violet-800"
+                    : diasTranscurridos <= 7
+                    ? "bg-amber-100 text-amber-800"
+                    : "bg-red-100 text-red-800";
+                return (
+                  <span className={`mt-1.5 inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold ${color}`}>
+                    hace {diasTranscurridos} día{diasTranscurridos !== 1 ? "s" : ""}
+                  </span>
+                );
+              })()}
               <ul className="mt-2 space-y-1 text-sm text-slate-800">
                 <li>
                   <span className="text-slate-500">Guardado:</span>{" "}
                   {new Date(snapCron.createdAt).toLocaleString("es", { dateStyle: "short", timeStyle: "short" })}
-                  {" · "}
-                  <span className="text-slate-500">
-                    hace {Math.max(0, Math.round((Date.now() - new Date(snapCron.createdAt).getTime()) / 86400000))} día(s)
-                  </span>
                 </li>
                 <li>
                   <span className="text-slate-500">Fuente:</span>{" "}

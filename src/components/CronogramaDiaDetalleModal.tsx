@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   sumarMacrosComidaDia,
@@ -27,6 +27,34 @@ import { eliminarEvidenciaRemota, subirEvidenciaBlob } from "../lib/mediaRemoteS
 import { useAuth } from "../context/AuthContext";
 
 type MacrosSlot = ReturnType<typeof sumarMacrosPlatoSlot>;
+
+function CopyButton({ texto }: { texto: string }) {
+  const [copiado, setCopiado] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const copiar = () => {
+    void navigator.clipboard.writeText(texto).then(() => {
+      setCopiado(true);
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => setCopiado(false), 2000);
+    });
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={copiar}
+      title="Copiar receta"
+      className={`shrink-0 rounded-lg border px-2 py-1 text-[10px] font-semibold transition ${
+        copiado
+          ? "border-emerald-300/80 bg-emerald-50 text-emerald-800"
+          : "border-slate-200/80 bg-white/90 text-slate-500 hover:border-teal-300 hover:text-teal-800"
+      }`}
+    >
+      {copiado ? "¡Copiado!" : "Copiar"}
+    </button>
+  );
+}
 
 function MacrosPorComidaDistribuidos({
   etiquetaPrincipal,
@@ -391,7 +419,10 @@ export function CronogramaDiaDetalleModal({
                           {porTxt ?? "1 porción"}
                         </span>
                       </div>
-                      <p className="mt-3 font-display text-base font-semibold leading-snug text-slate-900">{c.titulo}</p>
+                      <div className="mt-3 flex items-start justify-between gap-2">
+                        <p className="font-display text-base font-semibold leading-snug text-slate-900">{c.titulo}</p>
+                        <CopyButton texto={`${c.titulo}\n\n${c.receta}`} />
+                      </div>
                       <p className="mt-2 whitespace-pre-wrap text-xs leading-relaxed text-slate-600">{c.receta}</p>
                       {muestraMacros ? (
                         <MacrosPorComidaDistribuidos

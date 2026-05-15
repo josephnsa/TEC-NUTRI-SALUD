@@ -190,6 +190,13 @@ export function KetoMercado() {
     e.target.value = "";
   };
 
+  const eliminarItem = (id: string, esManual: boolean) => {
+    if (!esManual && !window.confirm("¿Quitar este ítem de la lista?")) return;
+    const next = items.filter((it) => it.id !== id);
+    persist(next, dias, personas);
+    setMsg(esManual ? "Ítem extra eliminado." : "Ítem eliminado de la lista.");
+  };
+
   const agregarItemManual = () => {
     const nome = extraNombre.trim();
     if (nome.length < 2) {
@@ -537,10 +544,10 @@ export function KetoMercado() {
                     type="checkbox"
                     checked={it.comprado}
                     onChange={() => toggle(it.id)}
-                    className="mt-1 h-5 w-5 rounded border-emerald-300 text-teal-600 focus:ring-teal-500/30"
+                    className="mt-1 h-5 w-5 shrink-0 rounded border-emerald-300 text-teal-600 focus:ring-teal-500/30"
                     aria-label={`Marcar ${it.nombre}`}
                   />
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <p
                         className={`font-medium ${it.comprado ? "text-slate-500 line-through" : "text-slate-900"}`}
@@ -558,6 +565,17 @@ export function KetoMercado() {
                     </p>
                     {it.nota && <p className="mt-1 text-xs text-amber-800">{it.nota}</p>}
                   </div>
+                  <button
+                    type="button"
+                    aria-label={`Eliminar ${it.nombre}`}
+                    onClick={() => eliminarItem(it.id, it.origen === "manual")}
+                    className="shrink-0 rounded-lg p-1.5 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
+                    title={it.origen === "manual" ? "Quitar ítem extra" : "Quitar ítem de la lista"}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+                      <path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z" clipRule="evenodd" />
+                    </svg>
+                  </button>
                 </li>
               ))}
             </ul>
