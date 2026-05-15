@@ -323,7 +323,8 @@ export async function generarCronogramaIA(
   perfil: PerfilUsuario,
   dias: number,
   mercadoItems: ListaItem[] | undefined,
-  modo: ModoCronograma
+  modo: ModoCronograma,
+  onProgress?: (hecho: number, total: number, fase: "generando" | "enriqueciendo") => void
 ): Promise<DiaPlan[]> {
   if (!key) {
     throw new Error(
@@ -333,6 +334,8 @@ export async function generarCronogramaIA(
   const total = Math.min(30, Math.max(3, Math.round(dias)));
   const partes: DiaPlan[] = [];
   let hecho = 0;
+
+  onProgress?.(0, total, "generando");
 
   while (hecho < total) {
     const chunk = Math.min(CHUNK_DIAS, total - hecho);
@@ -344,6 +347,7 @@ export async function generarCronogramaIA(
         partes.push(...slice);
         hecho += chunk;
         chunkOk = true;
+        onProgress?.(hecho, total, "generando");
         break;
       } catch (e) {
         if (m === GEMINI_MODEL_IDS.length - 1) {
@@ -360,6 +364,7 @@ export async function generarCronogramaIA(
     throw new Error(`IA devolvió ${partes.length} días en lugar de ${total}.`);
   }
 
+  onProgress?.(total, total, "enriqueciendo");
   const conVideos = await enriquecerYoutubeFaltantes(partes);
   return conVideos.map((p, i) => ({ ...p, dia: i + 1 }));
 }

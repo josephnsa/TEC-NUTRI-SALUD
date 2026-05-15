@@ -9,6 +9,7 @@ import { Login } from "./pages/Login";
 import { ActualizarClave } from "./pages/ActualizarClave";
 import { Agente } from "./pages/Agente";
 import { MiEspacio } from "./pages/MiEspacio";
+import { NotFound } from "./pages/NotFound";
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
         <Route path="/agente" element={<Agente />} />
         <Route path="/login" element={<Login />} />
         <Route path="/actualizar-clave" element={<ActualizarClave />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Layout>
   );

@@ -570,9 +570,25 @@ export function KetoMercado() {
         {Array.from(grupos.entries()).map(([cat, list]) => {
           const listaFiltrada = soloPendientes ? list.filter((i) => !i.comprado) : list;
           if (listaFiltrada.length === 0) return null;
+          const compradosCat = list.filter((i) => i.comprado).length;
+          const totalCat = list.length;
+          const todosComprados = compradosCat === totalCat;
           return (
           <section key={cat}>
-            <h2 className="ui-section-title mb-2 text-gradient-brand">{labels[cat] ?? cat}</h2>
+            <div className="mb-2 flex items-center gap-2">
+              <h2 className="ui-section-title text-gradient-brand">{labels[cat] ?? cat}</h2>
+              <span
+                className={`rounded-full px-2 py-0.5 text-[10px] font-bold tabular-nums ${
+                  todosComprados
+                    ? "bg-emerald-100 text-emerald-800"
+                    : compradosCat > 0
+                    ? "bg-amber-100 text-amber-800"
+                    : "bg-slate-100 text-slate-600"
+                }`}
+              >
+                {compradosCat}/{totalCat}
+              </span>
+            </div>
             <ul className="space-y-2">
               {listaFiltrada.map((it) => (
                 <li

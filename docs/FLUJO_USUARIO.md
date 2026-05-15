@@ -89,20 +89,24 @@ La app es instalable como PWA. Cuando hay una nueva versión del service worker 
 - El prompt recibe **toda la lista del mercado con cantidades y unidades** (no solo los comprados); la instrucción varía según modo: mercado activo prioriza comprados estrictamente, mixto combina, perfil usa la lista como despensa probable.
 - Tras recibir la respuesta principal, una **segunda pasada** pide IDs de YouTube para los slots sin vídeo, verifica cada ID cargando la miniatura real (`i.ytimg.com`) y solo asigna los que confirman.
 - Ver contrato en `src/lib/recipesGemini.ts` y plan **`docs/PLAN_MEJORAS_FASE3_NUTRICION_SUPABASE_UI.md`**.
-- Ver contrato en `src/lib/recipesGemini.ts` y plan **`docs/PLAN_MEJORAS_FASE3_NUTRICION_SUPABASE_UI.md`**.
 
 ---
 
-## Evolución Fase 3 (ejecución inmediata en roadmap)
+## Mejoras UX implementadas (mayo 2026)
 
-Sin cambiar el orden **datos → mercado → cronograma**, las siguientes mejoras quedaron documentadas para implementarse en PR pequeños:
+Mejoras adicionales sobre el flujo base, sin cambiar el orden datos → mercado → cronograma:
 
-| Qué cambia para la usuaria | Documento fuente |
-|----------------------------|------------------|
-| Sincronizar en cuenta (Supabase gratis) snapshots clave de mercados y planes + objetivos nutricionales opcionales | `PLAN_MEJORAS_FASE3_…`, Épica F en `MEJORAS_NEGOCIO_Y_PRODUCTO.md` |
-| **Ítems extra** agregados a mano al mercado guardado | Idem · historias 13–14 en `USER_STORIES.md` |
-| Menú con **toda** la despensa, **macros** y **saldo/resto diario orientativo** (siempre disclaimers) | Idem |
-| Video **dentro de la página** donde aplique | Idem · historia 15–16 |
+| Pantalla | Mejora |
+|----------|--------|
+| **Cronograma** | Barra de progreso durante generación IA ("Generando días… X/Y") con porcentaje; botón **Reintentar** al fallar. Botón **Copiar plan** (texto del cronograma completo al portapapeles). Estado vacío guiado cuando no hay plan activo. Badges por día (kcal · proteína · grasa · IA · vídeo). |
+| **Cronograma — modal día** | Botón **Copiar** en cada receta. Macro badges por comida. |
+| **Mercado keto** | Contador **X/Y** comprados por sección (verde = todo, ámbar = parcial, gris = ninguno). Eliminación individual de ítems. Edición en línea de cantidades. Filtro "Solo pendientes". |
+| **Asistente** | Respuestas en Markdown (encabezados, listas, negrita). Chips de sugerencias rápidas. Historial de preguntas recientes en `localStorage`. |
+| **Mis datos (Mi plan)** | Indicador de completitud del perfil (barra + nivel: Básico / Recomendado / Detallado). |
+| **Mi espacio** | CTA "Siguiente paso" como banner destacado con gradiente en la parte superior. Badges de antigüedad (verde/ámbar/rojo) en mercado y plan activo. |
+| **Belleza** | Barra de navegación sticky con anclas a cada categoría. |
+| **Inicio de sesión** | Botón mostrar/ocultar contraseña. |
+| **404** | Página propia con CTA al inicio y al cronograma. |
 
 ---
 
@@ -113,4 +117,4 @@ Sin cambiar el orden **datos → mercado → cronograma**, las siguientes mejora
 
 ---
 
-*Actualizado: mayo 2026 — fases 2.0–2.5b y épicas A–F; próximo hito técnico: `docs/PLAN_MEJORAS_FASE3_NUTRICION_SUPABASE_UI.md`.*
+*Actualizado: mayo 2026 — fases 2.0–3.x, épicas A–F y mejoras UX completadas (ver tabla arriba).*

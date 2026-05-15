@@ -127,6 +127,7 @@ export function Cronograma() {
   const [vistaCronograma, setVistaCronograma] = useState<"plantillas" | "ia">("plantillas");
   const [iaCargando, setIaCargando] = useState(false);
   const [iaError, setIaError] = useState<string | null>(null);
+  const [iaProgreso, setIaProgreso] = useState<{ hecho: number; total: number; fase: "generando" | "enriqueciendo" } | null>(null);
   const [perfilContextoId, setPerfilContextoId] = useState<string | null>(null);
   const [layoutDias, setLayoutDias] = useState<"lista" | "calendario">("lista");
   const [mesCal, setMesCal] = useState(() => {
@@ -475,8 +476,15 @@ export function Cronograma() {
     setIaCargando(true);
     setIaError(null);
     setStatus(null);
+    setIaProgreso({ hecho: 0, total: diasCronograma, fase: "generando" });
     try {
-      const plan = await generarCronogramaIA(perfil, diasCronograma, itemsMercadoActivo, modoCronograma);
+      const plan = await generarCronogramaIA(
+        perfil,
+        diasCronograma,
+        itemsMercadoActivo,
+        modoCronograma,
+        (hecho, total, fase) => setIaProgreso({ hecho, total, fase })
+      );
       setCronogramaIa(plan);
       setVistaCronograma("ia");
       let estatusIa = `IA: ${plan.length} día(s). Macros y vídeo en el detalle; la lista del mercado (cantidades y comprados según modo) se envía al modelo.`;
@@ -507,6 +515,7 @@ export function Cronograma() {
       setIaError(e instanceof Error ? e.message : "Error IA.");
     } finally {
       setIaCargando(false);
+      setIaProgreso(null);
     }
   };
 
@@ -842,7 +851,41 @@ export function Cronograma() {
             .
           </p>
         )}
-        {iaError && <p className="md:col-span-2 text-sm text-red-700">{iaError}</p>}
+        {iaCargando && iaProgreso && (
+          <div className="md:col-span-2 space-y-1.5">
+            <div className="flex items-center justify-between gap-2 text-xs text-violet-900">
+              <span className="flex items-center gap-1.5 font-medium">
+                <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-violet-600 border-t-transparent" />
+                {iaProgreso.fase === "enriqueciendo"
+                  ? "Buscando vídeos de recetas…"
+                  : iaProgreso.hecho === 0
+                  ? "Iniciando generación…"
+                  : `Generando días… ${iaProgreso.hecho} / ${iaProgreso.total}`}
+              </span>
+              <span className="tabular-nums text-violet-700">
+                {Math.round((iaProgreso.hecho / iaProgreso.total) * 100)} %
+              </span>
+            </div>
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-violet-100">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-violet-500 to-teal-500 transition-all duration-500"
+                style={{ width: `${Math.max(4, Math.round((iaProgreso.hecho / iaProgreso.total) * 100))}%` }}
+              />
+            </div>
+          </div>
+        )}
+        {iaError && (
+          <div className="md:col-span-2 flex items-start justify-between gap-3 rounded-xl border border-red-200/80 bg-red-50/90 px-3 py-2">
+            <p className="text-sm text-red-700">{iaError}</p>
+            <button
+              type="button"
+              className="shrink-0 rounded-lg border border-red-200/80 bg-white/90 px-2.5 py-1 text-xs font-semibold text-red-700 transition hover:bg-red-100"
+              onClick={() => void cargarRecetasIA()}
+            >
+              Reintentar
+            </button>
+          </div>
+        )}
       </div>
 
       <section className="ui-card">
