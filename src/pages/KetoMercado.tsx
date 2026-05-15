@@ -489,6 +489,36 @@ export function KetoMercado() {
         </section>
       )}
 
+      {items.length > 0 && (() => {
+        const total = items.length;
+        const comprados = items.filter((i) => i.comprado).length;
+        const pct = total === 0 ? 0 : Math.round((comprados / total) * 100);
+        const completo = comprados === total;
+        return (
+          <div className="ui-card-muted space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="font-semibold text-teal-950">
+                {completo ? "¡Lista completa!" : "Progreso de compra"}
+              </span>
+              <span className="tabular-nums font-mono text-sm font-bold text-teal-900">
+                {comprados}/{total} ítems
+              </span>
+            </div>
+            <div className="relative h-3 w-full overflow-hidden rounded-full bg-emerald-100/80">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${completo ? "bg-gradient-to-r from-emerald-500 to-teal-400" : "bg-gradient-to-r from-teal-600 to-emerald-500"}`}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+            {comprados > 0 && !completo && (
+              <p className="text-[11px] text-slate-500">
+                {total - comprados} ítem{total - comprados !== 1 ? "s" : ""} pendiente{total - comprados !== 1 ? "s" : ""}
+              </p>
+            )}
+          </div>
+        );
+      })()}
+
       <div className="space-y-8">
         {Array.from(grupos.entries()).map(([cat, list]) => (
           <section key={cat}>

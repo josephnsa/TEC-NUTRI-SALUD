@@ -819,6 +819,76 @@ export function Cronograma() {
         </ul>
       </section>
 
+      {(() => {
+        if (!diasConFecha.length) return null;
+        const totalesDias = diasConFecha.map((d) => sumarMacrosComidaDia(d.comidas));
+        const diasConKcal = totalesDias.filter((t) => t.kcal > 0);
+        if (diasConKcal.length === 0) return null;
+        const n = diasConKcal.length;
+        const avg = diasConKcal.reduce(
+          (acc, t) => ({
+            kcal: acc.kcal + t.kcal,
+            proteinG: acc.proteinG + t.proteinG,
+            fatG: acc.fatG + t.fatG,
+            carbG: acc.carbG + t.carbG,
+            fiberG: acc.fiberG + t.fiberG
+          }),
+          { kcal: 0, proteinG: 0, fatG: 0, carbG: 0, fiberG: 0 }
+        );
+        const chip =
+          "flex min-w-[4.5rem] flex-1 flex-col items-center justify-center rounded-xl border px-2.5 py-2 text-center shadow-sm backdrop-blur-sm";
+        return (
+          <section className="rounded-2xl border border-violet-200/70 bg-gradient-to-br from-violet-50/70 via-white/95 to-fuchsia-50/30 p-4 shadow-md shadow-violet-900/5 backdrop-blur-sm">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="font-display text-sm font-semibold text-violet-950">
+                Macros IA · promedio diario
+              </h2>
+              <span className="text-[10px] font-medium text-slate-400">
+                orientativo, {n} día{n !== 1 ? "s" : ""} con datos
+              </span>
+            </div>
+            <div className="motion-safe:animate-fade-up mt-3 flex flex-wrap gap-2">
+              <div className={`${chip} border-amber-200/90 bg-gradient-to-br from-amber-50 via-white to-amber-50/40`}>
+                <span className="text-[9px] font-bold uppercase tracking-wider text-amber-900/85">Calorías</span>
+                <span className="font-mono text-base font-bold tabular-nums text-amber-950">~{Math.round(avg.kcal / n)}</span>
+                <span className="text-[9px] text-amber-800/90">kcal/día</span>
+              </div>
+              {avg.proteinG > 0 && (
+                <div className={`${chip} border-sky-200/90 bg-gradient-to-br from-sky-50 via-white to-cyan-50/40`}>
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-sky-900/85">Proteína</span>
+                  <span className="font-mono text-base font-bold tabular-nums text-sky-950">{(avg.proteinG / n).toFixed(0)}</span>
+                  <span className="text-[9px] text-sky-800/90">g/día</span>
+                </div>
+              )}
+              {avg.fatG > 0 && (
+                <div className={`${chip} border-violet-200/90 bg-gradient-to-br from-violet-50 via-white to-fuchsia-50/30`}>
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-violet-900/85">Grasa</span>
+                  <span className="font-mono text-base font-bold tabular-nums text-violet-950">{(avg.fatG / n).toFixed(0)}</span>
+                  <span className="text-[9px] text-violet-800/90">g/día</span>
+                </div>
+              )}
+              {avg.carbG > 0 && (
+                <div className={`${chip} border-emerald-300/85 bg-gradient-to-br from-emerald-50 via-white to-teal-50/35`}>
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-900/85">Carbos</span>
+                  <span className="font-mono text-base font-bold tabular-nums text-emerald-950">{(avg.carbG / n).toFixed(0)}</span>
+                  <span className="text-[9px] text-emerald-800/90">g/día</span>
+                </div>
+              )}
+              {avg.fiberG > 0 && (
+                <div className={`${chip} border-lime-200/90 bg-gradient-to-br from-lime-50/90 via-white to-green-50/25`}>
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-lime-900/85">Fibra</span>
+                  <span className="font-mono text-base font-bold tabular-nums text-lime-950">{(avg.fiberG / n).toFixed(0)}</span>
+                  <span className="text-[9px] text-lime-800/90">g/día</span>
+                </div>
+              )}
+            </div>
+            <p className="mt-2 text-[10px] text-slate-400">
+              Estimaciones orientativas generadas por IA · no sustituyen asesoría nutricional profesional.
+            </p>
+          </section>
+        );
+      })()}
+
       <section className="space-y-4" id="lista-cronograma">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <h2 className="ui-section-title text-gradient-brand">Días y recetas</h2>
