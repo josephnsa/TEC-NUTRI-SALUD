@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import {
   esRetornoOAuthEnUrl,
   limpiarUrlTrasOAuth,
+  normalizarUrlRetornoOAuth,
   parametrosOAuthEnUrl,
   urlRedireccionOAuth
 } from "./authOAuth";
@@ -42,5 +43,24 @@ describe("authOAuth", () => {
     expect(window.location.pathname).toBe("/TEC-NUTRI-SALUD/");
     expect(window.location.hash).toBe("#/mi-plan");
     expect(window.location.search).toBe("");
+  });
+
+  it("normalizarUrlRetornoOAuth convierte doble hash a callback", () => {
+    window.history.replaceState(
+      {},
+      "",
+      "/TEC-NUTRI-SALUD/#/mi-plan#access_token=at&refresh_token=rt"
+    );
+    normalizarUrlRetornoOAuth();
+    expect(window.location.hash).toBe("#/auth/callback");
+    expect(window.location.search).toContain("access_token=at");
+    expect(parametrosOAuthEnUrl()?.get("access_token")).toBe("at");
+  });
+
+  it("normalizarUrlRetornoOAuth mueve ?code= a #/auth/callback", () => {
+    window.history.replaceState({}, "", "/TEC-NUTRI-SALUD/?code=xyz");
+    normalizarUrlRetornoOAuth();
+    expect(window.location.hash).toBe("#/auth/callback");
+    expect(window.location.search).toContain("code=xyz");
   });
 });

@@ -3,7 +3,10 @@ import ReactDOM from "react-dom/client";
 import { HashRouter } from "react-router-dom";
 import App from "./App";
 import { AuthProvider } from "./context/AuthContext";
+import { normalizarUrlRetornoOAuth } from "./lib/authOAuth";
 import "./index.css";
+
+normalizarUrlRetornoOAuth();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

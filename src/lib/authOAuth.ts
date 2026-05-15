@@ -18,7 +18,11 @@ export function urlRedireccionOAuth(): string {
 /** Parámetros OAuth en search (`?code=`) o en hash (`#access_token=` o doble `#`). */
 export function parametrosOAuthEnUrl(): URLSearchParams | null {
   const { search, hash } = window.location;
-  if (search.includes("code=") || search.includes("error=")) {
+  if (
+    search.includes("code=") ||
+    search.includes("error=") ||
+    search.includes("access_token=")
+  ) {
     return new URLSearchParams(search);
   }
   if (!hash) return null;
@@ -40,6 +44,38 @@ export function esRetornoOAuthEnUrl(): boolean {
 export function limpiarUrlTrasOAuth(rutaHash = "#/mi-plan"): void {
   const base = `${window.location.origin}${window.location.pathname}`;
   window.history.replaceState({}, document.title, `${base}${rutaHash}`);
+}
+
+/**
+ * Antes del primer render: convierte `#/ruta#access_token=...` en `?tokens#/auth/callback`
+ * para que HashRouter no interprete una ruta inválida (flash 404).
+ */
+export function normalizarUrlRetornoOAuth(): void {
+  const { origin, pathname, search, hash } = window.location;
+  const base = `${origin}${pathname}`;
+  const destinoHash = "#/auth/callback";
+
+  const segundoHash = hash.indexOf("#", 1);
+  if (
+    segundoHash > 0 &&
+    (hash.includes("access_token=") || hash.includes("error="))
+  ) {
+    const tokenParams = hash.slice(segundoHash + 1);
+    window.history.replaceState({}, document.title, `${base}?${tokenParams}${destinoHash}`);
+    return;
+  }
+
+  if (search.includes("code=") || search.includes("error=")) {
+    if (hash !== destinoHash) {
+      window.history.replaceState({}, document.title, `${base}${search}${destinoHash}`);
+    }
+    return;
+  }
+
+  if (hash.startsWith("#access_token=") || hash.startsWith("#error=")) {
+    const tokenParams = hash.slice(1);
+    window.history.replaceState({}, document.title, `${base}?${tokenParams}${destinoHash}`);
+  }
 }
 
 /**

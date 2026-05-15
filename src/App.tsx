@@ -5,6 +5,7 @@ import { KetoMercado } from "./pages/KetoMercado";
 import { Belleza } from "./pages/Belleza";
 import { MiPlan } from "./pages/MiPlan";
 import { Cronograma } from "./pages/Cronograma";
+import { AuthCallback } from "./pages/AuthCallback";
 import { Login } from "./pages/Login";
 import { ActualizarClave } from "./pages/ActualizarClave";
 import { Agente } from "./pages/Agente";
@@ -23,6 +24,7 @@ export default function App() {
         <Route path="/cronograma" element={<Cronograma />} />
         <Route path="/agente" element={<Agente />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/actualizar-clave" element={<ActualizarClave />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
