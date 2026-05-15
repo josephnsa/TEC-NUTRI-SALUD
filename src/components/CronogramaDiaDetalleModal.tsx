@@ -24,6 +24,7 @@ import {
   type SeguimientoPlanDia
 } from "../lib/diaAdjuntosIDB";
 import { eliminarEvidenciaRemota, subirEvidenciaBlob } from "../lib/mediaRemoteStorage";
+import { validarArchivoAdjunto, mensajeLimitesAdjuntos } from "../lib/mediaLimits";
 import { useAuth } from "../context/AuthContext";
 
 type MacrosSlot = ReturnType<typeof sumarMacrosPlatoSlot>;
@@ -277,6 +278,11 @@ export function CronogramaDiaDetalleModal({
       const f = files[i];
       if (soloImagen && !f.type.startsWith("image/")) continue;
       if (!soloImagen && !f.type.startsWith("video/")) continue;
+      const val = validarArchivoAdjunto(f);
+      if (!val.ok) {
+        setAvisoCopiaCuenta(val.mensaje);
+        continue;
+      }
       const newId = await addDiaMedia(perfilId, fechaIso, f, slot);
       if (newId && user?.id && isConfigured) {
         const mime = f.type || (f.name.toLowerCase().endsWith(".mp4") ? "video/mp4" : "image/jpeg");
@@ -515,7 +521,8 @@ export function CronogramaDiaDetalleModal({
             {tab === "registro" && (
               <div className="space-y-5">
                 <p className="text-xs text-slate-600">
-                  Fotos o vídeos por comida. Son tu registro; no sustituyen el video sugerido de la receta.
+                  Fotos o vídeos por comida. Son tu registro; no sustituyen el video sugerido de la receta.{" "}
+                  {mensajeLimitesAdjuntos()}
                 </p>
                 {isConfigured && user && (
                   <p className="text-xs text-teal-800">

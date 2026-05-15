@@ -75,3 +75,4 @@ La app usa **HashRouter** (`/#/ruta`) para evitar errores 404 en Pages. Rutas pr
 - **Roadmap de mejoras (perfil, N listas Mi mercado, N cronogramas, UX):** `docs/MEJORAS_NEGOCIO_Y_PRODUCTO.md`
 - **Roadmap Fase 3 (nutrición guiada + nube + UX):** `docs/PLAN_MEJORAS_FASE3_NUTRICION_SUPABASE_UI.md`
 - Skill del agente: `.cursor/skills/tec-nutri-salud-delivery/SKILL.md`
+- Checklist de cierre y pasos manuales Supabase/Pages: `docs/CHECKLIST_CIERRE.md`

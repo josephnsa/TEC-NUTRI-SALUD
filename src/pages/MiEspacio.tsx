@@ -16,8 +16,10 @@ import {
 import {
   contarClavesRespaldo,
   descargarRespaldoCompletoJson,
-  importarRespaldoReemplazandoTodo
+  descargarRespaldoCompletoV2,
+  importarRespaldoCompleto
 } from "../lib/backupLocal";
+import { mensajeLimitesAdjuntos } from "../lib/mediaLimits";
 import {
   loadPerfilLocal,
   perfilGuardadoEnDispositivo,
@@ -37,6 +39,7 @@ export function MiEspacio() {
   const { user, isConfigured } = useAuth();
   const [tick, setTick] = useState(0);
   const [estadoImport, setEstadoImport] = useState<string | null>(null);
+  const [exportandoRespaldo, setExportandoRespaldo] = useState(false);
   const inputRespaldoRef = useRef<HTMLInputElement>(null);
   const [msgClave, setMsgClave] = useState<string | null>(null);
   const [nuevaClave, setNuevaClave] = useState("");
@@ -379,29 +382,55 @@ export function MiEspacio() {
       <section className="ui-card-muted text-sm text-slate-800">
         <p className="font-semibold text-teal-900">Respaldo en este dispositivo</p>
         <p className="mt-2 text-slate-600">
-          Descarga un JSON con las claves <code className="rounded bg-white/80 px-1 text-xs">tec_nutri_salud_*</code>{" "}
-          (perfiles, mercado, historial de menús, listas). Las fotos y vídeos del cronograma siguen solo en el
-          navegador (IndexedDB).
+          <strong>Respaldo completo (recomendado):</strong> perfiles, mercado, menús y, si caben en el límite (~120 MB),
+          fotos/vídeos del cronograma. <strong>Respaldo rápido (v1):</strong> solo datos en{" "}
+          <code className="rounded bg-white/80 px-1 text-xs">localStorage</code>, sin medios.
         </p>
+        <p className="mt-1 text-xs text-slate-500">{mensajeLimitesAdjuntos()}</p>
         {idbAdjuntos && idbAdjuntos.diasConDatos > 0 && (
           <p className="mt-2 rounded-lg border border-amber-200/90 bg-amber-50/80 px-3 py-2 text-xs text-amber-950">
-            <strong>Cronograma · tu registro (IndexedDB):</strong> {idbAdjuntos.diasConDatos} día
+            <strong>Cronograma · tu registro:</strong> {idbAdjuntos.diasConDatos} día
             {idbAdjuntos.diasConDatos !== 1 ? "s" : ""} con datos
             {idbAdjuntos.nImg + idbAdjuntos.nVideo > 0
               ? ` · ${idbAdjuntos.nImg} foto${idbAdjuntos.nImg !== 1 ? "s" : ""} · ${idbAdjuntos.nVideo} vídeo${idbAdjuntos.nVideo !== 1 ? "s" : ""}`
-              : " (notas o progreso, sin fotos/vídeo)"}
-            . <strong>Eso no va dentro del JSON</strong> de respaldo: sigue solo en este navegador; con cuenta y Storage
-            parte del contenido puede estar copiado a la nube si lo subiste desde el detalle del día.
+              : " (notas o progreso)"}
+            . Usa respaldo completo para otro navegador; con cuenta, lo subido a Storage puede recuperarse al iniciar sesión.
           </p>
         )}
         <p className="mt-1 text-xs text-slate-500">Claves detectadas: {contarClavesRespaldo()}</p>
         <div className="mt-4 flex flex-wrap gap-2">
           <button
             type="button"
+            disabled={exportandoRespaldo}
+            className="ui-btn-primary px-4 py-2 text-sm"
+            onClick={() =>
+              void (async () => {
+                setExportandoRespaldo(true);
+                setEstadoImport(null);
+                try {
+                  const r = await descargarRespaldoCompletoV2();
+                  if (!r.ok) setEstadoImport(r.error);
+                  else if (r.incluyeAdjuntos) {
+                    setEstadoImport("Respaldo completo descargado (datos + fotos/vídeo del cronograma).");
+                  } else {
+                    setEstadoImport(
+                      "Respaldo descargado (solo datos): los medios no cupieron en el límite; reduce vídeos grandes o usa solo datos (v1)."
+                    );
+                  }
+                } finally {
+                  setExportandoRespaldo(false);
+                }
+              })()
+            }
+          >
+            {exportandoRespaldo ? "Generando respaldo…" : "Descargar respaldo completo"}
+          </button>
+          <button
+            type="button"
             className="ui-btn-secondary px-4 py-2 text-sm"
             onClick={() => descargarRespaldoCompletoJson()}
           >
-            Descargar respaldo JSON
+            Solo datos (JSON v1)
           </button>
           <input
             ref={inputRespaldoRef}
@@ -415,7 +444,7 @@ export function MiEspacio() {
               void (async () => {
                 if (
                   !window.confirm(
-                    "Se borrarán en este navegador todos los datos NutriSalud guardados localmente (prefijo tec_nutri_salud_) y se sustituirán por el contenido del archivo. Las fotos del cronograma en IndexedDB no se tocan. ¿Continuar?"
+                    "Se reemplazarán todos los datos NutriSalud en este navegador (localStorage y, si el archivo es v2, fotos/vídeo del cronograma). ¿Continuar?"
                   )
                 ) {
                   setEstadoImport("Importación cancelada.");
@@ -424,9 +453,17 @@ export function MiEspacio() {
                 setEstadoImport("Leyendo archivo…");
                 try {
                   const text = await f.text();
-                  const r = importarRespaldoReemplazandoTodo(text);
+                  const r = await importarRespaldoCompleto(text);
                   if (r.ok) {
-                    setEstadoImport(`Listo: se aplicaron ${r.claves} clave(s). Recarga la página si algo no se actualiza.`);
+                    const extra =
+                      r.version === 2 && r.diasAdjuntos > 0
+                        ? ` · ${r.diasAdjuntos} día(s) con registro restaurado(s).`
+                        : r.version === 1
+                          ? " (v1: sin medios del cronograma)."
+                          : "";
+                    setEstadoImport(
+                      `Listo: ${r.claves} clave(s) aplicada(s)${extra} Recarga la página si algo no se actualiza.`
+                    );
                     setTick((t) => t + 1);
                     refreshIdbAdjuntos();
                   } else setEstadoImport(r.error);
@@ -441,7 +478,7 @@ export function MiEspacio() {
             className="ui-btn-secondary px-4 py-2 text-sm"
             onClick={() => inputRespaldoRef.current?.click()}
           >
-            Restaurar desde JSON…
+            Restaurar respaldo (v1 o v2)…
           </button>
         </div>
         {estadoImport && (

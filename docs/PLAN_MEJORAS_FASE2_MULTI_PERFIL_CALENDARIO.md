@@ -29,7 +29,7 @@ La tabla siguiente sustituye al “gap” histórico: la base del plan **2.1–2
 | **Cronograma** | Snapshots locales + activo por perfil; plantillas e IA; **vista Lista / Calendario** (`Cronograma.tsx`); enlace **`/#/cronograma?dia=YYYY-MM-DD`** abre detalle si hay día en plan o historial (`buscarDiaEnSnapshots`). |
 | **Medios del usuario** | Fotos/vídeo por día (slots) en **IndexedDB** + miniaturas (`diaAdjuntosIDB.ts`, `imageThumb.ts`, `CronogramaDiaDetalleModal.tsx`). Opcional **subida a Supabase Storage** si hay sesión (`mediaRemoteStorage.ts`). |
 
-**Sigue abierto como evolutivo (no bloqueante del núcleo F2):** backup/export que incluya **referencias binarias IDB** (p. ej. ZIP en una fase posterior), políticas/cuotas de Storage por usuario, y pulido UX del calendario según feedback.
+**Sigue abierto como evolutivo (no bloqueante del núcleo F2):** export **ZIP** binario (hoy respaldo v2 en JSON+base64), pulido UX del calendario según feedback. Respaldo v2 y límites de medios ya están en la app.
 
 **Ya desde antes en app:** campo **nombre**; **NumericInputs**; Belleza por categorías; marca **NutriSalud**.
 
@@ -138,7 +138,7 @@ Recomendación: **local primero** + export/import ya existente extendido a “fa
 | 2.4 | Guardar snapshot de cronograma al generar (plantillas/IA) | Medio | **Hecho** (`cronogramaHistorial`, sync remoto opcional). |
 | 2.5 | Vista calendario + panel detalle (plan + fecha) | Alto (UX) | **Hecho** (Cronograma lista/calendario, modal detalle, query `dia`). |
 | 2.5b | **Adjuntos**: fotos/vídeo por día (o por comida), IDB + miniaturas, detalle con galería y progreso | Alto (almacenamiento + UX) | **Hecho** (IDB + modal; progreso según UI actual). |
-| 2.6 | Sync nube opcional (incl. media: Storage Supabase, políticas y cuotas) | Muy alto | **Parcial**: snapshots mercado/plan + upload evidencias; falta cierre de backup rico y límites documentados en producto. |
+| 2.6 | Sync nube opcional (incl. media: Storage Supabase, políticas y cuotas) | Muy alto | **Hecho en app (mayo 2026)**: snapshots + Storage 50 MB/archivo; respaldo **v2** (JSON con IDB en base64, tope ~120 MB); límites en UI al adjuntar; checklist en `docs/CHECKLIST_CIERRE.md`. Pendiente manual: ejecutar `schema.sql` en tu proyecto Supabase. |
 
 > **Nota:** 2.5 y 2.5b pueden partirse en PRs (primero detalle texto+progreso sin media, luego media).
 

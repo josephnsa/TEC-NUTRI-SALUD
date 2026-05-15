@@ -1,5 +1,10 @@
-/** Respaldo JSON de datos en `localStorage` (prefijo app). IndexedDB (fotos del día) no se exporta ni importa aquí. */
+/** Respaldo JSON: v1 solo `localStorage`; v2 incluye fotos/vídeo del cronograma (IndexedDB). */
 
+import {
+  exportarAdjuntosParaRespaldo,
+  importarAdjuntosDesdeRespaldo,
+  type DiaAdjuntosRecordExport
+} from "./adjuntosBackup";
 import { CRONOGRAMA_HISTORIAL_EVENT } from "./cronogramaHistorial";
 import { ADJUNTOS_DIA_EVENT } from "./diaAdjuntosIDB";
 import { PERFILES_STORAGE_EVENT } from "./perfilStorage";
@@ -127,6 +132,130 @@ export function importarRespaldoReemplazandoTodo(
     const n = aplicarSnapshotLocalStorage(snap);
     notificarRefrescoTrasRespaldo();
     return { ok: true, claves: n };
+  } catch {
+    return { ok: false, error: "No se pudo leer el JSON." };
+  }
+}
+
+export type BackupPayloadV2 = {
+  version: 2;
+  exportedAt: string;
+  app: "tec-nutri-salud";
+  localStorage: Record<string, string | null>;
+  adjuntos?: DiaAdjuntosRecordExport[];
+  /** Si no cupieron medios en el export. */
+  adjuntosOmitidos?: string;
+};
+
+export function validarYExtraerRespaldoV2(parsed: unknown): BackupPayloadV2 | null {
+  if (!isRecord(parsed)) return null;
+  if (parsed.version !== 2) return null;
+  const ls = parsed.localStorage;
+  if (!isRecord(ls)) return null;
+  const localStorage: Record<string, string | null> = {};
+  for (const [k, v] of Object.entries(ls)) {
+    if (typeof k !== "string" || !k.startsWith(PREFIX)) continue;
+    if (v === null) localStorage[k] = null;
+    else if (typeof v === "string") localStorage[k] = v;
+    else return null;
+  }
+  const adjuntos = Array.isArray(parsed.adjuntos) ? (parsed.adjuntos as DiaAdjuntosRecordExport[]) : undefined;
+  const adjuntosOmitidos =
+    typeof parsed.adjuntosOmitidos === "string" ? parsed.adjuntosOmitidos : undefined;
+  return {
+    version: 2,
+    exportedAt: typeof parsed.exportedAt === "string" ? parsed.exportedAt : new Date().toISOString(),
+    app: "tec-nutri-salud",
+    localStorage,
+    adjuntos,
+    adjuntosOmitidos
+  };
+}
+
+export async function construirRespaldoV2(): Promise<
+  { ok: true; payload: BackupPayloadV2 } | { ok: false; error: string }
+> {
+  const localStorageSnapshot = recolectarLocalStorageNutri();
+  const adj = await exportarAdjuntosParaRespaldo();
+  if (!adj.ok) {
+    return {
+      ok: true,
+      payload: {
+        version: 2,
+        exportedAt: new Date().toISOString(),
+        app: "tec-nutri-salud",
+        localStorage: localStorageSnapshot,
+        adjuntosOmitidos: adj.error
+      }
+    };
+  }
+  return {
+    ok: true,
+    payload: {
+      version: 2,
+      exportedAt: new Date().toISOString(),
+      app: "tec-nutri-salud",
+      localStorage: localStorageSnapshot,
+      adjuntos: adj.records
+    }
+  };
+}
+
+function descargarJsonBlob(payload: unknown, nombre: string) {
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = nombre;
+  a.rel = "noopener";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+export async function descargarRespaldoCompletoV2(): Promise<
+  { ok: true; incluyeAdjuntos: boolean } | { ok: false; error: string }
+> {
+  try {
+    const built = await construirRespaldoV2();
+    if (!built.ok) return built;
+    const fecha = new Date().toISOString().slice(0, 10);
+    descargarJsonBlob(built.payload, `tec-nutri-salud-respaldo-completo-${fecha}.json`);
+    return {
+      ok: true,
+      incluyeAdjuntos: Boolean(built.payload.adjuntos?.length) && !built.payload.adjuntosOmitidos
+    };
+  } catch {
+    return { ok: false, error: "No se pudo generar el respaldo." };
+  }
+}
+
+export async function importarRespaldoCompleto(
+  json: string
+): Promise<
+  | { ok: true; claves: number; diasAdjuntos: number; version: 1 | 2 }
+  | { ok: false; error: string }
+> {
+  try {
+    const data = JSON.parse(json) as unknown;
+    const v2 = validarYExtraerRespaldoV2(data);
+    if (v2) {
+      limpiarLocalStorageNutri();
+      const n = aplicarSnapshotLocalStorage(v2.localStorage);
+      let diasAdjuntos = 0;
+      if (v2.adjuntos?.length) {
+        diasAdjuntos = await importarAdjuntosDesdeRespaldo(v2.adjuntos);
+      }
+      notificarRefrescoTrasRespaldo();
+      return { ok: true, claves: n, diasAdjuntos, version: 2 };
+    }
+    const v1 = validarYExtraerRespaldoV1(data);
+    if (!v1) return { ok: false, error: "Archivo no válido (se espera respaldo v1 o v2)." };
+    limpiarLocalStorageNutri();
+    const n = aplicarSnapshotLocalStorage(v1);
+    notificarRefrescoTrasRespaldo();
+    return { ok: true, claves: n, diasAdjuntos: 0, version: 1 };
   } catch {
     return { ok: false, error: "No se pudo leer el JSON." };
   }
