@@ -2,14 +2,14 @@
 
 ## Persona
 
-María quiere comer mejor en estilo keto, organizar el mercado, **guardar lo que realmente compró** y que el sistema le arme un **cronograma coherente con esos ingredientes**, con recetas y enlaces a videos. También quiere **variedad** en las sugerencias, no siempre los mismos platos.
+María quiere comer mejor según **su tipo de dieta** (cetogénica, mediterránea, balanceada), organizar el mercado, **guardar lo que realmente compró** y que el sistema le arme un **cronograma coherente con esos ingredientes**, con recetas y vídeos. También quiere **variedad** en las sugerencias, no siempre los mismos platos.
 
 ## Historias
 
-1. **Mercado keto**  
-   *Como* usuaria con dieta baja en carbos  
+1. **Lista de compras / Mi mercado**  
+   *Como* usuaria según mi estilo de dieta en el perfil  
    *quiero* indicar cuántos días cubre la compra y cuántas personas comen  
-   *para* obtener una lista con cantidades orientativas, marcar ítems al comprar **o marcar toda la lista de una vez** si compré todo junto.
+   *para* obtener una lista con cantidades orientativas (plantilla por dieta **o IA**), marcar ítems al comprar **o marcar toda la lista de una vez** si compré todo junto.
 
 2. **Guardar mercado realizado (nuevo)**  
    *Como* usuaria  
@@ -141,7 +141,7 @@ María quiere comer mejor en estilo keto, organizar el mercado, **guardar lo que
 24. **Lista base personalizada por tipo de dieta**  
     *Como* usuaria con dieta mediterránea o balanceada  
     *quiero* que "Generar lista base" me entregue alimentos de MI tipo de dieta con cantidades coherentes  
-    *para* no recibir siempre una lista keto genérica que no corresponde a lo que como.  
+    *para* no recibir siempre una **lista plantilla equivocada** (p. ej. solo keto) que no corresponde a lo que como.  
     **Criterios de aceptación:**  
     - Hay catálogos distintos para dieta keto/lowcarb, mediterránea y balanceada.  
     - La función `generarListaBase(dias, personas, estiloDieta)` selecciona el catálogo correcto.  
@@ -191,7 +191,7 @@ María quiere comer mejor en estilo keto, organizar el mercado, **guardar lo que
 |------|-------------|
 | **Cronograma** | Barra de progreso IA (por chunks + %) y botón Reintentar; botón Copiar plan; empty state guiado; badges kcal/macros/vídeo/IA por día en lista |
 | **Modal día** | Botones ◀ ▶ para navegar entre días (+ teclas ArrowLeft / ArrowRight); botón Copiar receta por slot |
-| **Mercado keto** | Barra progreso compras global; contador X/Y por categoría; edición cantidad en línea; eliminar ítem; filtro "solo pendientes" |
+| **Mi mercado** | Barra progreso compras global; navegación por categoría (incl. cereales/frutas/legumbres donde aplique); contador X/Y por categoría; edición cantidad en línea; eliminar ítem; filtro "solo pendientes"; copiar texto y PDF |
 | **Asistente** | Respuestas en Markdown; chips de sugerencias; historial reciente en localStorage |
 | **Mis datos** | Barra de completitud del perfil (Básico / Recomendado / Detallado) |
 | **Mi espacio** | CTA "Siguiente paso" como banner con gradiente en la parte superior; badges de antigüedad en mercado y plan |

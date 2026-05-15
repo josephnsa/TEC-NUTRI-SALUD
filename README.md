@@ -1,6 +1,6 @@
 # NutriSalud
 
-Web progresiva (PWA) para **salud alimenticia**: gestión de perfiles familiares, **lista de mercado keto** (por días, checklist, guardado con nombre y notas), **plan personalizado** y **cronograma** con plantillas o recetas asistidas por IA, diario de fotos/videos por día, historial versionado de planes y mercados, respaldo JSON local y publicación en GitHub Pages.
+Web progresiva (PWA) para **salud alimenticia**: gestión de perfiles familiares, **lista de compras / Mi mercado** por tipo de dieta del perfil (keto, mediterránea, balanceada: días y personas, checklist, guardado con nombre y notas), **plan personalizado** y **cronograma** con plantillas o recetas asistidas por IA, diario de fotos/videos por día, historial versionado de planes y mercados, respaldo JSON local y publicación en GitHub Pages.
 
 Stack: **Vite + React + TypeScript + Tailwind**, **Supabase** (auth email/Google + tabla `profiles`, capa gratuita), **GitHub Pages** (hosting estático gratuito).
 
@@ -11,7 +11,7 @@ Stack: **Vite + React + TypeScript + Tailwind**, **Supabase** (auth email/Google
 | Área | Qué incluye |
 |---|---|
 | **Multi-perfil** | Hasta 8 miembros de la familia; cada uno tiene su propio mercado activo y cronograma activo |
-| **Mercado keto** | Lista por días y personas, checklist, historial con nombre y nota editables, "usar para plan" |
+| **Mi mercado** | Lista por días y personas según perfil (*lista base* por tipo de dieta o **generar con IA**), checklist, PDF/copia texto, historial con nombre y nota, mercado activo para el cronograma |
 | **Cronograma** | Plantillas o IA (Gemini); historial de snapshots con título, "plan activo de la semana", restaurar, renombrar y borrar |
 | **Diario por día** | Fotos (galería o cámara) y videos adjuntos al día del plan; lightbox integrado; ESC para cerrar |
 | **Mi Espacio** | Dashboard con mercado activo y cronograma activo del perfil seleccionado; respaldo JSON |
@@ -37,7 +37,7 @@ Copia `.env.example` a `.env` y rellena solo si usarás nube o IA.
 4. Authentication → URL configuration → **Redirect URLs**: añade la URL de tu GitHub Pages terminada en `/#/login` (ej. `https://TU_USUARIO.github.io/TEC-NUTRI-SALUD/#/login`).
 5. Copia **Project URL** y **anon public key** a `.env` como `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`.
 
-Sin Supabase, la app sigue funcionando completamente en modo local: perfiles, lista keto e historial de mercados, historial de cronogramas, diario de fotos y respaldo completo JSON se guardan en **localStorage / IndexedDB**. Exporta/importa JSON de respaldo desde **Mi Espacio**.
+Sin Supabase, la app sigue funcionando completamente en modo local: perfiles, lista de mercado e historial de mercados, historial de cronogramas, diario de fotos y respaldo completo JSON se guardan en **localStorage / IndexedDB**. Exporta/importa JSON de respaldo desde **Mi Espacio**. La pantalla está en **`/#/keto-mercado`** (ruta técnica heredada).
 
 ## Asistente IA (opcional)
 
@@ -53,7 +53,7 @@ Con la misma clave: **chat** en Asistente y, en **Mi plan** o **Cronograma**, el
 3. Añade secretos opcionales del build: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_GEMINI_API_KEY`.
 4. Haz push a `main`; el workflow `.github/workflows/pages.yml` genera `dist/` y publica.
 
-La app usa **HashRouter** (`/#/ruta`) para evitar errores 404 en Pages. Rutas principales: `/#/`, `/#/mi-espacio`, `/#/keto-mercado`, `/#/cronograma`, `/#/mi-plan`, etc.
+La app usa **HashRouter** (`/#/ruta`) para evitar errores 404 en Pages. Rutas principales: `/#/`, `/#/mi-espacio`, `/#/keto-mercado` (Mi mercado), `/#/cronograma`, `/#/mi-plan`, etc.
 
 ## Documentación interna
 

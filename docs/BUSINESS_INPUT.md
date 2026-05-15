@@ -6,9 +6,9 @@ Unir el **mercado real** (qué compró la persona) con el **cronograma alimentic
 
 ## Flujo principal
 
-1. Usuario define periodo y personas → lista keto sugerida.
+1. Usuario define periodo y personas → **lista base** según dieta del perfil o lista generada por **IA**.
 2. Durante/al terminar la compra marca ítems como **comprados** o usa **“Compré todo de una vez”** si trajo la lista completa.
-3. Usuario pulsa **Guardar mercado realizado** → historial + mercado activo; puede **descargar/importar JSON** de respaldo en Mercado keto.
+3. Usuario pulsa **Guardar mercado realizado** → historial + mercado activo; puede **descargar/importar JSON** de respaldo desde **Mi mercado**.
 4. En **Mi plan** / **Cronograma** el usuario elige **modo** (perfil / mercado / mixto) y **días** (3–30); puede pulsar **“Generar recetas con agente IA (gratis)”** (Google AI Studio + Gemini en el navegador, misma clave que el asistente) o **Nuevas combinaciones** (plantillas).
 5. Vista **plantillas** o **IA**: la IA genera JSON en trozos (hasta 10 días por llamada) con `responseMimeType: application/json`; cada comida incluye `titulo`, `receta` (ingredientes **para 1 persona** + pasos) y `videoQuery` alineado al mismo plato para **YouTube** (búsqueda en internet).
 6. Cada día del cronograma muestra título, receta y enlace **“Buscar video para esta receta”**, construido con título + `videoQuery` + estilo de dieta para mejor coincidencia con el plato mostrado.

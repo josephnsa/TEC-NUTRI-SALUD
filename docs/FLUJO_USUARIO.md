@@ -4,7 +4,7 @@ Documento corto para alinear negocio y pantallas. La app sigue **un orden fijo e
 
 ## Idea central
 
-**Mis datos → Mercado keto → Cronograma** (menú con recetas y video).  
+**Mis datos → Mi mercado → Cronograma** (menú con recetas y video).  
 Las cantidades del cronograma son **orientativas para 1 persona**; si cocinas para más comensales, multiplicas proporciones. El mercado puede planificarse para varias personas en la lista de compra; el texto de cada receta del menú se simplifica a **una porción** para escalar mentalmente.
 
 La implementación expone este orden en:
@@ -32,7 +32,7 @@ Pantalla **`/#/mi-espacio`** (`MiEspacio.tsx`): vista rápida del avance en los 
 
 ```mermaid
 flowchart LR
-  A[Mis datos / Mi plan] --> B[Mercado keto]
+  A[Mis datos / Mi plan] --> B[Mi mercado]
   B --> C[Guardar mercado]
   C --> D[Cronograma]
   D --> E{¿Fuente de menú?}
@@ -48,23 +48,23 @@ flowchart LR
    Perfil: datos corporales, gustos, estilo de dieta. Debe hacerse **primero** para que mercado y cronograma respeten exclusiones y modo nutricional orientativo.  
    Soporta **varios perfiles** (multiperfil local): selector global en la barra superior, CRUD en Mi plan; cada perfil tiene su propio mercado activo y cronogramas guardados.
 
-2. **Mercado keto**  
+2. **Mi mercado** (`/#/keto-mercado`; ruta heredada)  
    Días y comensales para la **lista de compra**. Dos formas de generar:
-   - **Lista base** (siempre disponible): plantillas keto locales con cantidades orientativas.
-   - **Generar con IA ✦** (requiere `VITE_GEMINI_API_KEY`): llama a Gemini con el perfil completo (tipo de dieta, condiciones, alimentos a evitar) y devuelve 20–35 ítems concretos y personalizados; los ítems generados llevan badge `IA`.
+   - **Lista base** (según tipo de dieta del perfil: catálogos keto, mediterráneo o balanceado; cantidades orientativas).
+   - **Generar con IA ✦** primero cuando hay clave; luego opción lista base; la IA usa el perfil completo.
 
-   Marcas lo comprado (o "todo de una vez"). Puedes **añadir ítems extra** fuera del generador. **Guardar mercado realizado** enlaza la despensa al plan y navega al cronograma.
+   Marcas lo comprado (o "todo de una vez"). Puedes **añadir ítems extra**. **Copiar texto** / **PDF** opcionales. **Guardar mercado realizado** enlaza la despensa al plan y puede navegar al cronograma.
    Cada mercado guardado puede tener **nombre amigable** ("Semana 19 mayo") y **nota** ("Solo verdurería"), editables desde el historial.
 
 3. **Cronograma**  
    Modo perfil / mercado / mixto; días; **Nuevas combinaciones** (plantillas) o **Agente IA recetas**. La IA actúa como dietista experto en el tipo de dieta del perfil: calcula TDEE + déficit/superávit según la meta de peso y lo convierte en objetivo calórico diario con distribución de macros (keto 70/25/5 · mediterránea 35/20/45 · balanceada 30/20/50); todos los platos devuelven `kcal_estimate`, `protein_g`, `fat_g`, `carb_g`.
    Al volver a la página, el plan IA activo se restaura automáticamente sin necesidad de regenerar.  
-   Cada comida: **embed de YouTube** cuando la IA devuelve un `youtube_video_id` válido; si no, enlace **"Buscar video para esta receta"**.  
+   Cada comida: **embed de YouTube** solo si hay `youtube_video_id` que pasa miniatura/embed; si no, enlaces destacados para **buscar vídeo**.
    Los planes se **guardan en historial** con título editable, plan **activo de la semana**, restauración y borrado en “Planes guardados”. Vista **lista** o **calendario** mensual; un clic abre el detalle sin salir de la app.
 
 4. **Detalle del día** (modal desde calendario o lista)  
    Tres pestañas:  
-   - **Plan** — recetas con etiqueta de **porciones**; resumen del día en **tarjetas de colores** (kcal ámbar · proteína azul · grasa violeta · carbos esmeralda · fibra lima); **video embebido** YouTube `nocookie` cuando hay ID verificado, o botón destacado "Ver vídeos en YouTube" cuando no hay coincidencia; comparativa vs presupuesto diario del perfil.  
+   - **Plan** — recetas con etiqueta de **porciones**; resumen del día en **tarjetas de colores**; **video embebido** YouTube cuando el ID es válido y admite incrustación; si falla, fallback a **«Ver receta en YouTube»** (búsqueda); enlace a más resultados.  
    - **Tu registro** — fotos y vídeos propios por comida (IndexedDB + miniaturas); con sesión, **copia automática en la cuenta** (Storage privado del proyecto).  
    - **Progreso** — seguimiento del plan (sí / parcial / no), checklist del día y nota libre.
 
@@ -105,7 +105,7 @@ Mejoras adicionales sobre el flujo base, sin cambiar el orden datos → mercado 
 |----------|--------|
 | **Cronograma** | Barra de progreso durante generación IA ("Generando días… X/Y") con porcentaje; botón **Reintentar** al fallar. Botón **Copiar plan** (texto del cronograma completo al portapapeles). Estado vacío guiado cuando no hay plan activo. Badges por día (kcal · proteína · grasa · IA · vídeo). |
 | **Cronograma — modal día** | Botón **Copiar** en cada receta. Macro badges por comida. |
-| **Mercado keto** | Contador **X/Y** comprados por sección (verde = todo, ámbar = parcial, gris = ninguno). Eliminación individual de ítems. Edición en línea de cantidades. Filtro "Solo pendientes". |
+| **Mi mercado** | Navegación por categorías (incluye cereales, frutas, legumbres en dieta mediterránea/balanceada). Barra global de progreso. Contador **X/Y** comprados por sección. Eliminación y edición de cantidades en línea. Filtro "Solo pendientes". Export PDF/texto. |
 | **Asistente** | Respuestas en Markdown (encabezados, listas, negrita). Chips de sugerencias rápidas. Historial de preguntas recientes en `localStorage`. |
 | **Mis datos (Mi plan)** | Indicador de completitud del perfil (barra + nivel: Básico / Recomendado / Detallado). |
 | **Mi espacio** | CTA "Siguiente paso" como banner destacado con gradiente en la parte superior. Badges de antigüedad (verde/ámbar/rojo) en mercado y plan activo. |

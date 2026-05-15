@@ -2,8 +2,9 @@
 name: tec-nutri-salud-delivery
 description: >-
   Flujo de trabajo para desarrollar y desplegar TEC Nutri Salud (Vite React PWA,
-  Supabase, GitHub Pages). Úsalo cuando toques auth, perfil, cronograma, mercado
-  keto, recetas IA (Gemini), UX del recorrido guiado, navegación responsive o CI.
+  Supabase, GitHub Pages). Úsalo cuando toques auth, perfil, cronograma, lista de
+  compras (Mi mercado, ruta `#/keto-mercado`), recetas IA (Gemini), UX del recorrido
+  guiado, navegación responsive o CI.
 ---
 
 # NutriSalud (TEC Nutri Salud repo) — entrega ordenada (estilo “herramientas”)
@@ -19,7 +20,7 @@ Actúa en fases: cada fase tiene entrada/salida clara.
 El flujo **visible y de negocio** es siempre:
 
 1. **Datos** → `/#/mi-plan` (`PASOS_RECORRIDO_PRINCIPAL[0]` en `src/lib/recorrido.ts`)
-2. **Mercado** → `/#/keto-mercado`
+2. **Mi mercado (lista)** → `/#/keto-mercado` (URL heredada; pantalla usa `Mi mercado` + dieta del perfil)
 3. **Menú (cronograma)** → `/#/cronograma`
 
 **Resumen del recorrido:** `/#/mi-espacio` (`RUTA_MI_ESPACIO` en `recorrido.ts`, pantalla `MiEspacio.tsx`) — estado de pasos 1–3 y siguiente paso sugerido; enlaces en **Layout** (“Resumen”) y en la home.
@@ -56,7 +57,7 @@ No dupliques listas de pasos en páginas sueltas sin importar `recorrido.ts`.
 - **Referencia UI:** `Home.tsx` (hero con orbes y entradas escalonadas) y `StepHeader.tsx`; nuevas pantallas deben alinearse (cards blancas translúcidas, bordes suaves, hover con elevación leve).
 - Plan detallado: **§8** en `docs/PLAN_MEJORAS_FASE2_MULTI_PERFIL_CALENDARIO.md` (fase **2.0** en tabla §6).
 
-- Sin Supabase: perfil, lista keto actual e historial de mercados en `localStorage`.
+- Sin Supabase: perfil, **lista de mercado actual por perfil** e historial de mercados en `localStorage`.
 - **Perfil:** tipo `PerfilUsuario` incluye **`nombre`** (texto); sincroniza con Supabase `profiles.display_name` vía `profileRemote.ts`. Carga/guardado saneado en `perfilStorage.normalizePerfilParsed` (migra JSON antiguo sin `nombre`).
 - **Números en formularios:** usar `IntField` / `DecimalField` de `src/components/NumericInputs.tsx` para edad, peso, talla y “días” (evita ceros a la izquierda y spinners incómodos).
 - Con Supabase: `supabase/schema.sql`, Google OAuth, redirect URLs con `/#/login`, `/#/mi-plan` y **`/#/actualizar-clave`** (recuperación de contraseña) según panel; detalle en `docs/DEPLOYMENT.md` §5.4.

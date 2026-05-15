@@ -173,7 +173,7 @@ export function MiPlan() {
             Familia (este dispositivo)
           </h2>
           <p className="text-xs text-slate-600">
-            Cada persona tiene su mercado y lista keto. Usa el selector de la barra superior o este menú para cambiar de perfil.
+            Cada persona tiene su mercado y su lista de compras. Usa el selector de la barra superior o este menú para cambiar de perfil.
           </p>
           <div className="flex flex-wrap items-end gap-3">
             <label className="text-sm">
