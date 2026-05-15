@@ -49,11 +49,16 @@ flowchart LR
    Soporta **varios perfiles** (multiperfil local): selector global en la barra superior, CRUD en Mi plan; cada perfil tiene su propio mercado activo y cronogramas guardados.
 
 2. **Mercado keto**  
-   Días y comensales para la **lista de compra**. Marcas lo comprado (o "todo de una vez"). Puedes **añadir ítems extra** (fuera del generador) para reflejar toda la despensa. **Guardar mercado realizado** enlaza la despensa al plan y navega al cronograma.  
+   Días y comensales para la **lista de compra**. Dos formas de generar:
+   - **Lista base** (siempre disponible): plantillas keto locales con cantidades orientativas.
+   - **Generar con IA ✦** (requiere `VITE_GEMINI_API_KEY`): llama a Gemini con el perfil completo (tipo de dieta, condiciones, alimentos a evitar) y devuelve 20–35 ítems concretos y personalizados; los ítems generados llevan badge `IA`.
+
+   Marcas lo comprado (o "todo de una vez"). Puedes **añadir ítems extra** fuera del generador. **Guardar mercado realizado** enlaza la despensa al plan y navega al cronograma.
    Cada mercado guardado puede tener **nombre amigable** ("Semana 19 mayo") y **nota** ("Solo verdurería"), editables desde el historial.
 
 3. **Cronograma**  
-   Modo perfil / mercado / mixto; días; **Nuevas combinaciones** (plantillas) o **Agente IA recetas** (con **macros estimadas** y **presupuesto diario** de referencia si definiste meta de peso en Mi plan).  
+   Modo perfil / mercado / mixto; días; **Nuevas combinaciones** (plantillas) o **Agente IA recetas**. La IA actúa como dietista experto en el tipo de dieta del perfil: calcula TDEE + déficit/superávit según la meta de peso y lo convierte en objetivo calórico diario con distribución de macros (keto 70/25/5 · mediterránea 35/20/45 · balanceada 30/20/50); todos los platos devuelven `kcal_estimate`, `protein_g`, `fat_g`, `carb_g`.
+   Al volver a la página, el plan IA activo se restaura automáticamente sin necesidad de regenerar.  
    Cada comida: **embed de YouTube** cuando la IA devuelve un `youtube_video_id` válido; si no, enlace **"Buscar video para esta receta"**.  
    Los planes se **guardan en historial** con título editable, plan **activo de la semana**, restauración y borrado en “Planes guardados”. Vista **lista** o **calendario** mensual; un clic abre el detalle sin salir de la app.
 
@@ -117,4 +122,4 @@ Mejoras adicionales sobre el flujo base, sin cambiar el orden datos → mercado 
 
 ---
 
-*Actualizado: mayo 2026 — fases 2.0–3.x, épicas A–F y mejoras UX completadas (ver tabla arriba).*
+*Actualizado: mayo 2026 — fases 2.0–4.x, épicas A–F; Fase 4: Mercado IA, cronograma calórico experto, persistencia plan IA, logout limpio.*

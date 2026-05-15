@@ -104,7 +104,31 @@ María quiere comer mejor en estilo keto, organizar el mercado, **guardar lo que
     *quiero* una estética más **marcada y moderna** con animaciones **cortas y opcionales** según configuración del sistema  
     *para* disfrutar la interfaz sin sacrificar claridad ni `prefers-reduced-motion`.
 
-## Estado implementación (historias 13–18, mayo 2026)
+---
+
+## Fase 4 — IA de calidad, persistencia y sesión (mayo 2026)
+
+19. **Mercado personalizado con IA**  
+    *Como* usuaria con perfil guardado  
+    *quiero* pulsar **"Generar con IA ✦"** en el mercado y obtener una lista de compra adaptada a mi **estilo de dieta, condiciones de salud y alimentos que evito**, con cantidades calculadas para los días y personas que indiqué  
+    *para* no recibir siempre la misma lista genérica de plantilla.
+
+20. **Cronograma calórico experto**  
+    *Como* usuaria con meta de peso definida  
+    *quiero* que el cronograma IA genere menús cuya **suma diaria se acerque a mis calorías objetivo** (TDEE + déficit/superávit según ritmo) y que el **agente actúe como dietista experto** en mi tipo de dieta (keto / mediterránea / balanceada) con macros precisos  
+    *para* que las recetas sean coherentes con mi plan de adelgazamiento o mantenimiento.
+
+21. **Cronograma activo persiste al navegar**  
+    *Como* usuaria que genera un plan IA  
+    *quiero* que al salir de la página de Cronograma y volver, **el plan que generé con IA siga activo y visible** automáticamente  
+    *para* no tener que regenerar cada vez que cambio de pestaña.
+
+22. **Limpiar datos locales al cerrar sesión**  
+    *Como* usuaria en un dispositivo compartido  
+    *quiero* que al cerrar sesión se borren el perfil, mercado y cronograma del dispositivo  
+    *para* que la siguiente persona no vea mis datos al abrir la app.
+
+## Estado implementación (historias 13–22, mayo 2026)
 
 | Historia | Criterios clave implementados |
 |----------|-------------------------------|
@@ -114,6 +138,10 @@ María quiere comer mejor en estilo keto, organizar el mercado, **guardar lo que
 | **16** (video + nutrición) | Embed nocookie verificado con miniatura; fallback visual; tarjetas macro por color |
 | **17** (código limpio) | `tsc --noEmit` pasa estricto; fix import `supabase` en `Login`; script `npm run typecheck` |
 | **18** (UI tech) | Tarjetas macro con gradientes y hover; tokens Tailwind; `motion-safe:`/`motion-reduce:` |
+| **19** (mercado IA) | `mercadoIA.ts` con `generarMercadoIA()`; botón "Generar con IA ✦" en KetoMercado; badge IA; reintentar |
+| **20** (cronograma calórico) | TDEE + déficit/superávit; macros por dieta; persona "dietista experto" en prompt; macros obligatorios |
+| **21** (persistencia IA) | `useEffect` restaura plan IA activo al montar; ref flag para no sobreescribir en sesión activa |
+| **22** (logout limpio) | `signOut` borra `tec_nutri_salud_*` de localStorage cuando Supabase está configurado; navega a `/` |
 
 ## UX polish adicional (mayo 2026)
 

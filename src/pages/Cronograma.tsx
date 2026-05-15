@@ -158,6 +158,8 @@ export function Cronograma() {
     const pid = getActivoPerfilId();
     setPerfilContextoId(pid);
     setSnapActivoId(getSnapshotActivoId(pid));
+    // Permitir restauración del plan IA del nuevo perfil
+    iaYaRestoradaRef.current = false;
   }, []);
 
   useEffect(() => {
