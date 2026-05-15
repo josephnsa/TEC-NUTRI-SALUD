@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Unir el **mercado real** (qué compró la persona) con el **cronograma alimenticio** y las **recetas + búsqueda de video**, manteniendo el producto gratuito (GitHub Pages + opciones gratuitas de datos/IA).
+Unir la **lista de compra real** (**Mi mercado**: qué compró o planificó la persona) con el **cronograma alimenticio** y las **recetas + vídeo** (embed con fallback a búsqueda), manteniendo el producto gratuito (GitHub Pages + opciones gratuitas de datos/IA).
 
 ## Flujo principal
 
@@ -11,7 +11,7 @@ Unir el **mercado real** (qué compró la persona) con el **cronograma alimentic
 3. Usuario pulsa **Guardar mercado realizado** → historial + mercado activo; puede **descargar/importar JSON** de respaldo desde **Mi mercado**.
 4. En **Mi plan** / **Cronograma** el usuario elige **modo** (perfil / mercado / mixto) y **días** (3–30); puede pulsar **“Generar recetas con agente IA (gratis)”** (Google AI Studio + Gemini en el navegador, misma clave que el asistente) o **Nuevas combinaciones** (plantillas).
 5. Vista **plantillas** o **IA**: la IA genera JSON en trozos (hasta 10 días por llamada) con `responseMimeType: application/json`; cada comida incluye `titulo`, `receta` (ingredientes **para 1 persona** + pasos) y `videoQuery` alineado al mismo plato para **YouTube** (búsqueda en internet).
-6. Cada día del cronograma muestra título, receta y enlace **“Buscar video para esta receta”**, construido con título + `videoQuery` + estilo de dieta para mejor coincidencia con el plato mostrado.
+6. El detalle por día prioriza **video embebido** (YouTube `nocookie`) cuando el ID es válido; si falla, la UI ofrece **abrir la búsqueda** con título + `videoQuery` + estilo de dieta.
 
 ## Reglas de priorización (mercado / mixto)
 
@@ -30,7 +30,7 @@ Unir el **mercado real** (qué compró la persona) con el **cronograma alimentic
 - Entrada: `PerfilUsuario`, `dias`, ítems del mercado activo, `ModoCronograma`.
 - Salida: `DiaPlan[]` validado; cada slot con **receta en formato 1 porción** (ingredientes con cantidades + pasos) y `videoQuery` coherente con el título para YouTube; la UI compone la URL de búsqueda con `youtubeBusquedaPlato`. Errores de JSON o red deben mostrarse en UI sin romper la app.
 
-## Fuera de alcance actual
+## Fuera de alcance histórico / nota de producto
 
-- Videos incrustados o IDs fijos por receta (solo búsqueda en YouTube / internet).
-- Sincronización del historial de mercado en Supabase (solo perfil remoto si está configurado).
+- **Antes** el alcance decía “solo búsqueda en YouTube”: hoy hay **embed opcional** validado por miniatura/postMessage y **fallback** a búsqueda.
+- Sin Supabase, el historial de mercados y planes permanece en **localStorage**; con Supabase configurado puede haber **snapshots** remotos (`user_market_snapshots` / `user_plan_snapshots`) según `schema.sql` — el detalle contractual sigue en `docs/DEPLOYMENT.md`.

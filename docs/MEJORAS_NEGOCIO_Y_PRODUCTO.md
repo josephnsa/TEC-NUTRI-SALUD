@@ -1,6 +1,6 @@
 # Mejoras de negocio y producto — TEC Nutri Salud
 
-Documento **estratégico**: describe cómo debe evolucionar la experiencia para que sea **dinámica**, **fácil de interpretar**, con **flujo intuitivo** y un modelo mental claro en torno al **perfil del usuario**, **varios mercados** y **varios cronogramas**. Sirve de base para priorizar desarrollo; no sustituye historias de usuario ya cerradas en `USER_STORIES.md`, sino que las **amplía y ordena**.
+Documento **estratégico**: describe cómo debe evolucionar la experiencia para que sea **dinámica**, **fácil de interpretar**, con **flujo intuitivo** y un modelo mental claro en torno al **perfil del usuario**, **varias listas / snapshots en Mi mercado** y **varios cronogramas**. Sirve de base para priorizar desarrollo; no sustituye historias de usuario ya cerradas en `USER_STORIES.md`, sino que las **amplía y ordena**.
 
 ---
 
@@ -49,7 +49,7 @@ María abre la app y lo primero que quiere saber es *“¿en qué voy?”*: dato
 
 **Mejoras de negocio:**
 
-- Nueva entrada mental **“Mi espacio” / “Resumen”** (puede ser la propia home logada o una pestaña dedicada): tarjetas **Perfil resumido**, **Mercado activo**, **Cronograma actual** (último guardado o borrador), **Atajo Asistente**.
+- Nueva entrada mental **“Mi espacio” / “Resumen”** (puede ser la propia home logada o una pestaña dedicada): tarjetas **Perfil resumido**, **Mi mercado activo** (lista de compras vigente para el plan), **Cronograma actual** (último guardado o borrador), **Atajo Asistente**.
 - Indicadores de estado: “Falta mercado para modo mixto óptimo”, “Última lista guardada hace X días”, “Cronograma IA generado el …”.
 - Opción **editar perfil** desde ese centro sin scroll largo; cronograma detallado sigue en pantalla dedicada.
 
@@ -105,9 +105,9 @@ María usa el móvil en el supermercado y el portátil el domingo. No quiere lee
 **Mejoras de negocio:**
 
 - **Jerarquía de navegación**: nivel 1 — Inicio / Mi espacio, **Mi mercado**, Plan & Cronograma (o fusionar en “Menú” con subpasos), Belleza, Asistente, Cuenta.
-- **Eliminar redundancia**: un solo bloque **“Mercado activo”** (lista de compras) reutilizable; Mi plan se enfoca en **datos personales + preferencias de generación**; Cronograma en **visualización y generación** de menús.
+- **Eliminar redundancia**: un solo bloque **“Mi mercado activo”** (lista de compras) reutilizable; Mi plan se enfoca en **datos personales + preferencias de generación**; Cronograma en **visualización y generación** de menús.
 - **Microcopy único**: mensajes legales/orientativos una vez por pantalla o en modal “ℹ️”.
-- **Estados vacíos guiados**: ilustración o texto corto + CTA (“Aún no tienes mercados guardados → Crear lista”).
+- **Estados vacíos guiados**: ilustración o texto corto + CTA (“Aún no tienes listas en Mi mercado → Crear lista”).
 - **PWA**: mantener manifest y SW; revisar que actualización de versión no deje usuarios en JS viejo sin mensaje (“Hay una nueva versión — actualizar”).
 
 **Criterios de aceptación:**
@@ -140,7 +140,7 @@ María ya tiene despensa ligada al plan y varios cronogramas. Quiere **no perder
 | Pilar | Qué cambia para la usuaria |
 |-------|-----------------------------|
 | Nube gratuita bien acotada | Copia en cuenta de snapshots importantes vía Supabase (**JSON compacto**, RLS) sin inflar BD |
-| Mercado extras | Lista manual + generada en un mismo **mercado guardado** consumido por cronograma/IA |
+| **Mi mercado (extras)** | Lista manual + generada en un mismo **mercado guardado** consumido por cronograma/IA |
 | Menú más listo para cocinar | Toda la despensa (incl. extras), **macros por plato** y **saldo del día** (siempre texto legal/orientativo) |
 | Multimedia | Embed de video donde aplique + fallback enlace externo |
 | Diseño tech | Nueva tanda visual en Tailwind (**contraste antes que brillo**), animaciones sólo seguras |
@@ -164,11 +164,11 @@ María ya tiene despensa ligada al plan y varios cronogramas. Quiere **no perder
                   │
      ┌────────────┼────────────┐
      ▼            ▼            ▼
-┌─────────┐  ┌─────────┐  ┌──────────────┐
-│ Perfil  │  │ Mercados│  │ Cronogramas  │
-│ (datos) │  │ (lista  │  │ (planes      │
-│         │  │  N)     │  │  guardados N)│
-└─────────┘  └────┬────┘  └──────┬───────┘
+┌─────────┐  ┌──────────────┐  ┌──────────────┐
+│ Perfil  │  │ Mi mercado   │  │ Cronogramas  │
+│ (datos) │  │ (lista N /   │  │ (planes      │
+│         │  │ snapshots)   │  │ guardados N) │
+└─────────┘  └──────┬───────┘  └──────┬───────┘
                   │              │
                   └──────┬───────┘
                          ▼
@@ -195,7 +195,7 @@ María ya tiene despensa ligada al plan y varios cronogramas. Quiere **no perder
 | P1 | D — Limpiar redundancia y estados vacíos | Alto | Media |
 | P2 | A — Centro “Mi espacio” | Alto | Media |
 | P3 | C — Guardar N cronogramas | Alto | Media–alta |
-| P4 | B — Enriquecer N mercados (nombre, notas) | Medio–alto | Baja–media |
+| P4 | B — Enriquecer N **listas de mercado guardadas** (nombre, notas) | Medio–alto | Baja–media |
 | P5 | E — Sync nube mercados/cronogramas | Medio (cuenta) | Alta |
 | **P6 (próximo)** | **F — Nutrición guiada + nube esencial + mercado extras + UX tech** (`docs/PLAN_MEJORAS_FASE3_NUTRICION_SUPABASE_UI.md`) | Alto diferenciación | Alta–media por sub-PR |
 
@@ -212,8 +212,8 @@ María ya tiene despensa ligada al plan y varios cronogramas. Quiere **no perder
 ## 7. Relación con otros documentos
 
 - `docs/USER_STORIES.md` — historias actuales; las épicas aquí **actualizan** el backlog cuando se conviertan en historias nuevas numeradas.
-- `docs/BUSINESS_INPUT.md` — reglas de priorización mercado/plantillas; siguen válidas dentro de cada mercado activo.
-- `docs/FLUJO_USUARIO.md` — flujo lineal actual; evolucionará a **flujo con nodos** (perfil ↔ mercados ↔ cronogramas) cuando se implemente Mi espacio.
+- `docs/BUSINESS_INPUT.md` — reglas de priorización lista de compras/plantillas; válidas dentro de cada **snapshot de Mi mercado** activo.
+- `docs/FLUJO_USUARIO.md` — flujo lineal actual; evolucionará a **flujo con nodos** (perfil ↔ Mi mercado ↔ cronogramas) cuando se implemente más carga desde Mi espacio.
 - **`docs/PLAN_MEJORAS_FASE2_MULTI_PERFIL_CALENDARIO.md`** — plan técnico y de producto para **multiperfil** (varias personas bajo una cuenta), **fecha de inicio de dieta**, **cronograma por fechas**, **historial comidas** y **vista calendario** (detalle in-page).
 - **`docs/PLAN_MEJORAS_FASE3_NUTRICION_SUPABASE_UI.md`** — evolutivo: **Supabase económico**, **ítems extra en mercado**, **macros y presupuesto diario**, **video embebido**, **UI tech** + estándares de código y documentación.
 
@@ -221,7 +221,7 @@ María ya tiene despensa ligada al plan y varios cronogramas. Quiere **no perder
 
 ## 8. Épica D — Multiperfil, fechas reales e historial (visión)
 
-**Necesidad de negocio:** una persona con sesión quiere gestionar **varios perfiles** (hijos, hermanos, convivientes), cada uno con **su mercado** y **su cronograma**, y ver el menú **por fecha de calendario** (ej. inicio 13/05/2026 → “día 1” = esa fecha), además de **consultar días pasados** (qué comió) sin perder el dato al recargar.
+**Necesidad de negocio:** una persona con sesión quiere gestionar **varios perfiles** (hijos, hermanos, convivientes), cada uno con **su lista de compras / Mi mercado** y **su cronograma**, y ver el menú **por fecha de calendario** (ej. inicio 13/05/2026 → “día 1” = esa fecha), además de **consultar días pasados** (qué comió) sin perder el dato al recargar.
 
 **Estado:** parcialmente cubierto en el MVP por un solo `perfil` en `localStorage` y un mercado activo global. La implementación completa requiere modelo de datos, UI de selector de perfil y persistencia de snapshots de cronograma; ver el plan enlazado arriba.
 
