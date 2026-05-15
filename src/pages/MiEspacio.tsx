@@ -7,7 +7,7 @@ import {
 } from "../lib/recorrido";
 import { usuarioTieneProveedorEmail } from "../lib/authPassword";
 import { supabase } from "../lib/supabase";
-import { contarCompradosMercado } from "../lib/nutritionPlan";
+import { calcularTdeePerfil, contarCompradosMercado, presupuestoKcalOrientativoDiario, sumarMacrosComidaDia } from "../lib/nutritionPlan";
 import {
   getMercadoActivoParaPlan,
   getMercadoRealizado,
@@ -197,6 +197,23 @@ export function MiEspacio() {
                 <li>
                   <span className="text-slate-500">Talla:</span> {perfil.tallaCm} cm
                 </li>
+                {(() => {
+                  const tdee = calcularTdeePerfil(perfil);
+                  const objetivo = presupuestoKcalOrientativoDiario(perfil);
+                  return (
+                    <li className="mt-1 rounded-lg border border-emerald-100 bg-emerald-50/70 px-2 py-1.5 text-xs">
+                      <span className="text-slate-500">TDEE estimado:</span>{" "}
+                      <strong className="text-teal-900">~{tdee} kcal/día</strong>
+                      {objetivo != null && objetivo !== tdee && (
+                        <>
+                          {" · "}
+                          <span className="text-slate-500">Objetivo:</span>{" "}
+                          <strong className="text-teal-900">~{objetivo} kcal/día</strong>
+                        </>
+                      )}
+                    </li>
+                  );
+                })()}
               </ul>
               <Link
                 to="/mi-plan"
@@ -307,6 +324,25 @@ export function MiEspacio() {
                     </span>
                   </li>
                 )}
+                {(() => {
+                  const diasConKcal = snapCron.diasPlan?.filter((d) => sumarMacrosComidaDia(d.comidas).kcal > 0) ?? [];
+                  if (!diasConKcal.length) return null;
+                  const avgKcal = Math.round(diasConKcal.reduce((s, d) => s + sumarMacrosComidaDia(d.comidas).kcal, 0) / diasConKcal.length);
+                  const perfil = loadPerfilLocal();
+                  const objetivo = perfil ? presupuestoKcalOrientativoDiario(perfil) : null;
+                  const diff = objetivo != null ? avgKcal - objetivo : null;
+                  return (
+                    <li className="mt-1 rounded-lg border border-violet-100 bg-violet-50/70 px-2 py-1.5 text-xs">
+                      <span className="text-slate-500">Prom. kcal/día:</span>{" "}
+                      <strong className="text-violet-900">~{avgKcal} kcal</strong>
+                      {diff != null && (
+                        <span className={`ml-1.5 font-semibold ${Math.abs(diff) <= (objetivo ?? 0) * 0.1 ? "text-emerald-700" : "text-amber-700"}`}>
+                          {Math.abs(diff) <= (objetivo ?? 0) * 0.1 ? "✓ en objetivo" : diff > 0 ? `+${diff}` : `${diff}`}
+                        </span>
+                      )}
+                    </li>
+                  );
+                })()}
               </ul>
             </>
           ) : (

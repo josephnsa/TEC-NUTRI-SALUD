@@ -1,10 +1,41 @@
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { MARCA_ESLOGAN } from "../lib/brand";
 import { PASOS_RECORRIDO_PRINCIPAL, RUTA_MI_ESPACIO } from "../lib/recorrido";
 import { useAuth } from "../context/AuthContext";
+import { getMercadoActivoParaPlan, getMercadoRealizado } from "../lib/mercadoHistorial";
+import { getActivoPerfilId, loadPerfilLocal, perfilGuardadoEnDispositivo } from "../lib/perfilStorage";
+import { getSnapshotActivoId, listarSnapshots } from "../lib/cronogramaHistorial";
+import { calcularTdeePerfil, presupuestoKcalOrientativoDiario } from "../lib/nutritionPlan";
 
 export function Home() {
   const { user, isConfigured } = useAuth();
+
+  const estado = useMemo(() => {
+    const tienePerfil = perfilGuardadoEnDispositivo();
+    if (!tienePerfil) return null;
+    const perfil = loadPerfilLocal();
+    if (!perfil) return null;
+    const mercadoId = getMercadoActivoParaPlan();
+    const mercado = mercadoId ? getMercadoRealizado(mercadoId) : null;
+    const perfilId = getActivoPerfilId();
+    const snapId = getSnapshotActivoId(perfilId);
+    const snap = snapId ? listarSnapshots(perfilId).find((s) => s.id === snapId) ?? null : null;
+    const tdee = calcularTdeePerfil(perfil);
+    const kcalObjetivo = presupuestoKcalOrientativoDiario(perfil);
+    return {
+      nombre: perfil.nombre.trim() || null,
+      estilo: perfil.estiloDieta,
+      tieneMercado: Boolean(mercado),
+      itemsMercado: mercado?.items?.length ?? 0,
+      tienePlan: Boolean(snap),
+      diasPlan: snap?.dias ?? 0,
+      fuentePlan: snap?.fuente ?? null,
+      tdee,
+      kcalObjetivo
+    };
+  }, []);
+
   return (
     <div className="space-y-12">
       <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-teal-950 via-emerald-900 to-cyan-950 p-6 shadow-glow ring-1 ring-white/10 sm:p-10 md:p-12">
@@ -94,6 +125,65 @@ export function Home() {
           )}
         </p>
       </section>
+
+      {estado && (
+        <section className="motion-safe:animate-fade-up motion-reduce:animate-none">
+          <div className="rounded-2xl border border-teal-200/80 bg-gradient-to-br from-white/95 via-teal-50/50 to-emerald-50/30 p-5 shadow-md shadow-teal-900/5 backdrop-blur-sm">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-teal-700">
+                  {estado.nombre ? `Bienvenido de vuelta, ${estado.nombre}` : "Bienvenido de vuelta"}
+                </p>
+                <p className="mt-1 text-sm text-slate-600">
+                  Dieta <strong className="text-teal-900">{estado.estilo}</strong>
+                  {estado.kcalObjetivo != null && (
+                    <> · objetivo <strong className="text-teal-900">{estado.kcalObjetivo} kcal/día</strong></>
+                  )}
+                  {estado.kcalObjetivo == null && (
+                    <> · TDEE estimado <strong className="text-teal-900">~{estado.tdee} kcal/día</strong></>
+                  )}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  { ok: true, label: "✓ Perfil", to: "/mi-plan" },
+                  { ok: estado.tieneMercado, label: estado.tieneMercado ? `✓ Mercado (${estado.itemsMercado} ítems)` : "○ Sin mercado", to: "/keto-mercado" },
+                  { ok: estado.tienePlan, label: estado.tienePlan ? `✓ Plan (${estado.diasPlan}d ${estado.fuentePlan === "ia" ? "·IA" : ""})` : "○ Sin plan", to: "/cronograma" }
+                ].map((b) => (
+                  <Link
+                    key={b.to}
+                    to={b.to}
+                    className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold transition hover:brightness-95 ${
+                      b.ok
+                        ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                        : "border-slate-200 bg-white/80 text-slate-500"
+                    }`}
+                  >
+                    {b.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {!estado.tieneMercado && (
+                <Link to="/keto-mercado" className="rounded-xl bg-teal-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-teal-700">
+                  Generar mercado con IA →
+                </Link>
+              )}
+              {!estado.tienePlan && (
+                <Link to="/cronograma" className="rounded-xl bg-violet-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-violet-700">
+                  Generar menú con IA →
+                </Link>
+              )}
+              {estado.tieneMercado && estado.tienePlan && (
+                <Link to={RUTA_MI_ESPACIO} className="rounded-xl bg-teal-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-teal-700">
+                  Ver mi resumen →
+                </Link>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="motion-safe:animate-fade-up motion-reduce:animate-none">
         <h2 className="font-display text-xl font-semibold text-gradient-brand">Explora la app</h2>

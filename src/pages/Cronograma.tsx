@@ -73,24 +73,44 @@ function celdasMes(year: number, monthIndex: number): (Date | null)[] {
   return cells;
 }
 
-function CopiarPlanBtn({ dias }: { dias: import("../lib/cronogramaHistorial").DiaPlanConFecha[] }) {
+function CopiarPlanBtn({
+  dias,
+  estiloDieta,
+  presupuestoKcal
+}: {
+  dias: import("../lib/cronogramaHistorial").DiaPlanConFecha[];
+  estiloDieta?: string;
+  presupuestoKcal?: number | null;
+}) {
   const [copiado, setCopiado] = useState(false);
 
   const copiar = () => {
-    const lineas: string[] = [];
+    const header: string[] = [];
+    header.push(`🥗 Plan ${estiloDieta ? estiloDieta.charAt(0).toUpperCase() + estiloDieta.slice(1) : "nutricional"} · ${dias.length} días`);
+    if (presupuestoKcal) header.push(`Objetivo: ~${presupuestoKcal} kcal/día`);
+    header.push("");
+
+    const lineas: string[] = [...header];
     for (const d of dias) {
-      lineas.push(`── Día ${d.dia} (${d.fecha}) ──`);
-      lineas.push(`Desayuno: ${d.comidas.desayuno.titulo}`);
-      lineas.push(d.comidas.desayuno.receta.split("\n")[0] ?? "");
-      lineas.push(`Almuerzo: ${d.comidas.almuerzo.titulo}`);
-      lineas.push(d.comidas.almuerzo.receta.split("\n")[0] ?? "");
-      lineas.push(`Cena: ${d.comidas.cena.titulo}`);
-      lineas.push(d.comidas.cena.receta.split("\n")[0] ?? "");
+      const tot = sumarMacrosComidaDia(d.comidas);
+      const kcalStr = tot.kcal > 0 ? ` (~${Math.round(tot.kcal)} kcal)` : "";
+      lineas.push(`📅 Día ${d.dia} (${d.fecha})${kcalStr}`);
+      lineas.push(`  🌅 Desayuno: ${d.comidas.desayuno.titulo}`);
+      const resDesayuno = d.comidas.desayuno.receta.split("\n")[0] ?? "";
+      if (resDesayuno) lineas.push(`     ${resDesayuno}`);
+      lineas.push(`  🥙 Almuerzo: ${d.comidas.almuerzo.titulo}`);
+      const resAlmuerzo = d.comidas.almuerzo.receta.split("\n")[0] ?? "";
+      if (resAlmuerzo) lineas.push(`     ${resAlmuerzo}`);
+      lineas.push(`  🌙 Cena: ${d.comidas.cena.titulo}`);
+      const resCena = d.comidas.cena.receta.split("\n")[0] ?? "";
+      if (resCena) lineas.push(`     ${resCena}`);
       lineas.push("");
     }
+    lineas.push("Generado con TEC Nutri Salud 🌿");
+
     void navigator.clipboard.writeText(lineas.join("\n")).then(() => {
       setCopiado(true);
-      setTimeout(() => setCopiado(false), 2200);
+      setTimeout(() => setCopiado(false), 2500);
     });
   };
 
@@ -98,9 +118,10 @@ function CopiarPlanBtn({ dias }: { dias: import("../lib/cronogramaHistorial").Di
     <button
       type="button"
       onClick={copiar}
+      title="Copiar el plan completo para compartir por WhatsApp, mensajes, etc."
       className={`ui-btn-secondary transition ${copiado ? "border-emerald-300 bg-emerald-50 text-emerald-800" : ""}`}
     >
-      {copiado ? "¡Plan copiado!" : "Copiar plan"}
+      {copiado ? "¡Copiado al portapapeles!" : "📋 Copiar plan"}
     </button>
   );
 }
@@ -721,7 +742,7 @@ export function Cronograma() {
             Guardar menú en historial
           </button>
           {diasConFecha.length > 0 && (
-            <CopiarPlanBtn dias={diasConFecha} />
+            <CopiarPlanBtn dias={diasConFecha} estiloDieta={perfil.estiloDieta} presupuestoKcal={presupuestoKcal} />
           )}
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <span>Días</span>
