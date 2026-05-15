@@ -30,7 +30,7 @@ function listaMercadoLinea(it: ListaItem): string {
 /** Lista completa para la IA — siempre con cantidades/unidad del usuario. */
 function textoListaMercadoCompleta(items: ListaItem[] | undefined): string {
   if (!items?.length) {
-    return "(No hay lista de mercado cargada para este perfil. El usuario debe ir a Mercado keto y/o marcar ítems.)";
+    return "(No hay lista de mercado cargada para este perfil; el usuario puede generar una en Mi mercado y marcar ítems.)";
   }
   return items.map(listaMercadoLinea).join("\n");
 }

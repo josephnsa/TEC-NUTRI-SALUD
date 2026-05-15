@@ -6,7 +6,7 @@ import { MarkdownRender } from "../components/MarkdownRender";
 import { URL_GOOGLE_AI_STUDIO_API_KEY } from "../lib/googleAiStudio";
 import { getMercadoActivoParaPlan, getMercadoRealizado } from "../lib/mercadoHistorial";
 import { getSnapshotActivoId, listarSnapshots } from "../lib/cronogramaHistorial";
-import type { PerfilUsuario } from "../lib/nutritionPlan";
+import { labelDieta, type PerfilUsuario } from "../lib/nutritionPlan";
 
 const SUGERENCIAS_BASE: Record<string, string[]> = {
   keto: [
@@ -38,21 +38,22 @@ const SUGERENCIAS_GENERALES = [
 
 function generarSugerencias(perfil: PerfilUsuario | null): string[] {
   if (!perfil) return SUGERENCIAS_GENERALES;
+  const etiquetaEstilo = labelDieta(perfil.estiloDieta);
   const base = [...(SUGERENCIAS_BASE[perfil.estiloDieta] ?? SUGERENCIAS_GENERALES)];
   const objetivo = perfil.objetivosNutricion?.pesoObjetivoKg;
   if (objetivo != null && Math.abs(perfil.pesoKg - objetivo) >= 0.5) {
     const pierde = perfil.pesoKg > objetivo;
     base.push(
       pierde
-        ? `Estrategias para bajar ${(perfil.pesoKg - objetivo).toFixed(1)} kg de forma saludable con dieta ${perfil.estiloDieta}.`
-        : `¿Cómo gano ${(objetivo - perfil.pesoKg).toFixed(1)} kg de masa muscular con dieta ${perfil.estiloDieta}?`
+        ? `Estrategias para bajar ${(perfil.pesoKg - objetivo).toFixed(1)} kg de forma saludable con dieta ${etiquetaEstilo}.`
+        : `¿Cómo gano ${(objetivo - perfil.pesoKg).toFixed(1)} kg de masa muscular con dieta ${etiquetaEstilo}?`
     );
   }
   if (perfil.enfermedades?.trim()) {
-    base.push(`¿Cómo adapto la dieta ${perfil.estiloDieta} considerando: ${perfil.enfermedades.trim().slice(0, 60)}?`);
+    base.push(`¿Cómo adapto la dieta (${etiquetaEstilo}) considerando: ${perfil.enfermedades.trim().slice(0, 60)}?`);
   }
   if (perfil.alimentosEvitar?.trim()) {
-    base.push(`Sustitutos saludables para ${perfil.alimentosEvitar.trim().slice(0, 40)} en dieta ${perfil.estiloDieta}.`);
+    base.push(`Sustitutos saludables para ${perfil.alimentosEvitar.trim().slice(0, 40)} en dieta ${etiquetaEstilo}.`);
   }
   return base.slice(0, 6);
 }
@@ -211,7 +212,7 @@ export function Agente() {
             <p className="text-xs font-semibold uppercase tracking-wide text-teal-800">Sugerencias rápidas</p>
             {perfilCargado && (
               <span className="rounded-full border border-teal-200/80 bg-teal-50/80 px-2 py-0.5 text-[10px] font-semibold text-teal-700">
-                para dieta {perfilCargado.estiloDieta}
+                dieta · {labelDieta(perfilCargado.estiloDieta)}
               </span>
             )}
           </div>

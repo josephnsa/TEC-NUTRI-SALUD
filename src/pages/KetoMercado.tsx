@@ -23,7 +23,7 @@ import {
   type MercadoSnapshot
 } from "../lib/mercadoHistorial";
 import { PERFILES_STORAGE_EVENT, loadPerfilLocal } from "../lib/perfilStorage";
-import { CATEGORIA_LABELS, DIETA_LABELS } from "../lib/nutritionPlan";
+import { CATEGORIA_LABELS, DIETA_LABELS, labelDieta } from "../lib/nutritionPlan";
 import { deleteMercadoSnapshotRemote, pushMercadoSnapshotRemote } from "../lib/snapshotsRemote";
 import { URL_GOOGLE_AI_STUDIO_API_KEY, geminiMercadoDisponible, generarMercadoIA } from "../lib/mercadoIA";
 import { exportarMercadoPdf } from "../lib/pdfExport";
@@ -149,12 +149,7 @@ export function KetoMercado() {
       try {
         const iaItems = await generarMercadoIA(perfil, dias, personas);
         persist(iaItems, dias, personas);
-        const nombreDieta: Record<string, string> = {
-          keto: "cetogénica",
-          mediterranea: "mediterránea",
-          balanceada: "balanceada"
-        };
-        setMsg(`IA generó ${iaItems.length} ítems personalizados para dieta ${nombreDieta[perfil.estiloDieta] ?? perfil.estiloDieta}.`);
+        setMsg(`IA generó ${iaItems.length} ítems personalizados · ${labelDieta(perfil.estiloDieta)}.`);
       } catch (e) {
         setIaMercadoError(e instanceof Error ? e.message : "Error al generar con IA.");
       } finally {

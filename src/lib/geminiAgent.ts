@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GEMINI_MODEL_IDS } from "./geminiModels";
 import { URL_GOOGLE_AI_STUDIO_API_KEY } from "./googleAiStudio";
 import type { PerfilUsuario } from "./nutritionPlan";
-import { calcularTdeePerfil, presupuestoKcalOrientativoDiario, sumarMacrosComidaDia } from "./nutritionPlan";
+import { calcularTdeePerfil, labelDieta, presupuestoKcalOrientativoDiario, sumarMacrosComidaDia } from "./nutritionPlan";
 import type { ListaItem } from "./ketoMercado";
 import type { CronogramaSnapshot } from "./cronogramaHistorial";
 
@@ -71,7 +71,7 @@ export async function consultarAgenteNutricion(
   if (!key) {
     return (
       `Modo sin API: crea una clave gratuita en Google AI Studio (${URL_GOOGLE_AI_STUDIO_API_KEY}), configura VITE_GEMINI_API_KEY y vuelve a construir la app para respuestas generadas al instante. ` +
-      "Mientras tanto, usa Mi plan para ver el cronograma y el mercado keto."
+      "Mientras tanto, navega por Cronograma y Mi mercado desde el menú de la app."
     );
   }
 
@@ -80,7 +80,7 @@ export async function consultarAgenteNutricion(
   const contextoExtra = contexto ? construirContextoExtra(contexto) : "";
 
   const genAI = new GoogleGenerativeAI(key);
-  const system = `Eres dietista-nutricionista especializado en dieta ${perfil.estiloDieta} y asistente de estilo de vida saludable. Hablas en español con precisión técnica pero lenguaje accesible.
+  const system = `Eres dietista-nutricionista especializado en la dieta estilo "${labelDieta(perfil.estiloDieta)}". Hablas en español con precisión técnica pero lenguaje accesible.
 Reglas: no diagnosticar; recomendar consultar a médico/dietista ante enfermedad o medicación.
 Si sugieres recetas o listas de comidas, indica cantidades orientativas para UNA (1) persona salvo que el usuario pida otra cosa.
 
