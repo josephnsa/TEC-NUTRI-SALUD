@@ -1244,6 +1244,29 @@ export function Cronograma() {
                             ▶ vídeo
                           </span>
                         )}
+                        {hayKcal && presupuestoKcal != null && (() => {
+                          const pct = Math.min(100, Math.round((totalDia.kcal / presupuestoKcal) * 100));
+                          const diff = totalDia.kcal - presupuestoKcal;
+                          const barColor =
+                            Math.abs(diff) <= presupuestoKcal * 0.1
+                              ? "bg-emerald-500"
+                              : diff > 0
+                              ? "bg-amber-500"
+                              : "bg-sky-400";
+                          return (
+                            <div className="flex w-full items-center gap-2 mt-1" title={`${Math.round(totalDia.kcal)} kcal · objetivo ${presupuestoKcal} kcal`}>
+                              <div className="flex-1 h-1.5 rounded-full overflow-hidden bg-slate-100">
+                                <div
+                                  className={`h-full rounded-full ${barColor} transition-all duration-500`}
+                                  style={{ width: `${pct}%` }}
+                                />
+                              </div>
+                              <span className={`text-[9px] tabular-nums font-semibold shrink-0 ${Math.abs(diff) <= presupuestoKcal * 0.1 ? "text-emerald-700" : diff > 0 ? "text-amber-700" : "text-sky-600"}`}>
+                                {pct}%
+                              </span>
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
                     <button type="button" className="ui-btn-secondary shrink-0 px-3 py-1 text-xs" onClick={() => abrirDia(d)}>

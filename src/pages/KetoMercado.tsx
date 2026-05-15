@@ -640,6 +640,42 @@ export function KetoMercado() {
         </div>
       )}
 
+      {grupos.size > 1 && (
+        <nav
+          className="sticky top-[3.4rem] z-30 -mx-3 overflow-x-auto border-b border-emerald-100/80 bg-white/85 px-3 py-2 backdrop-blur-xl sm:-mx-4 sm:px-4"
+          aria-label="Categorías del mercado"
+        >
+          <div className="flex min-w-max gap-2">
+            {Array.from(grupos.keys()).map((cat) => {
+              const total = grupos.get(cat)?.length ?? 0;
+              const comprados = grupos.get(cat)?.filter((i) => i.comprado).length ?? 0;
+              const completo = total > 0 && comprados === total;
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => {
+                    const el = document.getElementById(`mercado-cat-${cat}`);
+                    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }}
+                  className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition whitespace-nowrap ${
+                    completo
+                      ? "border-emerald-300/80 bg-emerald-50/90 text-emerald-800"
+                      : "border-emerald-200/80 bg-white/90 text-teal-900 hover:border-teal-300 hover:bg-teal-50/80"
+                  }`}
+                >
+                  {completo && <span>✓</span>}
+                  {labels[cat] ?? cat}
+                  <span className="rounded-full bg-slate-100/90 px-1.5 py-0.5 text-[9px] tabular-nums text-slate-500">
+                    {comprados}/{total}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </nav>
+      )}
+
       <div className="space-y-8">
         {Array.from(grupos.entries()).map(([cat, list]) => {
           const listaFiltrada = soloPendientes ? list.filter((i) => !i.comprado) : list;
@@ -648,7 +684,7 @@ export function KetoMercado() {
           const totalCat = list.length;
           const todosComprados = compradosCat === totalCat;
           return (
-          <section key={cat}>
+          <section key={cat} id={`mercado-cat-${cat}`} className="scroll-mt-28">
             <div className="mb-2 flex items-center gap-2">
               <h2 className="ui-section-title text-gradient-brand">{labels[cat] ?? cat}</h2>
               <span
