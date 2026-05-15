@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { getActivoPerfilId, loadPerfilLocal } from "../lib/perfilStorage";
 import { consultarAgenteNutricion, geminiDisponible, type ContextoAgente } from "../lib/geminiAgent";
@@ -6,15 +6,56 @@ import { MarkdownRender } from "../components/MarkdownRender";
 import { URL_GOOGLE_AI_STUDIO_API_KEY } from "../lib/googleAiStudio";
 import { getMercadoActivoParaPlan, getMercadoRealizado } from "../lib/mercadoHistorial";
 import { getSnapshotActivoId, listarSnapshots } from "../lib/cronogramaHistorial";
+import type { PerfilUsuario } from "../lib/nutritionPlan";
 
-const SUGERENCIAS = [
-  "3 meriendas keto sin horno con ingredientes básicos de despensa.",
-  "¿Qué desayunos rápidos encajan en dieta mediterránea?",
-  "Crea una lista de compras keto para 5 días y 2 personas.",
+const SUGERENCIAS_BASE: Record<string, string[]> = {
+  keto: [
+    "¿Cuántos gramos de carbohidratos puedo comer en dieta keto?",
+    "Tres meriendas keto rápidas sin hornear.",
+    "¿Cómo salgo de un estancamiento en dieta keto?",
+    "¿Es normal el mareo y fatiga en la primera semana keto?"
+  ],
+  mediterranea: [
+    "¿Cuánto aceite de oliva es razonable al día en dieta mediterránea?",
+    "Propón tres días de menú mediterráneo equilibrado.",
+    "¿Qué frutos secos y en qué cantidad son ideales en esta dieta?",
+    "Receta mediterránea rápida de menos de 30 minutos."
+  ],
+  balanceada: [
+    "¿Cuántas veces a la semana debo comer legumbres?",
+    "¿Cómo distribuyo los macros en una dieta balanceada?",
+    "Propón una semana de menú balanceado variado.",
+    "¿Qué snacks saludables me ayudan a no picar entre horas?"
+  ]
+};
+
+const SUGERENCIAS_GENERALES = [
   "¿Cómo distribuyo las proteínas a lo largo del día?",
-  "Ideas de cenas ligeras para bajar carbohidratos sin pasar hambre.",
+  "Ideas de cenas ligeras sin pasar hambre.",
   "¿Qué alimentos ayudan a mejorar el sueño desde la dieta?",
+  "¿Cuáles son los mejores alimentos antiinflamatorios?"
 ];
+
+function generarSugerencias(perfil: PerfilUsuario | null): string[] {
+  if (!perfil) return SUGERENCIAS_GENERALES;
+  const base = [...(SUGERENCIAS_BASE[perfil.estiloDieta] ?? SUGERENCIAS_GENERALES)];
+  const objetivo = perfil.objetivosNutricion?.pesoObjetivoKg;
+  if (objetivo != null && Math.abs(perfil.pesoKg - objetivo) >= 0.5) {
+    const pierde = perfil.pesoKg > objetivo;
+    base.push(
+      pierde
+        ? `Estrategias para bajar ${(perfil.pesoKg - objetivo).toFixed(1)} kg de forma saludable con dieta ${perfil.estiloDieta}.`
+        : `¿Cómo gano ${(objetivo - perfil.pesoKg).toFixed(1)} kg de masa muscular con dieta ${perfil.estiloDieta}?`
+    );
+  }
+  if (perfil.enfermedades?.trim()) {
+    base.push(`¿Cómo adapto la dieta ${perfil.estiloDieta} considerando: ${perfil.enfermedades.trim().slice(0, 60)}?`);
+  }
+  if (perfil.alimentosEvitar?.trim()) {
+    base.push(`Sustitutos saludables para ${perfil.alimentosEvitar.trim().slice(0, 40)} en dieta ${perfil.estiloDieta}.`);
+  }
+  return base.slice(0, 6);
+}
 
 const HISTORIAL_KEY = "tec_nutri_salud_agente_historial_v1";
 const MAX_HISTORIAL = 8;
@@ -44,7 +85,10 @@ function guardarEnHistorial(pregunta: string): string[] {
 }
 
 export function Agente() {
-  const [pregunta, setPregunta] = useState(SUGERENCIAS[0]!);
+  const perfilCargado = useMemo(() => loadPerfilLocal(), []);
+  const sugerencias = useMemo(() => generarSugerencias(perfilCargado), [perfilCargado]);
+
+  const [pregunta, setPregunta] = useState(() => sugerencias[0] ?? SUGERENCIAS_GENERALES[0]!);
   const [respuesta, setRespuesta] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [historial, setHistorial] = useState<string[]>(() => leerHistorial());
@@ -163,11 +207,18 @@ export function Agente() {
 
       <div className="ui-card space-y-4">
         <div>
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-teal-800">Sugerencias rápidas</p>
+          <div className="mb-2 flex items-center gap-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-teal-800">Sugerencias rápidas</p>
+            {perfilCargado && (
+              <span className="rounded-full border border-teal-200/80 bg-teal-50/80 px-2 py-0.5 text-[10px] font-semibold text-teal-700">
+                para dieta {perfilCargado.estiloDieta}
+              </span>
+            )}
+          </div>
           <div className="flex flex-wrap gap-2">
-            {SUGERENCIAS.map((s) => (
+            {sugerencias.map((s, i) => (
               <button
-                key={s}
+                key={i}
                 type="button"
                 onClick={() => setPregunta(s)}
                 className={`rounded-xl border px-3 py-1.5 text-left text-xs transition ${

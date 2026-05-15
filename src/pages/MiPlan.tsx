@@ -4,7 +4,9 @@ import { StepHeader } from "../components/StepHeader";
 import { DecimalField, IntField } from "../components/NumericInputs";
 import { useAuth } from "../context/AuthContext";
 import {
+  calcularTdeePerfil,
   contarCompradosMercado,
+  presupuestoKcalOrientativoDiario,
   resumenNutricional,
   type PerfilUsuario
 } from "../lib/nutritionPlan";
@@ -464,6 +466,57 @@ export function MiPlan() {
             </label>
           </div>
         </div>
+
+        {(() => {
+          const objetivo = perfil.objetivosNutricion?.pesoObjetivoKg;
+          if (!objetivo || !perfil.nivelActividad) return null;
+          const tdee = calcularTdeePerfil(perfil);
+          const kcalObj = presupuestoKcalOrientativoDiario(perfil);
+          if (!kcalObj) return null;
+          const deltaDiario = Math.abs(tdee - kcalObj);
+          if (deltaDiario < 10) return null;
+          const deltaKg = Math.abs(perfil.pesoKg - objetivo);
+          if (deltaKg < 0.5) {
+            return (
+              <div className="md:col-span-2 rounded-xl border border-emerald-200/80 bg-emerald-50/80 px-4 py-3 text-sm text-emerald-900">
+                <span className="font-semibold">¡Estás en tu peso objetivo!</span> Mantén el plan actual.
+              </div>
+            );
+          }
+          const pierde = perfil.pesoKg > objetivo;
+          const kcalPorKg = 7700;
+          const diasEstimados = Math.round((deltaKg * kcalPorKg) / deltaDiario);
+          const semanasEstimadas = Math.round(diasEstimados / 7);
+          const mesesEstimados = (diasEstimados / 30.5).toFixed(1);
+          const ritmo = perfil.objetivosNutricion?.ritmo ?? "relajado";
+          return (
+            <div className="md:col-span-2 rounded-2xl border border-cyan-200/70 bg-gradient-to-br from-cyan-50/60 via-white/95 to-teal-50/40 px-4 py-4 shadow-sm">
+              <p className="text-xs font-bold uppercase tracking-wider text-cyan-800">
+                {pierde ? "📉 Proyección para bajar de peso" : "📈 Proyección para ganar peso"}
+              </p>
+              <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-xl border border-cyan-100 bg-white/70 px-3 py-2.5 text-center">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Diferencia</p>
+                  <p className="mt-0.5 font-mono text-xl font-bold text-cyan-900">{deltaKg.toFixed(1)} kg</p>
+                  <p className="text-[10px] text-slate-500">{pierde ? `de ${perfil.pesoKg} a ${objetivo}` : `de ${perfil.pesoKg} a ${objetivo}`} kg</p>
+                </div>
+                <div className="rounded-xl border border-cyan-100 bg-white/70 px-3 py-2.5 text-center">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">{pierde ? "Déficit diario" : "Superávit diario"}</p>
+                  <p className="mt-0.5 font-mono text-xl font-bold text-teal-900">~{deltaDiario} kcal</p>
+                  <p className="text-[10px] text-slate-500">ritmo {ritmo}</p>
+                </div>
+                <div className="rounded-xl border border-cyan-100 bg-white/70 px-3 py-2.5 text-center">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Tiempo estimado</p>
+                  <p className="mt-0.5 font-mono text-xl font-bold text-emerald-900">~{semanasEstimadas} sem</p>
+                  <p className="text-[10px] text-slate-500">({mesesEstimados} meses aprox.)</p>
+                </div>
+              </div>
+              <p className="mt-3 text-[10px] leading-relaxed text-slate-500">
+                Estimación orientativa basada en ~7.700 kcal/kg · Días estimados: {diasEstimados} · No sustituye valoración médica.
+              </p>
+            </div>
+          );
+        })()}
 
         <div className="md:col-span-2 flex flex-wrap items-center gap-3">
           <button
