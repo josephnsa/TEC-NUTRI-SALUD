@@ -408,21 +408,14 @@ export function MiPlan() {
         </ul>
       </section>
 
-      <section className="rounded-2xl border border-teal-200/70 bg-gradient-to-br from-teal-50/90 via-white/95 to-cyan-50/50 p-5 shadow-md shadow-teal-900/5 backdrop-blur-sm">
-        <h2 className="font-display text-lg font-semibold text-teal-950">Paso 3 · Cronograma</h2>
-        <p className="mt-2 text-sm text-slate-600">
-          Genera el menú por días usando plantillas o recetas con IA (Gemini), visualiza en lista o
-          calendario, guarda planes con nombre y consulta el historial de semanas anteriores.
-        </p>
-        <div className="mt-4 flex flex-wrap gap-3">
-          <Link to="/cronograma" className="ui-btn-primary">
-            Ir a generar cronograma →
-          </Link>
-          <Link to={RUTA_MI_ESPACIO} className="ui-btn-secondary">
-            Ver resumen →
-          </Link>
-        </div>
-      </section>
+      <div className="flex flex-wrap gap-3">
+        <Link to="/keto-mercado" className="ui-btn-secondary">
+          Paso 2 · Mercado →
+        </Link>
+        <Link to="/cronograma" className="ui-btn-primary">
+          Paso 3 · Cronograma →
+        </Link>
+      </div>
     </div>
   );
 }
