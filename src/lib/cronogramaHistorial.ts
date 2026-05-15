@@ -1,5 +1,6 @@
 import type { DiaPlan, ModoCronograma } from "./nutritionPlan";
 import { fechaInicioEfectivaParaDias, fechaIsoParaDiaN } from "./planFechas";
+import { persistPlanActivoEnFamily } from "./perfilStorage";
 
 const STORAGE_KEY = "tec_nutri_salud_cronograma_historial_v1";
 const MAX_SNAPSHOTS = 48;
@@ -210,6 +211,7 @@ export function setSnapshotActivoId(perfilId: string | null, id: string | null):
   if (!perfilId) return;
   if (!id) localStorage.removeItem(activeSnapKey(perfilId));
   else localStorage.setItem(activeSnapKey(perfilId), id);
+  persistPlanActivoEnFamily(perfilId, id);
   emitHistorial();
 }
 

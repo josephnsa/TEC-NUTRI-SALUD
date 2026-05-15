@@ -27,6 +27,7 @@ import {
   stripToUsuario
 } from "../lib/perfilStorage";
 import { fetchAndApplyFamilyRemote, fetchProfileRemote, upsertProfileRemote } from "../lib/profileRemote";
+import { restaurarActivosLocalesDesdeEstado } from "../lib/prefsActivos";
 import { pullCloudSnapshots } from "../lib/snapshotsRemote";
 import { getMercadoActivoParaPlan, getMercadoRealizado, purgeMercadoDePerfil } from "../lib/mercadoHistorial";
 import { purgeSnapshotsDePerfil } from "../lib/cronogramaHistorial";
@@ -80,6 +81,8 @@ export function MiPlan() {
       await fetchAndApplyFamilyRemote(user.id);
       const pulled = await pullCloudSnapshots(user.id);
       if (!pulled.ok) setStatus(`Aviso: no se pudieron fusionar datos de mercado/planes desde la nube (${pulled.error}).`);
+      restaurarActivosLocalesDesdeEstado();
+      setMercadoActivoId(getMercadoActivoParaPlan());
       const mAfter = loadPerfilMiembroActivo();
       setFechaInicioPlan(mAfter?.fechaInicioPlan ?? "");
       setLoadingRemote(false);

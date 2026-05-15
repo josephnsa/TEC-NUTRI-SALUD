@@ -22,7 +22,9 @@ import {
   loadPerfilMiembroActivo
 } from "../lib/perfilStorage";
 import { etiquetaFechaDiaPlan, toYmdLocal } from "../lib/planFechas";
+import { urlReproducibleDesdePlato } from "../lib/recipeVideoUrl";
 import { fetchAndApplyFamilyRemote, fetchProfileRemote, upsertProfileRemote } from "../lib/profileRemote";
+import { capturarActivosLocalesEnEstado, restaurarActivosLocalesDesdeEstado } from "../lib/prefsActivos";
 import { deletePlanSnapshotRemote, pullCloudSnapshots, pushPlanSnapshotRemote } from "../lib/snapshotsRemote";
 import {
   CRONOGRAMA_HISTORIAL_EVENT,
@@ -223,6 +225,11 @@ export function Cronograma() {
       if (!pulled.ok) {
         setStatus(`Aviso: no se pudo sincronizar mercados/planes desde la nube (${pulled.error}).`);
       }
+      restaurarActivosLocalesDesdeEstado();
+      const pid = getActivoPerfilId();
+      setSnapActivoId(getSnapshotActivoId(pid));
+      setMercadoActivoId(getMercadoActivoParaPlan());
+      setHistorialTick((t) => t + 1);
       setLoadingRemote(false);
     })();
   }, [user?.id, isConfigured]);
@@ -429,8 +436,14 @@ export function Cronograma() {
 
   const marcarPlanActivo = (id: string) => {
     const pid = perfilContextoId ?? getActivoPerfilId();
+    if (!pid) return;
     setSnapshotActivoId(pid, id);
     setSnapActivoId(id);
+    capturarActivosLocalesEnEstado();
+    if (user?.id && isConfigured) {
+      const fam = loadEstadoPerfiles();
+      if (fam) void upsertProfileRemote(user.id, perfil, { family: fam });
+    }
   };
 
   const aplicarDesdeHistorial = (snapshotId: string) => {
@@ -1251,8 +1264,8 @@ export function Cronograma() {
               const lblFecha = etiquetaFechaDiaPlan(fechaIniCron, d.dia);
               const totalDia = sumarMacrosComidaDia(d.comidas);
               const hayKcal = totalDia.kcal > 0;
-              const hayVideo = (["desayuno", "almuerzo", "cena"] as const).some(
-                (s) => d.comidas[s].youtubeVideoId
+              const hayVideo = (["desayuno", "almuerzo", "cena"] as const).some((s) =>
+                Boolean(urlReproducibleDesdePlato(d.comidas[s]))
               );
               const esIA = vistaCronograma === "ia" && cronogramaIa?.length === diasCronograma;
               return (
@@ -1332,8 +1345,8 @@ export function Cronograma() {
                           <p className="text-xs font-semibold uppercase tracking-wide text-teal-800">{tituloSlot}</p>
                           <p className="mt-1 font-medium leading-snug text-slate-900">{c.titulo}</p>
                           <p className="mt-1 line-clamp-3 text-xs text-slate-500">{c.receta}</p>
-                          {c.youtubeVideoId && (
-                            <p className="mt-1.5 text-[10px] font-medium text-teal-700">▶ Ver receta en detalle</p>
+                          {urlReproducibleDesdePlato(c) && (
+                            <p className="mt-1.5 text-[10px] font-medium text-teal-700">▶ Vídeo en detalle</p>
                           )}
                         </div>
                       );

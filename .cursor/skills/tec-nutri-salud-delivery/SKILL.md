@@ -69,6 +69,13 @@ No dupliques listas de pasos en páginas sueltas sin importar `recorrido.ts`.
 - Botones **Compré todo de una vez** / **Desmarcar todo**; export/import JSON del historial.
 - **Clave de variedad** rota plantillas sin cambiar perfil.
 
+## Hotfix producción — mayo 2026 (H27–H30)
+
+- **Vídeo multi-plataforma (H30):** dependencia `react-player`; `src/lib/recipeVideoUrl.ts` (normaliza YouTube/TikTok/Vimeo/etc.); `PlatoReceta.videoUrl`; Gemini devuelve `video_url`; `RecipeVideoEmbed` lazy con `playUrl`.
+- **Mercado activo:** al montar `KetoMercado`, si no hay lista local, hidratar desde `getMercadoRealizado(activoId)`; `actualizarMercadoEnHistorial` al persistir toggles; activar = cargar snapshot + sync `family_json`.
+- **Plan activo:** `activosModulo` en `EstadoPerfiles` / `family_json`; `persistPlanActivoEnFamily` / `persistMercadoActivoEnFamily`; `restaurarActivosLocalesDesdeEstado` tras login; upsert al «Marcar activo».
+- Plan y pruebas: **`docs/PLAN_FIX_PROD_MAY2026.md`**.
+
 ## Fase 4 — IA personalizada + persistencia + export PDF (mayo 2026)
 
 ### Bug de persistencia del cronograma (H23)

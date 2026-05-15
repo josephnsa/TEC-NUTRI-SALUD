@@ -3,10 +3,10 @@ import { Link } from "react-router-dom";
 import {
   sumarMacrosComidaDia,
   sumarMacrosPlatoSlot,
-  youtubeBusquedaPlato,
   type PerfilUsuario,
   type PlatoReceta
 } from "../lib/nutritionPlan";
+import { busquedaVideoRecetaHref, urlReproducibleDesdePlato } from "../lib/recipeVideoUrl";
 import { RecipeVideoEmbedSafe } from "./RecipeVideoEmbed";
 import type { DiaPlanConFecha } from "../lib/cronogramaHistorial";
 import {
@@ -445,7 +445,11 @@ export function CronogramaDiaDetalleModal({
                   const tituloSlot =
                     slot === "desayuno" ? "Desayuno" : slot === "almuerzo" ? "Almuerzo" : "Cena";
                   const m = sumarMacrosPlatoSlot(c);
-                  const busquedaHref = youtubeBusquedaPlato(c.titulo, c.videoQuery, perfil.estiloDieta);
+                  const playUrl = urlReproducibleDesdePlato(c);
+                  const busquedaVideoHref = busquedaVideoRecetaHref(
+                    c.titulo,
+                    `${c.videoQuery} ${perfil.estiloDieta}`
+                  );
                   const muestraMacros =
                     m.kcal > 0 || m.proteinG > 0 || m.fatG > 0 || m.carbG > 0 || m.fiberG > 0;
                   const porTxt = EtiquetaPorciones(c);
@@ -480,35 +484,28 @@ export function CronogramaDiaDetalleModal({
                         {/* Siempre intentamos el embed: RecipeVideoEmbedSafe valida la miniatura y
                             detecta errores de embedding; si falla, muestra la tarjeta de búsqueda. */}
                         <div className="mt-2">
-                          {c.youtubeVideoId ? (
+                          {playUrl ? (
                             <div className="space-y-2">
                               <RecipeVideoEmbedSafe
-                                videoId={c.youtubeVideoId}
+                                playUrl={playUrl}
+                                videoId={c.youtubeVideoId ?? undefined}
                                 title={c.titulo}
-                                searchFallbackHref={busquedaHref}
+                                searchFallbackHref={busquedaVideoHref}
                               />
                               <a
                                 className="inline-flex items-center gap-1.5 text-[11px] font-medium text-teal-700 underline-offset-2 hover:underline"
-                                href={busquedaHref}
+                                href={busquedaVideoHref}
                                 target="_blank"
                                 rel="noopener noreferrer"
                               >
-                                <span>↗</span> Más resultados en YouTube
+                                <span>↗</span> Buscar en otras plataformas
                               </a>
                             </div>
                           ) : (
-                            <a
-                              href={busquedaHref}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="motion-safe:hover:border-teal-400/70 motion-safe:hover:shadow-md mt-1 flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-teal-300/80 bg-gradient-to-br from-teal-50 via-white to-violet-50/35 px-5 text-center text-teal-900 shadow-inner transition motion-safe:duration-150"
-                            >
-                              <span className="text-4xl motion-safe:animate-pulse motion-reduce:animate-none">▶</span>
-                              <span className="text-sm font-semibold">Ver receta en YouTube</span>
-                              <span className="text-[11px] text-teal-800/85">
-                                {c.titulo} · abre YouTube en nueva pestaña
-                              </span>
-                            </a>
+                            <RecipeVideoEmbedSafe
+                              title={c.titulo}
+                              searchFallbackHref={busquedaVideoHref}
+                            />
                           )}
                         </div>
                       </div>

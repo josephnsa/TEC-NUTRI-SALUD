@@ -4,7 +4,8 @@ import type { DiaPlan, ModoCronograma, PerfilUsuario, PlatoReceta } from "./nutr
 import { calcularTdeePerfil, presupuestoKcalOrientativoDiario } from "./nutritionPlan";
 import { GEMINI_MODEL_IDS } from "./geminiModels";
 import { URL_GOOGLE_AI_STUDIO_API_KEY } from "./googleAiStudio";
-import { miniaturaYoutubeCarga, youtubeVideoIdFromInput } from "./youtubeEmbed";
+import { urlReproducibleReceta } from "./recipeVideoUrl";
+import { youtubeVideoIdFromInput } from "./youtubeEmbed";
 
 export { URL_GOOGLE_AI_STUDIO_API_KEY } from "./googleAiStudio";
 
@@ -91,10 +92,12 @@ function normalizeSlot(x: unknown): PlatoReceta {
   const videoQuery = alinearVideoQuery(titulo, videoRaw || titulo);
   const ytField = o.youtube_video_id != null ? String(o.youtube_video_id).trim() : "";
   const fromField = ytField.length === 11 && /^[a-zA-Z0-9_-]+$/.test(ytField) ? ytField : null;
+  const videoUrlRaw = String(o.video_url ?? o.videoUrl ?? o.embedUrl ?? "").trim();
+  const videoUrl = urlReproducibleReceta(videoUrlRaw) ?? undefined;
   const youtubeVideoId =
     fromField ??
+    youtubeVideoIdFromInput(videoUrlRaw) ??
     youtubeVideoIdFromInput(videoRaw) ??
-    youtubeVideoIdFromInput(String(o.embedUrl ?? "")) ??
     youtubeVideoIdFromInput(receta) ??
     youtubeVideoIdFromInput(titulo);
   const kcal_estimate = numOrUndef(o.kcal_estimate);
@@ -112,6 +115,7 @@ function normalizeSlot(x: unknown): PlatoReceta {
     titulo,
     receta,
     videoQuery,
+    ...(videoUrl ? { videoUrl } : {}),
     ...(youtubeVideoId ? { youtubeVideoId } : {}),
     ...(kcal_estimate != null ? { kcal_estimate } : {}),
     ...(protein_g != null ? { protein_g } : {}),
@@ -247,17 +251,18 @@ Reglas obligatorias:
   Pasos numerados breves (máx. ~560 caracteres el campo).
 - Por defecto cada comida apunta a 1 persona; si porciones>1 dímelo en el texto.
 - "titulo": corto y claro.
-- "videoQuery": texto 6–16 palabras en español optimizado para YouTube. Incluye: nombre exacto del plato + ingrediente principal + "receta". Ejemplo: "salmón al horno con brócoli receta saludable fácil español".
-- Macros por comida cuando puedas estimar sin extremos falsos (1 porción): "kcal_estimate", "protein_g", "fat_g", "carb_g", "fiber_g" (grams; distribuye proporcionalmente si porciones>1 sólo como referencia TOTAL del plato entero aclarándolo implícito en valores).
-- "youtube_video_id" (exactamente 11 caracteres válidos youtube o null): IMPORTANTE. Proporciona un ID de vídeo de YouTube REAL que exista actualmente y muestre cómo preparar ese plato en español. Usa canales reconocidos de cocina (Tasty Español, Las Recetas de Laura, Paulina Cocina, Cocina con Carmen, etc.). Si no estás 100% seguro de que el ID es válido y accesible hoy, devuelve null. NUNCA inventes IDs: es preferible null a un ID incorrecto.
+- "videoQuery": texto 6–16 palabras en español para buscar el tutorial (plato + ingrediente + "receta").
+- "video_url" (URL completa pública o null): tutorial REAL en español. Plataformas: YouTube, TikTok, Vimeo, Instagram Reels, Facebook video. Debe poder reproducirse embebido. Si no hay certeza, null.
+- Macros por comida cuando puedas estimar sin extremos falsos (1 porción): "kcal_estimate", "protein_g", "fat_g", "carb_g", "fiber_g".
+- "youtube_video_id" (11 caracteres o null): solo si el vídeo es de YouTube; opcional si ya diste video_url. NUNCA inventes IDs ni URLs.
 
 Devuelve SOLO JSON: array de longitud ${diasChunk}. Cada elemento:
 {
   "dia": <número global del día>,
   "comidas": {
-    "desayuno": { "titulo": "", "receta": "", "videoQuery": "", "porciones": 1, "kcal_estimate": null, "protein_g": null, "fat_g": null, "carb_g": null, "fiber_g": null, "youtube_video_id": null },
-    "almuerzo": { "titulo": "", "receta": "", "videoQuery": "", "porciones": 1, "kcal_estimate": null, "protein_g": null, "fat_g": null, "carb_g": null, "fiber_g": null, "youtube_video_id": null },
-    "cena": { "titulo": "", "receta": "", "videoQuery": "", "porciones": 1, "kcal_estimate": null, "protein_g": null, "fat_g": null, "carb_g": null, "fiber_g": null, "youtube_video_id": null }
+    "desayuno": { "titulo": "", "receta": "", "videoQuery": "", "video_url": null, "porciones": 1, "kcal_estimate": null, "protein_g": null, "fat_g": null, "carb_g": null, "fiber_g": null, "youtube_video_id": null },
+    "almuerzo": { "titulo": "", "receta": "", "videoQuery": "", "video_url": null, "porciones": 1, "kcal_estimate": null, "protein_g": null, "fat_g": null, "carb_g": null, "fiber_g": null, "youtube_video_id": null },
+    "cena": { "titulo": "", "receta": "", "videoQuery": "", "video_url": null, "porciones": 1, "kcal_estimate": null, "protein_g": null, "fat_g": null, "carb_g": null, "fiber_g": null, "youtube_video_id": null }
   }
 }`;
 
@@ -282,8 +287,8 @@ function clonarPlanes(plan: DiaPlan[]): DiaPlan[] {
   return JSON.parse(JSON.stringify(plan)) as DiaPlan[];
 }
 
-/** Sugiere vídeos de YouTube cuando el primer modelo no devolvió id (embed en-app). */
-async function enriquecerYoutubeFaltantes(plan: DiaPlan[]): Promise<DiaPlan[]> {
+/** Sugiere URLs de vídeo (cualquier plataforma) cuando el primer modelo no devolvió enlace. */
+async function enriquecerVideosFaltantes(plan: DiaPlan[]): Promise<DiaPlan[]> {
   if (!key || typeof window === "undefined") return plan;
 
   type Pend = { dayPos: number; slot: SlotCron; titulo: string; q: string };
@@ -294,6 +299,7 @@ async function enriquecerYoutubeFaltantes(plan: DiaPlan[]): Promise<DiaPlan[]> {
     for (const slot of slots) {
       const p = plan[idx]?.comidas[slot];
       if (!p) continue;
+      if (urlReproducibleReceta(String(p.videoUrl ?? ""))) continue;
       const yt = String(p.youtubeVideoId ?? "").trim();
       if (/^[a-zA-Z0-9_-]{11}$/.test(yt)) continue;
       const tituloPlato = String(p.titulo ?? "").trim();
@@ -333,9 +339,9 @@ async function enriquecerYoutubeFaltantes(plan: DiaPlan[]): Promise<DiaPlan[]> {
       const r = await model.generateContent(`
 Devuelve SÓLO un objeto JSON. Cada CLAVE debe ser EXACTAMENTE el string "key" de cada entrada (ej. "1|desayuno").
 
-Valor por clave:
-- string de EXACTAMENTE 11 caracteres alfanuméricos (YouTube video ID) de un tutorial de cocina en español que encaje exactamente con "titulo" y "busqueda". Solo de canales reconocidos (Tasty Español, Paulina Cocina, Las Recetas de Laura, Cocina con Carmen, etc.). El vídeo debe existir hoy y tener embedding habilitado.
-- null si no tienes certeza total (NUNCA inventes IDs; es mejor null que un ID incorrecto).
+Valor por clave: objeto { "video_url": "https://..." } o null.
+- video_url: URL COMPLETA y pública de un tutorial de cocina en español (YouTube, TikTok, Vimeo, Instagram, Facebook). Debe existir hoy y ser embebible.
+- null si no tienes certeza (NUNCA inventes URLs).
 
 Entradas:
 ${JSON.stringify(payload)}
@@ -345,24 +351,27 @@ ${JSON.stringify(payload)}
       for (const it of slice) {
         const k = claveSlotYoutube(it.dayPos, it.slot);
         const entrada = mapa[k];
-        let idRaw = "";
         if (entrada === null || entrada === "null") continue;
-        if (typeof entrada === "string") idRaw = entrada.trim();
+        let urlRaw = "";
+        if (typeof entrada === "string") urlRaw = entrada.trim();
         else if (entrada && typeof entrada === "object") {
-          const v = (entrada as { youtube_video_id?: unknown }).youtube_video_id;
-          if (typeof v === "string") idRaw = v.trim();
+          const o = entrada as { video_url?: unknown; youtube_video_id?: unknown };
+          if (typeof o.video_url === "string") urlRaw = o.video_url.trim();
+          else if (typeof o.youtube_video_id === "string" && /^[a-zA-Z0-9_-]{11}$/.test(o.youtube_video_id)) {
+            urlRaw = `https://www.youtube.com/watch?v=${o.youtube_video_id}`;
+          }
         }
-        const id = idRaw.trim();
-        if (!/^[a-zA-Z0-9_-]{11}$/.test(id)) continue;
+        const urlOk = urlReproducibleReceta(urlRaw);
+        if (!urlOk) continue;
         const díaIdx = it.dayPos - 1;
         const díaObj = out[díaIdx];
         if (!díaObj?.comidas[it.slot]) continue;
-        /* eslint-disable no-await-in-loop -- verificación secuencial limitada */
-        const ok = await miniaturaYoutubeCarga(id);
-        /* eslint-enable no-await-in-loop */
-        if (ok) {
-          díaObj.comidas[it.slot] = { ...díaObj.comidas[it.slot], youtubeVideoId: id };
-        }
+        const ytId = youtubeVideoIdFromInput(urlOk);
+        díaObj.comidas[it.slot] = {
+          ...díaObj.comidas[it.slot],
+          videoUrl: urlOk,
+          ...(ytId ? { youtubeVideoId: ytId } : {})
+        };
       }
     } catch {
       /* continuar sin vídeos extra */
@@ -419,6 +428,6 @@ export async function generarCronogramaIA(
   }
 
   onProgress?.(total, total, "enriqueciendo");
-  const conVideos = await enriquecerYoutubeFaltantes(partes);
+  const conVideos = await enriquecerVideosFaltantes(partes);
   return conVideos.map((p, i) => ({ ...p, dia: i + 1 }));
 }

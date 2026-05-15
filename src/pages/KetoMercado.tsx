@@ -9,6 +9,7 @@ import {
   type ListaItem
 } from "../lib/ketoMercado";
 import {
+  actualizarMercadoEnHistorial,
   anotarMercado,
   contarComprados,
   descargarRespaldoMercadoJson,
@@ -22,7 +23,9 @@ import {
   setMercadoActivoParaPlan,
   type MercadoSnapshot
 } from "../lib/mercadoHistorial";
-import { PERFILES_STORAGE_EVENT, loadPerfilLocal } from "../lib/perfilStorage";
+import { PERFILES_STORAGE_EVENT, loadEstadoPerfiles, loadPerfilLocal } from "../lib/perfilStorage";
+import { upsertProfileRemote } from "../lib/profileRemote";
+import { capturarActivosLocalesEnEstado } from "../lib/prefsActivos";
 import { CATEGORIA_LABELS, DIETA_LABELS, labelDieta } from "../lib/nutritionPlan";
 import { deleteMercadoSnapshotRemote, pushMercadoSnapshotRemote } from "../lib/snapshotsRemote";
 import { URL_GOOGLE_AI_STUDIO_API_KEY, geminiMercadoDisponible, generarMercadoIA } from "../lib/mercadoIA";
@@ -63,6 +66,28 @@ export function KetoMercado() {
     setActivoId(getMercadoActivoParaPlan());
   }, []);
 
+  const aplicarSnapshotEnLista = useCallback((snap: MercadoSnapshot) => {
+    const nextItems = snap.items.map((i) => ({ ...i }));
+    setDias(snap.dias);
+    setPersonas(snap.personas);
+    setItems(nextItems);
+    saveListaLocal({
+      dias: snap.dias,
+      personas: snap.personas,
+      items: nextItems,
+      updatedAt: new Date().toISOString()
+    });
+  }, []);
+
+  const hidratarDesdeMercadoActivo = useCallback(() => {
+    const id = getMercadoActivoParaPlan();
+    if (!id) return false;
+    const snap = getMercadoRealizado(id);
+    if (!snap?.items?.length) return false;
+    aplicarSnapshotEnLista(snap);
+    return true;
+  }, [aplicarSnapshotEnLista]);
+
   const copiarListaTexto = useCallback(() => {
     const gruposLocal = new Map<string, typeof items>();
     items.forEach((it) => {
@@ -100,9 +125,11 @@ export function KetoMercado() {
       setDias(saved.dias);
       setPersonas(saved.personas);
       setItems(saved.items);
+    } else {
+      hidratarDesdeMercadoActivo();
     }
     refreshHistorial();
-  }, [refreshHistorial]);
+  }, [refreshHistorial, hidratarDesdeMercadoActivo]);
 
   useEffect(() => {
     const onPerfil = () => {
@@ -111,7 +138,7 @@ export function KetoMercado() {
         setDias(saved.dias);
         setPersonas(saved.personas);
         setItems(saved.items);
-      } else {
+      } else if (!hidratarDesdeMercadoActivo()) {
         setDias(7);
         setPersonas(2);
         setItems(generarListaBase(7, 2, loadPerfilLocal()?.estiloDieta));
@@ -120,12 +147,16 @@ export function KetoMercado() {
     };
     window.addEventListener(PERFILES_STORAGE_EVENT, onPerfil);
     return () => window.removeEventListener(PERFILES_STORAGE_EVENT, onPerfil);
-  }, [refreshHistorial]);
+  }, [refreshHistorial, hidratarDesdeMercadoActivo]);
 
   const persist = useCallback(
     (next: ListaItem[], d: number, p: number) => {
       setItems(next);
       saveListaLocal({ dias: d, personas: p, items: next, updatedAt: new Date().toISOString() });
+      const activo = getMercadoActivoParaPlan();
+      if (activo && getMercadoRealizado(activo)) {
+        actualizarMercadoEnHistorial(activo, d, p, next);
+      }
     },
     []
   );
@@ -201,9 +232,21 @@ export function KetoMercado() {
   };
 
   const activar = (id: string) => {
+    const snap = getMercadoRealizado(id);
     setMercadoActivoParaPlan(id);
+    if (snap?.items?.length) aplicarSnapshotEnLista(snap);
+    capturarActivosLocalesEnEstado();
     refreshHistorial();
-    setMsg("Mercado activo para el plan.");
+    if (user?.id && isConfigured) {
+      const fam = loadEstadoPerfiles();
+      const p = loadPerfilLocal();
+      if (fam && p) void upsertProfileRemote(user.id, p, { family: fam });
+    }
+    setMsg(
+      snap?.items?.length
+        ? `Mercado activo cargado (${contarComprados(snap.items)}/${snap.items.length} comprados).`
+        : "Mercado activo para el plan."
+    );
   };
 
   const borrar = (id: string) => {

@@ -14,9 +14,16 @@ export type PerfilMiembro = PerfilUsuario & {
   fechaInicioPlan?: string | null;
 };
 
+/** Preferencias de mercado/plan activos por perfil (sync en `family_json`). */
+export type ActivosModuloPrefs = {
+  mercadoPorPerfil?: Record<string, string>;
+  planPorPerfil?: Record<string, string>;
+};
+
 export type EstadoPerfiles = {
   perfiles: PerfilMiembro[];
   activoId: string;
+  activosModulo?: ActivosModuloPrefs;
 };
 
 function emitPerfilesChanged() {
@@ -90,6 +97,28 @@ function normalizeMiembro(raw: unknown): PerfilMiembro | null {
   return { ...base, id: o.id, creadoEn, fechaInicioPlan: fechaInicioPlan ?? null };
 }
 
+function parseActivosModuloInline(raw: unknown): ActivosModuloPrefs | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const o = raw as ActivosModuloPrefs;
+  const mercado: Record<string, string> = {};
+  const plan: Record<string, string> = {};
+  if (o.mercadoPorPerfil && typeof o.mercadoPorPerfil === "object") {
+    for (const [k, v] of Object.entries(o.mercadoPorPerfil)) {
+      if (typeof k === "string" && typeof v === "string" && v.trim()) mercado[k] = v.trim();
+    }
+  }
+  if (o.planPorPerfil && typeof o.planPorPerfil === "object") {
+    for (const [k, v] of Object.entries(o.planPorPerfil)) {
+      if (typeof k === "string" && typeof v === "string" && v.trim()) plan[k] = v.trim();
+    }
+  }
+  if (!Object.keys(mercado).length && !Object.keys(plan).length) return undefined;
+  return {
+    ...(Object.keys(mercado).length ? { mercadoPorPerfil: mercado } : {}),
+    ...(Object.keys(plan).length ? { planPorPerfil: plan } : {})
+  };
+}
+
 /** Parsea estado multiperfil desde JSON ya deserializado (p. ej. `family_json` en Supabase). */
 export function parseEstadoPerfilesFromUnknown(data: unknown): EstadoPerfiles | null {
   if (!data || typeof data !== "object") return null;
@@ -98,7 +127,8 @@ export function parseEstadoPerfilesFromUnknown(data: unknown): EstadoPerfiles | 
   const perfiles = root.perfiles.map(normalizeMiembro).filter(Boolean) as PerfilMiembro[];
   if (!perfiles.length) return null;
   const activoOk = perfiles.some((p) => p.id === root.activoId) ? root.activoId : perfiles[0].id;
-  return { perfiles, activoId: activoOk };
+  const activosModulo = parseActivosModuloInline(root.activosModulo);
+  return activosModulo ? { perfiles, activoId: activoOk, activosModulo } : { perfiles, activoId: activoOk };
 }
 
 function parseEstado(raw: string): EstadoPerfiles | null {
@@ -115,6 +145,60 @@ export function aplicarEstadoPerfilesRemoto(data: unknown): boolean {
   if (!e) return false;
   writeEstado(e);
   return true;
+}
+
+/** Lectura sin efectos (prefs activos). */
+export function readEstadoPerfilesForSync(): EstadoPerfiles | null {
+  return readEstadoFromDisk();
+}
+
+/** Escritura directa del estado (prefs activos). */
+export function writeEstadoPerfilesDirect(e: EstadoPerfiles): void {
+  writeEstado(e);
+}
+
+export const ACTIVOS_PREFS_EVENT = "tec-nutri-salud-activos-prefs";
+
+function emitActivosPrefsChanged() {
+  try {
+    window.dispatchEvent(new CustomEvent(ACTIVOS_PREFS_EVENT, { detail: {} }));
+  } catch {
+    /* ignore */
+  }
+}
+
+function patchActivosModuloEnEstado(patch: Partial<ActivosModuloPrefs>): void {
+  const e = readEstadoFromDisk();
+  if (!e) return;
+  const prev = e.activosModulo ?? {};
+  const mercadoPorPerfil = { ...prev.mercadoPorPerfil, ...patch.mercadoPorPerfil };
+  const planPorPerfil = { ...prev.planPorPerfil, ...patch.planPorPerfil };
+  const activosModulo: ActivosModuloPrefs = {
+    ...(Object.keys(mercadoPorPerfil).length ? { mercadoPorPerfil } : {}),
+    ...(Object.keys(planPorPerfil).length ? { planPorPerfil } : {})
+  };
+  writeEstado({ ...e, activosModulo });
+  emitActivosPrefsChanged();
+}
+
+/** Persiste id de mercado activo en `family_json` local (sync nube aparte). */
+export function persistMercadoActivoEnFamily(perfilId: string, mercadoId: string | null): void {
+  const e = readEstadoFromDisk();
+  if (!e) return;
+  const mercadoPorPerfil = { ...(e.activosModulo?.mercadoPorPerfil ?? {}) };
+  if (mercadoId) mercadoPorPerfil[perfilId] = mercadoId;
+  else delete mercadoPorPerfil[perfilId];
+  patchActivosModuloEnEstado({ mercadoPorPerfil });
+}
+
+/** Persiste id de plan activo en `family_json` local (sync nube aparte). */
+export function persistPlanActivoEnFamily(perfilId: string, planId: string | null): void {
+  const e = readEstadoFromDisk();
+  if (!e) return;
+  const planPorPerfil = { ...(e.activosModulo?.planPorPerfil ?? {}) };
+  if (planId) planPorPerfil[perfilId] = planId;
+  else delete planPorPerfil[perfilId];
+  patchActivosModuloEnEstado({ planPorPerfil });
 }
 
 function readEstadoFromDisk(): EstadoPerfiles | null {

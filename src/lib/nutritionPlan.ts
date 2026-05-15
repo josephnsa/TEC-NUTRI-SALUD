@@ -9,6 +9,8 @@ export type PlatoReceta = {
   titulo: string;
   receta: string;
   videoQuery: string;
+  /** URL pública del tutorial (YouTube, TikTok, Vimeo, etc.). */
+  videoUrl?: string | null;
   youtubeVideoId?: string | null;
   kcal_estimate?: number;
   protein_g?: number;

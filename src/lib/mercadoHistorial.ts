@@ -1,5 +1,5 @@
 import type { ListaItem } from "./ketoMercado";
-import { getActivoPerfilId, getPrimerPerfilId, listPerfilesMiembros } from "./perfilStorage";
+import { getActivoPerfilId, getPrimerPerfilId, listPerfilesMiembros, persistMercadoActivoEnFamily } from "./perfilStorage";
 
 const HIST_KEY = "tec_nutri_salud_mercados_historial_v1";
 /** Clave global legacy (sin multiperfil). */
@@ -111,6 +111,29 @@ export function setMercadoActivoParaPlan(id: string | null) {
   const k = activeMercadoStorageKey(pid);
   if (!id) localStorage.removeItem(k);
   else localStorage.setItem(k, id);
+  persistMercadoActivoEnFamily(pid, id);
+}
+
+/** Actualiza ítems/días de un mercado guardado (p. ej. lista activa en curso). */
+export function actualizarMercadoEnHistorial(
+  id: string,
+  dias: number,
+  personas: number,
+  items: ListaItem[]
+): boolean {
+  const list = parseHistorial();
+  const idx = list.findIndex((s) => s.id === id);
+  if (idx === -1) return false;
+  const now = new Date().toISOString();
+  list[idx] = {
+    ...list[idx],
+    dias,
+    personas,
+    items: items.map((i) => ({ ...i })),
+    updatedAt: now
+  };
+  writeHistorial(list);
+  return true;
 }
 
 export function getMercadoActivoParaPlan(): string | null {

@@ -1,6 +1,7 @@
 import { supabase } from "./supabase";
 import type { EstadoPerfiles } from "./perfilStorage";
 import { aplicarEstadoPerfilesRemoto, parseEstadoPerfilesFromUnknown } from "./perfilStorage";
+import { restaurarActivosLocalesDesdeEstado } from "./prefsActivos";
 import type { PerfilUsuario } from "./nutritionPlan";
 
 type ProfileRow = {
@@ -67,7 +68,9 @@ export async function fetchFamilyRemote(userId: string): Promise<EstadoPerfiles 
 export async function fetchAndApplyFamilyRemote(userId: string): Promise<boolean> {
   const fam = await fetchFamilyRemote(userId);
   if (!fam) return false;
-  return aplicarEstadoPerfilesRemoto(fam);
+  const ok = aplicarEstadoPerfilesRemoto(fam);
+  if (ok) restaurarActivosLocalesDesdeEstado(fam);
+  return ok;
 }
 
 export type UpsertProfileOpts = { family?: EstadoPerfiles };

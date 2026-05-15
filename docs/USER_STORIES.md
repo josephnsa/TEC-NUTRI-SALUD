@@ -166,6 +166,27 @@ María quiere comer mejor según **su tipo de dieta** (cetogénica, mediterráne
     - PDF muestra: nombre del plan, perfil, tipo de dieta, objetivo calórico, por cada día: desayuno/almuerzo/cena con ingredientes truncados y macros (kcal, P, G, C).  
     - Incluye promedio de kcal/día del plan completo.
 
+## Hotfix producción — vídeo, mercado activo, plan activo (mayo 2026)
+
+| ID | Como usuario | Quiero | Para que |
+|----|--------------|--------|----------|
+| **H27** | persona con plan IA | ver un vídeo o un enlace claro en el modal del día | no me quede con pantalla negra «Video no disponible» |
+| **H28** | comprador | que al marcar un mercado como activo se carguen sus ítems y comprados | el progreso (ej. 31/16) coincida al volver a Mi mercado |
+| **H29** | usuario con cuenta | que el plan «Marcar activo» sobreviva al cerrar sesión | retome el mismo menú tras iniciar sesión en otro dispositivo |
+
+**Criterios de aceptación H27–H29:** ver `docs/PLAN_FIX_PROD_MAY2026.md` (fase 2).
+
+## Hotfix producción + vídeo multi-plataforma (mayo 2026)
+
+| ID | Como usuario | Quiero | Para que |
+|----|--------------|--------|----------|
+| **H27** | persona con plan IA | ver un vídeo o enlace claro en el modal del día | no quede pantalla negra «Video no disponible» |
+| **H28** | comprador | que el mercado activo cargue sus ítems y comprados | el progreso coincida al volver a Mi mercado |
+| **H29** | usuario con cuenta | que «Marcar activo» del plan persista tras cerrar sesión | retome el mismo menú al volver a entrar |
+| **H30** | cocinero | ver el tutorial en la app aunque esté en TikTok, YouTube u otra red | reproduzca en el modal sin depender solo de YouTube |
+
+**H30 — criterios:** `react-player` con URL en `videoUrl`; IA devuelve `video_url` pública; badge de plataforma; fallback de búsqueda. Ver `docs/PLAN_FIX_PROD_MAY2026.md`.
+
 ## Estado implementación (historias 13–26, mayo 2026)
 
 | Historia | Criterios clave implementados |
